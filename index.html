@@ -876,9 +876,9 @@
 </a>
 <nav aria-label="Primary navigation">
 <a href="#career">Career Deck</a>
-<a href="#courses">Courses</a>
+<a href="#plans">Packages</a>
 <a href="#about">About</a>
-<a class="nav-cta" href="#career">Enter Hub</a>
+<button class="login-pill" id="loginPill" type="button" aria-label="Log in"></button>
 </nav>
 </header>
 <main>
@@ -1758,9 +1758,31 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .enroll-box .ghost{flex:1;display:inline-flex;justify-content:center;padding:12px 16px;border-radius:12px;font-weight:600;text-decoration:none;color:var(--white);border:1px solid rgba(255,255,255,.2)}
 .enroll-box .x{position:absolute;top:12px;right:14px;background:none;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer}
 @media (max-width:900px){.plan-grid{grid-template-columns:1fr}}
+.login-pill{display:inline-flex;margin-left:6px;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid rgba(100,221,255,.35);background:rgba(5,25,39,.85);backdrop-filter:blur(8px);color:var(--white);font:600 .78rem/1 "Courier New",monospace;letter-spacing:.08em;cursor:pointer}
+.login-pill svg{width:12px;height:12px;fill:var(--cyan)}.login-pill.ok{border-color:rgba(94,230,168,.4);color:var(--green);cursor:default}.login-pill.ok svg{fill:var(--green)}
+.login-pill a{color:var(--amber);text-decoration:none;border-left:1px solid rgba(255,255,255,.15);padding-left:9px;cursor:pointer}
+.login-box label{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin:12px 0 6px}
+.login-box input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#07192a;color:#fff;font-size:1rem}
+.login-box .err{min-height:22px;margin:10px 0 4px;color:var(--amber);font-size:.88rem}
+.login-box .cta{background:linear-gradient(135deg,var(--cyan),var(--cyan-2));border:0;cursor:pointer;font-size:.95rem}
+.login-box .ghost{line-height:1.2;align-items:center}
+@media (max-width:640px){.login-pill{padding:9px 11px}}
+
 </style>
 
 <div class="member-bar" id="memberBar"></div>
+<div class="enroll-modal" id="loginModal" role="dialog" aria-modal="true">
+  <form class="enroll-box login-box" id="loginForm" autocomplete="on">
+    <button class="x" id="loginClose" type="button" aria-label="Close">×</button>
+    <div class="tier" style="color:var(--cyan)">MEMBER LOGIN</div>
+    <h3>Unlock your decks</h3>
+    <p>Enter the email you enrolled with and the access key you received. This browser will remember you.</p>
+    <label>Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
+    <label>Access key</label><input id="loginKey" type="text" required placeholder="ECD-C202710-…" autocomplete="off" spellcheck="false">
+    <div class="err" id="loginErr"></div>
+    <div class="row"><button class="cta" id="loginBtn" type="submit">Unlock my decks</button><a class="ghost" href="#plans" id="loginEnroll">Not enrolled yet</a></div>
+  </form>
+</div>
 <div class="enroll-modal" id="enrollModal" role="dialog" aria-modal="true">
   <div class="enroll-box">
     <button class="x" id="enrollClose" aria-label="Close">×</button>
@@ -1772,24 +1794,38 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 </div>
 <script id="ecademy-access">
 (function(){
-  /* ===== CONFIG — palitan ang mga URL kapag nagawa na ang offers sa Systeme.io ===== */
-  const SCHOOL_LOGIN = 'https://reynaldolomotan.systeme.io/school';
+  /* ===== CONFIG ===== */
+  const PUBLIC_JWK = {"kty": "EC", "crv": "P-256", "x": "MtUpDnnFjxjC0bFfCVLpxs0UxDuY_EydrGyNxfvh_HY", "y": "agGSXWmgRmBmzKcS0e3I5SYcB7tQwSI9MTbTTIacBoE"};
+  const CONTACT = 'https://m.me/';            // Messenger / email link para sa "Enroll" (palitan)
   const PACKAGES = {
-    junior: { name:'Junior Officers', tier:'Package A', price:'₱1,499', per:'one-time', ranks:['Third Officer','Second Officer'], url:'', 
-              feats:['Deck 01 · Third Officer — LSA / FFE / PSC readiness (22 simulators)','Deck 02 · Second Officer — Navigation equipment & GMDSS (19 simulators)'], no:['Deck 03 · Chief Officer — Draft Survey','Command Deck · Master — Full Bridge'] },
-    chief:  { name:'Chief Mate', tier:'Package B', price:'₱2,499', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
-              feats:['Everything in Junior Officers','Deck 03 · Chief Officer — Manual Draft Survey trainer, 7 narrated video lessons, tank soundings & hydrometer'], no:['Command Deck · Master — Full Bridge'] },
-    all:    { name:'All Access · Master', tier:'Package C', price:'₱3,999', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
-              feats:['Everything in Chief Mate','Command Deck · Master — Full Bridge Simulation with all equipment, heavy weather navigation','All future modules while enrolled'], no:[] }
+    J: { code:'J', name:'Junior Officers', tier:'Package A', price:'₱1,499', per:'one-time', ranks:['Third Officer','Second Officer'], url:'',
+         feats:['Deck 01 · Third Officer — LSA / FFE / PSC readiness (22 simulators)','Deck 02 · Second Officer — Navigation equipment & GMDSS (19 simulators)'], no:['Deck 03 · Chief Officer — Draft Survey','Command Deck · Master — Full Bridge'] },
+    C: { code:'C', name:'Chief Mate', tier:'Package B', price:'₱2,499', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
+         feats:['Everything in Junior Officers','Deck 03 · Chief Officer — Manual Draft Survey trainer, 7 narrated video lessons, tank soundings & hydrometer'], no:['Command Deck · Master — Full Bridge'] },
+    A: { code:'A', name:'All Access · Master', tier:'Package C', price:'₱3,999', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
+         feats:['Everything in Chief Mate','Command Deck · Master — Full Bridge Simulation with all equipment, heavy weather navigation','All future modules while enrolled'], no:[] }
   };
-  const TOKEN = 'ec4d3my-7k2p';           // kasama sa embed code ng bawat lesson sa Systeme.io
-  const FREE_DEMOS = ['flare'];           // libreng demo sa public mode
-  /* ============================================================================ */
-  const params = new URLSearchParams((location.hash || '').replace(/^#/, '').replace(/^\?/, ''));
-  const qs = new URLSearchParams(location.search);
-  const pkgKey = params.get('pkg') || qs.get('pkg');
-  const tok = params.get('t') || qs.get('t');
-  const pkg = (pkgKey && PACKAGES[pkgKey] && tok === TOKEN) ? PACKAGES[pkgKey] : null;
+  const FREE_DEMOS = ['flare'];
+  /* ================== */
+  const LS = 'ecademy.access';
+  let session = null; try { session = JSON.parse(localStorage.getItem(LS) || 'null'); } catch(e) {}
+  const b64d = s => { s = s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length % 4) s += '='; const bin = atob(s); const u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; };
+  async function verify(email, key){
+    email = (email || '').trim().toLowerCase(); key = (key || '').trim();
+    const m = key.match(/^ECD-([JCA])(\d{6})-([A-Za-z0-9.~]+)-([A-Za-z0-9_-]+)$/); if(!m) return { ok:false, why:'That does not look like an ECADEMY access key.' };
+    const [, pkg, exp, nameB, sigB] = m; const name = new TextDecoder().decode(b64d(nameB.replace(/\./g,'-').replace(/~/g,'_')));
+    const now = new Date(); const nowYM = String(now.getFullYear()) + String(now.getMonth()+1).padStart(2,'0');
+    if(exp !== '999912' && exp < nowYM) return { ok:false, why:'This access key expired in ' + exp.slice(0,4) + '-' + exp.slice(4) + '. Please renew.' };
+    try {
+      const k = await crypto.subtle.importKey('jwk', PUBLIC_JWK, {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']);
+      const ok = await crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, b64d(sigB), new TextEncoder().encode(`${pkg}|${exp}|${email}|${name}`));
+      if(!ok) return { ok:false, why:'Email and access key do not match. Check the email you enrolled with.' };
+    } catch(e) { return { ok:false, why:'Your browser could not verify the key (' + e.message + ').' }; }
+    return { ok:true, pkg, exp, email, name };
+  }
+  function expired(s){ if(!s) return true; const now = new Date(); const nowYM = String(now.getFullYear()) + String(now.getMonth()+1).padStart(2,'0'); return s.exp !== '999912' && s.exp < nowYM; }
+  if(session && (expired(session) || !PACKAGES[session.pkg])) { session = null; localStorage.removeItem(LS); }
+  const pkg = session ? PACKAGES[session.pkg] : null;
   const allowed = new Set(pkg ? pkg.ranks : []);
   const neededFor = r => Object.values(PACKAGES).find(p => p.ranks.includes(r));
   const lockSvg = '<svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-7-2a2 2 0 0 1 4 0v2h-4V7z"/></svg>';
@@ -1800,40 +1836,56 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const b = document.createElement('span'); b.className = 'lock-badge' + (open ? ' ok' : ''); b.innerHTML = (open ? okSvg + 'Unlocked' : lockSvg + 'Locked'); card.appendChild(b);
     if(!open) card.querySelectorAll('.topic-btn.has-sim').forEach(t => { if(FREE_DEMOS.includes(t.dataset.app) && !pkg) { const s=t.querySelector('.sim-tag'); if(s) s.textContent='▶ FREE DEMO'; return; } t.classList.add('locked'); const s = t.querySelector('.sim-tag'); if(s) s.textContent = 'LOCKED'; });
   });
+  /* enroll modal */
   const modal = document.getElementById('enrollModal');
   function showEnroll(rank){
-    const need = neededFor(rank) || PACKAGES.all;
+    const need = neededFor(rank) || PACKAGES.A;
     document.getElementById('enrollTier').textContent = need.tier + ' · ' + need.name;
     document.getElementById('enrollTitle').textContent = rank + ' deck is locked';
     document.getElementById('enrollText').textContent = pkg
-      ? 'Your current package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
-      : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll once in the ECADEMY school, log in, and every simulator in this deck unlocks.';
-    const go = document.getElementById('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll · ' + need.price;
-    if(!need.url) go.onclick = () => { modal.classList.remove('open'); };
-    document.getElementById('enrollLogin').href = SCHOOL_LOGIN;
+      ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
+      : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll, receive your access key by message, then log in here — every simulator in the deck unlocks on this device.';
+    const go = document.getElementById('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll · ' + need.price; go.target = need.url ? '_blank' : '';
+    go.onclick = () => { modal.classList.remove('open'); };
+    const lg = document.getElementById('enrollLogin'); lg.href = '#'; lg.removeAttribute('target'); lg.textContent = pkg ? 'Log out' : 'Already enrolled? Log in';
+    lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(pkg) logout(); else openLogin(); };
     modal.classList.add('open');
   }
   document.getElementById('enrollClose').onclick = () => modal.classList.remove('open');
   modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
-  document.addEventListener('click', e => {
-    const t = e.target.closest('.topic-btn.locked'); if(!t) return;
-    e.stopPropagation(); e.preventDefault();
-    showEnroll(t.closest('.rank-card').dataset.rank);
-  }, true);
-  // plans
+  document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card').dataset.rank); }, true);
+  /* login modal */
+  const lm = document.getElementById('loginModal');
+  function openLogin(){ lm.classList.add('open'); document.getElementById('loginErr').textContent=''; setTimeout(() => document.getElementById('loginEmail').focus(), 50); }
+  document.getElementById('loginClose').onclick = () => lm.classList.remove('open');
+  lm.addEventListener('click', e => { if(e.target === lm) lm.classList.remove('open'); });
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault(); const btn = document.getElementById('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
+    let r; try { r = await verify(document.getElementById('loginEmail').value, document.getElementById('loginKey').value); } catch(err) { r = { ok:false, why:'Could not check the key: ' + err.message }; }
+    btn.disabled = false; btn.textContent = 'Unlock my decks';
+    if(!r.ok){ document.getElementById('loginErr').textContent = r.why; return; }
+    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, at:Date.now() }));
+    document.getElementById('loginErr').style.color = 'var(--green)'; document.getElementById('loginErr').textContent = 'Welcome aboard, ' + r.name + '. Unlocking ' + PACKAGES[r.pkg].name + '…';
+    setTimeout(() => location.reload(), 900);
+  });
+  function logout(){ localStorage.removeItem(LS); location.reload(); }
+  /* top-right pill */
+  const pill = document.getElementById('loginPill');
+  if(pkg){ pill.innerHTML = okSvg + '<span>' + session.name.split(' ')[0] + ' · ' + pkg.name + '</span><a href="#" id="pillOut">Log out</a>'; pill.classList.add('ok'); document.getElementById('pillOut').onclick = e => { e.preventDefault(); logout(); }; }
+  else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.onclick = openLogin; }
+  /* plans */
   const grid = document.getElementById('planGrid');
-  grid.innerHTML = Object.entries(PACKAGES).map(([k,p]) => `
+  grid.innerHTML = Object.values(PACKAGES).map(p => `
     <article class="plan${p.featured ? ' featured' : ''}">
       <div class="tier">${p.tier}${p.featured ? ' · Most popular' : ''}</div>
       <h3>${p.name}</h3>
       <div class="price">${p.price}<small>${p.per}</small></div>
       <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}${p.no.map(f => '<li class="no">' + f + '</li>').join('')}</ul>
-      <a class="cta" href="${p.url || '#'}" ${p.url ? 'target="_blank" rel="noopener"' : 'data-soon="1"'}>${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included') : (pkg ? 'Upgrade' : 'Enroll now')}</a>
-      <div class="fine">${p.url ? 'Secure checkout · instant access' : 'Checkout link coming soon'}</div>
+      <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included') : (pkg ? 'Upgrade' : 'Enroll now')}</a>
+      <div class="fine">${p.url ? 'Secure checkout · access key by email' : 'GCash · Maya · bank transfer · card — access key sent within the day'}</div>
     </article>`).join('');
-  grid.querySelectorAll('[data-soon]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if(typeof showToast === 'function') showToast('Checkout opens soon — the ECADEMY school is being set up.'); }));
-  // member bar
-  if(pkg){ const bar = document.getElementById('memberBar'); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + pkg.name.toUpperCase() + (pkg === PACKAGES.all ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
+  /* member bar */
+  if(pkg){ const bar = document.getElementById('memberBar'); const until = session.exp === '999912' ? 'lifetime' : 'until ' + session.exp.slice(0,4) + '-' + session.exp.slice(4); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + session.name.toUpperCase() + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
 })();
 </script>
 </body>
