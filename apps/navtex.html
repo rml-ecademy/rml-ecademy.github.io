@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY NAVTEX Receiver</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8;--lcd:#c9cf8a;--lcdk:#1d2410}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line)}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}
+.wrap{display:grid;grid-template-columns:minmax(760px,1fr) 400px;gap:12px;padding:12px}
+@media(max-width:1250px){.wrap{grid-template-columns:1fr}}
+/* device */
+.dev{background:linear-gradient(#4a4f53,#2f3336);border-radius:14px;padding:18px 22px 22px;box-shadow:0 14px 40px #000a,inset 0 1px 0 #6b7175;position:relative;display:grid;grid-template-columns:330px 1fr;gap:22px;min-height:520px}
+.devt{position:absolute;left:24px;top:14px;color:#e8ecee;font:600 19px Arial;letter-spacing:.05em}
+.prn{margin-top:42px;display:flex;flex-direction:column;align-items:center}
+.pto{display:flex;align-items:center;gap:12px;color:#e8ecee;font:600 13px Arial;align-self:flex-start;margin-bottom:12px}.pto i{width:46px;height:46px;border-radius:50%;background:radial-gradient(#2a2d30,#141617);box-shadow:inset 0 2px 4px #000}
+.slot{width:300px;height:16px;background:#111;border-radius:3px;box-shadow:inset 0 3px 6px #000}
+.paper{width:270px;height:380px;overflow:auto;background:#f4f3ee;color:#222;font:11px/1.35 "Courier New",monospace;padding:8px 12px;margin-top:-6px;box-shadow:0 6px 12px #0008;white-space:pre-wrap}
+.paper .ph{display:flex;justify-content:space-between;color:#555;font-style:italic;font-size:10px}.paper hr{border:0;border-top:1px dashed #999;margin:10px 0}
+.fr{background:#3a3e41;border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr 150px;gap:14px;box-shadow:inset 0 1px 0 #6a6e71}
+.brand{grid-column:1/-1;color:#e8ecee;font:700 15px Arial;letter-spacing:.25em}
+.lcdw{background:#2a2d2f;padding:10px;border-radius:6px}
+.lcd{background:var(--lcd);color:var(--lcdk);height:400px;border-radius:2px;font:15px/1.25 "Courier New",monospace;padding:6px 8px;position:relative;overflow:hidden;box-shadow:inset 0 0 18px #6f7440}
+.lcd.dim1{filter:brightness(.8)}.lcd.dim2{filter:brightness(.62)}.lcd.dim3{filter:brightness(.45)}.lcd.off{background:#2b2f22;color:transparent;box-shadow:none}
+.lcd .top{display:flex;justify-content:space-between;border-bottom:1px solid #4b5226;font-size:12.5px}.lcd .big{font-size:22px;font-weight:700;margin:4px 0}
+.lcd .body{white-space:pre-wrap;overflow:hidden;height:270px}.lcd .help{position:absolute;left:8px;right:8px;bottom:4px;border-top:1px solid #4b5226;font-size:12px}
+.lcd .pop{position:absolute;left:12px;right:12px;top:70px;background:var(--lcd);border:2px solid var(--lcdk);padding:10px;text-align:center}
+.lcd .inv{background:var(--lcdk);color:var(--lcd)}.lcd .row{white-space:pre}.lcd .ico{border:1px solid var(--lcdk);padding:0 3px;font-size:11px;margin-left:3px}
+.keys{display:flex;flex-direction:column;align-items:center;gap:14px}
+.pad{width:130px;height:130px;border-radius:50%;background:radial-gradient(#3d4245,#1b1d1f);position:relative;box-shadow:0 3px 6px #000}
+.pad button{position:absolute;width:40px;height:40px;background:none;border:0;color:#cfe86a;font-size:22px;cursor:pointer}.pad button:active{color:#fff}
+.k{width:58px;height:46px;border-radius:50%;background:radial-gradient(#45494c,#222527);color:#d6dadc;border:0;font:600 12px Arial;cursor:pointer;box-shadow:0 3px 5px #000}.k:active{transform:translateY(1px)}
+.krow{display:flex;gap:14px;align-items:center}.dim{display:flex;flex-direction:column;align-items:center;background:radial-gradient(#45494c,#222527);border-radius:30px;padding:4px 6px;box-shadow:0 3px 5px #000}.dim button{background:none;border:0;color:#d6dadc;font:700 22px Arial;cursor:pointer}.dim span{font:600 11px Arial;color:#d6dadc}
+.pwr{display:flex;align-items:center;gap:10px;background:#26292b;border-radius:30px;padding:8px 12px;color:#e8ecee;font:italic 700 13px Arial}.pwr button{width:44px;height:44px;border-radius:50%;background:radial-gradient(#45494c,#222527);border:0;color:#d6dadc;font-size:18px;cursor:pointer}
+/* side */
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}
+.dec td{padding:2px 6px;border-bottom:1px solid #22323a;vertical-align:top}.dec td:first-child{color:var(--mut);white-space:nowrap}
+.small{color:var(--mut);font-size:12px}
+.clock{font:700 16px Consolas,monospace;color:var(--acc)}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style><style id="fitcss">
+html,body{height:100%}
+.wrap{display:flex!important;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:hidden}
+.fitbox>*{transform-origin:0 0;margin:0!important}
+.wrap>.side{flex:1 1 320px;min-width:300px;overflow:auto}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.wrap>.side{max-height:none!important}}
+</style><style id="real3d">/* ===== ECADEMY 3D realism layer ===== */
+body{background:radial-gradient(ellipse at 30% 20%,#16232a 0%,#0b1114 55%,#06090b 100%) fixed!important}
+.dev,.frame,.ap,.rep,.mount .dev,.pad0{position:relative;box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -4px 8px rgba(0,0,0,.55),inset 2px 0 0 rgba(255,255,255,.05),inset -2px 0 0 rgba(0,0,0,.35),0 30px 60px rgba(0,0,0,.6),0 10px 18px rgba(0,0,0,.45)!important}
+.dev,.frame,.ap{isolation:isolate}
+.dev::before,.frame::before,.ap::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(170deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 35%,rgba(0,0,0,0) 65%,rgba(0,0,0,.28) 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.018) 1px 3px);z-index:-1}
+.wall,.con,.mount,.stand{box-shadow:inset 0 0 80px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25),0 20px 40px rgba(0,0,0,.5)!important;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 2px,rgba(0,0,0,.02) 2px 4px)!important}
+/* screens: recessed bezel + glass glare */
+.bez,.lcdw,.seg,.disp,.repin,.bezel{position:relative;box-shadow:inset 0 6px 14px rgba(0,0,0,.85),inset 0 -2px 0 rgba(255,255,255,.12),0 1px 0 rgba(255,255,255,.15)!important}
+.bez::after,.lcdw::after,.seg::after,.disp::after,.repin::after{content:"";position:absolute;inset:6%;border-radius:4px;pointer-events:none;z-index:3;background:linear-gradient(155deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 28%,rgba(255,255,255,0) 42%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.18),transparent 60%)}
+canvas#lcd,canvas#scr,canvas#aps,canvas#rep,.lcd{box-shadow:0 0 0 2px #050505,0 0 18px rgba(0,0,0,.6)!important}
+/* hard keys */
+.k,.kb,.ob,.tk,.pad button,.dim button{transition:transform .06s,box-shadow .06s}
+.k,.kb{box-shadow:0 5px 0 #050607,0 8px 14px rgba(0,0,0,.65),inset 0 2px 0 rgba(255,255,255,.28),inset 0 -4px 6px rgba(0,0,0,.55)!important;background-image:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%),radial-gradient(circle at 50% 40%,#43484c,#16191b)!important;text-shadow:0 1px 0 #000}
+.k:active,.kb:active{transform:translateY(4px)!important;box-shadow:0 1px 0 #050607,0 2px 4px rgba(0,0,0,.6),inset 0 2px 4px rgba(0,0,0,.6)!important}
+.ob{box-shadow:0 6px 0 #6a3a08,0 10px 16px rgba(0,0,0,.6),inset 0 3px 0 rgba(255,255,255,.55),inset 0 -6px 10px rgba(120,60,0,.55)!important}
+.ob:active{transform:translateY(5px)!important;box-shadow:0 1px 0 #6a3a08,0 2px 5px rgba(0,0,0,.6),inset 0 3px 6px rgba(0,0,0,.4)!important}
+.pad{box-shadow:0 8px 14px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.18),inset 0 -6px 12px rgba(0,0,0,.7),0 0 0 3px #0a0b0c!important;background:radial-gradient(circle at 50% 35%,#3a3f43,#141618 65%,#0a0b0c)!important}
+.pad button:active{transform:scale(.9)}
+.knob,.lock,.selk{box-shadow:0 10px 18px rgba(0,0,0,.75),0 0 0 4px #1a1b1c,0 0 0 6px #4a4d50,inset 0 3px 2px rgba(255,255,255,.22),inset 0 -6px 10px rgba(0,0,0,.8)!important}
+.knob{background:conic-gradient(from 0deg,#2a2c2e,#55595c,#2a2c2e,#5c6063,#2a2c2e,#55595c,#2a2c2e)!important}
+.plate{text-shadow:0 1px 0 rgba(255,255,255,.25),0 -1px 0 #000;box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.3)!important}
+.placard,.note,.ann span,.tag{box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.paper{box-shadow:0 10px 18px rgba(0,0,0,.55),inset 0 -20px 30px rgba(0,0,0,.08)!important}
+.cover{box-shadow:inset 0 4px 10px #000,0 2px 0 rgba(255,255,255,.12)!important}
+#wheel{filter:drop-shadow(0 14px 12px rgba(0,0,0,.6))}
+canvas#rai{filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.led i{box-shadow:inset 0 1px 3px #000,0 1px 0 rgba(255,255,255,.15)}
+</style></head><body>
+<header><b>ECADEMY</b><span>NAVTEX RECEIVER TRAINER</span><span class="sub">· 518 / 490 / 4209.5 kHz · NAVAREA XI (training)</span><span class="sp"></span>
+<span class="small">UTC</span><span class="clock" id="clk">--</span><span class="small">SIM</span>
+<button class="btn" data-acc="0">❚❚</button><button class="btn" data-acc="1">×1</button><button class="btn on" data-acc="60">×60</button><button class="btn" data-acc="300">×300</button><button class="btn" id="nextmsg">⏭ NEXT MSG</button><button class="btn" id="restart">↺ RESTART</button></header>
+<div class="wrap">
+ <div class="dev">
+  <div class="devt">NAVTEX RECEIVER</div>
+  <div class="prn"><div class="pto"><i></i>PUSH TO OPEN</div><div class="slot"></div><div class="paper" id="paper"></div><div class="small" style="margin-top:6px;color:#cfd3d5">Printer: <b id="prst">AUTO</b> · <button class="btn" id="tear" style="padding:2px 8px">✂ TEAR OFF</button></div></div>
+  <div class="fr"><div class="brand">ECADEMY · NX-T1</div>
+   <div class="lcdw"><div class="lcd" id="lcd"></div></div>
+   <div class="keys">
+    <div class="pad"><button data-k="up" style="left:45px;top:4px">▲</button><button data-k="down" style="left:45px;bottom:4px">▼</button><button data-k="left" style="left:4px;top:45px">◀</button><button data-k="right" style="right:4px;top:45px">▶</button></div>
+    <div class="krow"><button class="k" data-k="ent">ENT</button><button class="k" data-k="menu">MENU<br>ESC</button></div>
+    <div class="krow"><div class="dim"><button data-k="dimp">+</button><span>DIM</span><button data-k="dimm">−</button></div><div style="display:flex;flex-direction:column;gap:14px"><button class="k" data-k="list">LIST</button><button class="k" data-k="print">PRINT</button></div></div>
+    <div class="pwr"><span>NAVTEX<br>NX-T1</span><button data-k="pwr">⏻</button></div>
+   </div></div>
+ </div>
+ <div class="side">
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>MESSAGE DECODER (selected message)</h3><div id="dec" class="small">Open a message (LIST ▸ ENT) to decode its header.</div></div>
+  <div class="card"><h3>QUICK GUIDE</h3><div class="small">
+   <b>Header</b> ZCZC <b>B1 B2 B3B4</b>: B1 = transmitting station (A–X) · B2 = message type (A–Z) · B3B4 = serial number (00 = must always be printed).<br>
+   <b>Keys:</b> LIST = message list · ENT = select / open · MENU/ESC = menu or back · ▲▼ move · ◀▶ select · PRINT = print shown message · DIM ± = brightness.<br>
+   <b>Cannot be rejected:</b> A (navigational warnings), B (meteorological warnings), D (SAR / distress / piracy), L (additional nav warnings).<br>
+   Keyboard: arrows, Enter = ENT, Esc = MENU, L = LIST, P = PRINT.</div></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · fictional station IDs and messages for NAVAREA XI (Philippines) · NOT FOR NAVIGATION OR GMDSS WATCHKEEPING</div>
+<script>
+const $ = id => document.getElementById(id);
+const TYPES = {A:"Navigational warning", B:"Meteorological warning", C:"Ice report", D:"SAR / distress alert relay / piracy", E:"Meteorological forecast", F:"Pilot / VTS service message", G:"AIS service message", H:"LORAN message", I:"Spare", J:"SATNAV (GNSS) message", K:"Other electronic navaid message", L:"Navigational warning (additional to A)", T:"Test transmission (national)", V:"Special service", W:"Special service", X:"Special service", Y:"Special service", Z:"No message on hand (QRU)"};
+const MUST = ["A", "B", "D", "L"];
+const STN = {518:{M:"Manila", C:"Cebu", P:"Puerto Princesa", D:"Davao", K:"Hong Kong (area)"}, 490:{N:"Manila (national, Filipino/English)", E:"Cebu (national)"}, 4209.5:{R:"NAVAREA XI coordinator (HF)"}};
+const START = Date.UTC(2026, 9, 1, 0, 0, 0) / 1000;  // 01 Oct 2026 00:00 UTC
+const MSGS = [
+ {m:1, f:518, id:"MA01", err:0, txt:"010001 UTC OCT 26\nMANILA COASTAL WARNING 0409/26\nMANILA BAY.\nDANGEROUS WRECK LOCATED IN 14-27.6N 120-48.3E, DEPTH 6.2 METERS.\nWIDE BERTH REQUESTED."},
+ {m:5, f:518, id:"ME02", err:0.4, txt:"010005 UTC OCT 26\nWEATHER BULLETIN FOR PHILIPPINE WATERS\nSYNOPSIS: RIDGE OF HIGH PRESSURE AFFECTING NORTHERN LUZON.\nMANILA BAY / VERDE ISLAND PASSAGE: WIND NE 10-15 KT. SEA SLIGHT TO MODERATE. VIS GOOD.\nSIBUYAN / VISAYAN SEA: WIND E 15-20 KT. SEA MODERATE. VIS GOOD, MOD IN SHOWERS."},
+ {m:9, f:518, id:"CA05", err:1.2, txt:"010009 UTC OCT 26\nCEBU COASTAL WARNING 0221/26\nCAMOTES SEA.\nCABLE LAYING OPERATIONS BY CS ORIENT BETWEEN\n10-25.0N 124-05.0E AND 10-30.0N 124-20.0E.\nWIDE BERTH OF 2 NM REQUESTED. CALL VTS CEBU VHF 12."},
+ {m:14, f:518, id:"MD00", err:0, alarm:true, txt:"010014 UTC OCT 26\nDISTRESS ALERT RELAY / SAR\nTABLAS STRAIT.\nOVERDUE FISHING BANCA 'MV JOEMAR' 6 POB\nLAST KNOWN POSITION 12-40.0N 121-50.0E AT 302200UTC SEP.\nVESSELS IN AREA REQUESTED TO KEEP SHARP LOOKOUT,\nASSIST IF POSSIBLE AND REPORT TO MRCC MANILA."},
+ {m:19, f:518, id:"MA06", err:0, txt:"010019 UTC OCT 26\nNAVAREA XI 0923/26 (PHILIPPINES)\nSIBUYAN SEA.\nMILITARY EXERCISES INCLUDING LIVE FIRING 010000Z TO 052359Z OCT 26\nIN AREA BOUNDED BY\n12-30.0N 122-40.0E\n12-30.0N 123-00.0E\n12-10.0N 123-00.0E\n12-10.0N 122-40.0E\nMARINERS ADVISED TO KEEP CLEAR."},
+ {m:23, f:518, id:"MA01", err:0, repeat:true, txt:"010001 UTC OCT 26\nMANILA COASTAL WARNING 0409/26\nMANILA BAY.\nDANGEROUS WRECK LOCATED IN 14-27.6N 120-48.3E, DEPTH 6.2 METERS.\nWIDE BERTH REQUESTED."},
+ {m:27, f:518, id:"PB04", err:2.1, txt:"010027 UTC OCT 26\nGALE WARNING NR 12\nSULU SEA AND CUYO EAST PASS.\nNORTHEAST WINDS 30 TO 35 KNOTS, ROUGH TO VERY ROUGH SEAS 3.5 TO 5 METERS.\nSMALL SEA CRAFT ADVISED NOT TO VENTURE OUT."},
+ {m:32, f:518, id:"CA07", err:0.6, txt:"010032 UTC OCT 26\nMANILA COASTAL WARNING 0412/26\nVERDE ISLAND PASSAGE.\nDRIFTING CONTAINER REPORTED IN 13-33.5N 121-10.2E.\nVESSELS IN VICINITY KEEP SHARP LOOKOUT AND REPORT SIGHTINGS TO PCG."},
+ {m:37, f:518, id:"MJ01", err:0, txt:"010037 UTC OCT 26\nGNSS INTERFERENCE TESTING\nMANILA BAY AREA WITHIN 30 NM OF 14-35N 120-50E\n020100 TO 020500 UTC OCT 26.\nGPS POSITIONS MAY BE UNRELIABLE. USE ALTERNATIVE MEANS OF POSITION FIXING."},
+ {m:42, f:518, id:"ML09", err:0, txt:"010042 UTC OCT 26\nMANILA COASTAL WARNING 0415/26\nVERDE ISLAND PASSAGE.\nMALABRIGO POINT LIGHT 13-35.7N 121-15.4E UNLIT."},
+ {m:47, f:518, id:"DA11", err:38.0, txt:"010047 UTC OCT 26\nDAVAO COASTAL WARNING 0118/26\nDAVAO GULF.\nUNDERWATER OPERATIONS IN 07-02.0N 125-38.0E. VESSELS KEEP CLEAR 1 NM."},
+ {m:52, f:518, id:"MD00", err:0, alarm:true, txt:"010052 UTC OCT 26\nNAVIGATIONAL WARNING TO ALL STNS.\nLN354/26 SIBUYAN SEA\nREPORTED ONE PERSON OVERBOARD IN VICINITY OF 12-18N 122-35E\nAT 010030UTC OCT. SEARCH AND RESCUE REQUESTED.\nREPORT SIGHTINGS TO MRCC MANILA."},
+ {m:58, f:518, id:"CE15", err:0.2, txt:"010058 UTC OCT 26\nWEATHER FORECAST CENTRAL VISAYAS\nCAMOTES SEA / BOHOL STRAIT: WIND E 10-15 KT. SEA SLIGHT. VIS GOOD."},
+ {m:63, f:490, id:"NA03", err:0, txt:"010103 UTC OCT 26\nPAALALA SA MGA MARINERO / NOTICE TO MARINERS (NATIONAL)\nMANILA SOUTH HARBOR. DREDGING OPERATIONS NORTH HARBOR ENTRANCE.\nLEAST DEPTH 8.5 METERS. PASS AT SLOW SPEED."},
+ {m:68, f:518, id:"MD00", err:0, alarm:true, txt:"010108 UTC OCT 26\nPIRACY / ARMED ROBBERY WARNING\nSULU AND CELEBES SEAS.\nVESSELS ADVISED TO MAINTAIN ANTI-PIRACY WATCH AND REPORT ANY SUSPICIOUS\nAPPROACH TO PCG / RECAAP ISC.", serial2:"MD01"},
+ {m:73, f:518, id:"MZ00", err:0, txt:"010113 UTC OCT 26\nQRU - NO MESSAGE ON HAND."}];
+MSGS.forEach((q, i) => { if (q.serial2) q.id = q.serial2; q.k = i; });
+let S, simT, acc = 60, last = performance.now(), queue;
+function reset() {
+  S = {pwr:true, dim:0, freq:518, scr:"main", cur:0, view:null, vscroll:0, pop:null, menuCur:0, sub:null, subCur:0, auto:true, alarmSnd:true, alarmOn:false,
+    st:{518:{M:true, C:true, P:false, D:false, K:false}, 490:{N:true, E:false}, 4209.5:{R:true}}, ty:Object.fromEntries(Object.keys(TYPES).map(k => [k, !["I", "H", "C"].includes(k)])),
+    msgs:[], ids:new Set(), lastHdr:null, rx:0, rej:0, tr:{st:false, ty:false, open:false, d:false, print:false, ecdis:false, decode:false}};
+  simT = 0; queue = MSGS.slice(); $("paper").innerHTML = ""; render(); tasks(); }
+const B1 = id => id[0], B2 = id => id[1];
+function rxCheck(q) { const st = S.st[q.f] || {}; if (q.f !== S.freq && !(q.f === 518 && S.freq === 518)) return "freq"; if (!st[B1(q.id)]) return "station"; if (!S.ty[B2(q.id)] && !MUST.includes(B2(q.id))) return "type"; return null; }
+function receive(q) {
+  const r = rxCheck(q); if (r) { S.rej++; log(`(not received/rejected: ${q.id} · ${r === "freq" ? "different frequency" : r === "station" ? "station " + B1(q.id) + " not selected" : "type " + B2(q.id) + " deselected"})`); return; }
+  if (q.err > 33) { S.msgs.unshift({...q, t:simT, bad:true, txt:q.txt.replace(/[A-Z]/g, ch => Math.random() < .35 ? "*" : ch)}); S.lastHdr = q; log(`${q.id} error rate ${q.err}% (>33%): stored as corrupt, will be received again`); render(); return; }
+  const key = q.id + "|" + q.txt.split("\n")[0];
+  if (S.ids.has(key) && !q.id.endsWith("00")) { log(`${q.id} already received: repeat ignored (not printed)`); return; }
+  S.ids.add(key); const m = {...q, t:simT, read:false}; S.msgs.unshift(m); S.rx++; S.lastHdr = q; if (S.msgs.length > 200) S.msgs.pop();
+  if (S.auto) printMsg(m);
+  if (q.alarm && S.alarmSnd) { S.alarmOn = true; beepLoop(); }
+  S.pop = {m, txt:q.alarm ? "Received SAR / DISTRESS msg!" : "Received new int'l msg.", c:1}; render(); }
+function printMsg(m) { const p = $("paper"), d = document.createElement("div"); d.innerHTML = `<div class="ph"><span>${m.f}kHz</span><span>Error Rate: ${m.err.toFixed(1)}%</span></div>ZCZC ${m.id}\n${m.txt}\nNNNN<hr>`; p.appendChild(d); p.scrollTop = p.scrollHeight; }
+function log(t) { console.log(t); }
+let AC = null, beepT = null; function beepLoop() { clearInterval(beepT); const b = () => { if (!S.alarmOn) { clearInterval(beepT); return; } try { AC = AC || new AudioContext(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 2200; o.type = "square"; g.gain.value = .03; o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + .25); } catch (e) {} }; b(); beepT = setInterval(b, 700); }
+const pad = n => String(n).padStart(2, "0");
+function utc(t) { const d = new Date((START + t) * 1000); return `${pad(d.getUTCDate())} ${["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][d.getUTCMonth()]} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`; }
+/* ---------- LCD rendering ---------- */
+const MENU = ["Message", "Rx Setting (station / type)", "Frequency", "Alarm", "Printer", "Self Test", "Send to ECDIS (MSI)", "System info"];
+function topLine() { const h = S.lastHdr; return `<div class="top"><span>${S.freq} ${h ? h.id : "----"} ${h && h.alarm ? '<span class="ico inv">SAR</span>' : ""}</span><span>ERROR RATE= ${(h ? h.err : 0).toFixed(1)}%</span></div><div class="top" style="border:0"><span>${utc(simT)}</span><span>${S.msgs.length}/200</span></div>`; }
+function render() {
+  const L = $("lcd"); L.className = "lcd" + (S.pwr ? (S.dim ? " dim" + S.dim : "") : " off"); if (!S.pwr) { L.innerHTML = ""; return; }
+  let h = topLine();
+  if (S.scr === "main") { const m = S.msgs[0]; h += `<div class="big">${m ? "ZCZC " + m.id : "NAVTEX STANDBY"}</div><div class="body">${m ? esc(m.txt.split("\n").slice(1).join("\n")).slice(0, 380) : "Waiting for messages on " + S.freq + " kHz…\n\nStations: " + Object.keys(S.st[S.freq] || {}).filter(k => S.st[S.freq][k]).join(" ")}</div><div class="help">[LIST] MSG LIST  [MENU] MENU  [PRINT] PRINT</div>`; }
+  if (S.scr === "list") { const L2 = S.msgs; h += `<div class="big">MESSAGE LIST ${S.freq}</div><div class="body">${L2.length ? L2.slice(Math.max(0, S.cur - 8), Math.max(0, S.cur - 8) + 12).map((m, i0) => { const i = i0 + Math.max(0, S.cur - 8); return `<div class="row ${i === S.cur ? "inv" : ""}">${m.read ? " " : "*"}${m.bad ? "!" : " "}${m.id} ${utc(m.t).slice(3, 9)} ${esc(m.txt.split("\n")[1] || "").slice(0, 18)}</div>`; }).join("") : "(no messages)"}</div><div class="help">[▲▼]SELECT [ENT]DISPLAY [MENU]BACK  *=unread !=error</div>`; }
+  if (S.scr === "view") { const m = S.view, lines = ("ZCZC " + m.id + "\n" + m.txt + "\nNNNN").split("\n"); h += `<div class="body" style="height:300px;font-size:14px">${esc(lines.slice(S.vscroll, S.vscroll + 18).join("\n"))}</div><div class="help">[▲▼]SCROLL [PRINT]PRINT [MENU]BACK</div>`; }
+  if (S.scr === "menu") { h += `<div class="big">MAIN MENU</div><div class="body">${MENU.map((t, i) => `<div class="row ${i === S.menuCur ? "inv" : ""}">${i + 1}. ${t}</div>`).join("")}</div><div class="help">[▲▼]SELECT [ENT]ENTER [MENU]CANCEL</div>`; }
+  if (S.scr === "sub") h += subScreen();
+  if (S.pop) { const sel = S.pop.c; h = h.replace(/<div class="help">[\s\S]*?<\/div>/g, ""); h += `<div class="pop"><div style="font-size:17px">${S.pop.txt}</div><div style="margin-top:22px;font-size:17px">Display new msg ?</div><div style="font-size:17px"><span class="${sel ? "inv" : ""}"> Yes </span>  <span class="${sel ? "" : "inv"}"> No </span></div>${S.alarmOn ? '<div style="margin-top:8px">ALARM ▸ press any key to silence</div>' : ""}</div>`; h += `<div class="help">[◀][▶]SELECT  [ENT]ENTER  [MENU]CANCEL</div>`; }
+  L.innerHTML = h; $("prst").textContent = S.auto ? "AUTO" : "MANUAL"; }
+function subScreen() {
+  const s = S.sub; let b = "";
+  if (s === "rx") { const st = S.st[S.freq] || {}, ks = Object.keys(st), ts = Object.keys(TYPES), items = ks.map(k => ["st", k]).concat(ts.map(k => ["ty", k]));
+    S._items = items; b = `<div class="big">RX SETTING ${S.freq}kHz</div><div class="body" style="font-size:13px">STATION:\n${ks.map(k => `<span class="${items[S.subCur][0] === "st" && items[S.subCur][1] === k ? "inv" : ""}">[${st[k] ? "■" : " "}]${k}</span>`).join(" ")}\n\nMESSAGE TYPE:\n${ts.map((k, i) => `<span class="${items[S.subCur][0] === "ty" && items[S.subCur][1] === k ? "inv" : ""}">[${MUST.includes(k) ? "■" : S.ty[k] ? "■" : " "}]${k}</span>${(i + 1) % 6 ? " " : "\n"}`).join("")}\n\n${items[S.subCur][0] === "st" ? `${items[S.subCur][1]} = ${STN[S.freq][items[S.subCur][1]]}` : `${items[S.subCur][1]} = ${TYPES[items[S.subCur][1]]}${MUST.includes(items[S.subCur][1]) ? "\n(cannot be rejected)" : ""}`}</div><div class="help">[◀▶▲▼]MOVE [ENT]ON/OFF [MENU]BACK</div>`; }
+  if (s === "freq") { const F = [518, 490, 4209.5]; b = `<div class="big">FREQUENCY</div><div class="body">${F.map((f, i) => `<div class="row ${i === S.subCur ? "inv" : ""}">${f === S.freq ? "●" : "○"} ${f} kHz  ${f === 518 ? "(International, English)" : f === 490 ? "(National language)" : "(HF NBDP)"}</div>`).join("")}</div><div class="help">[▲▼]SELECT [ENT]SET [MENU]BACK</div>`; }
+  if (s === "alarm") b = `<div class="big">ALARM</div><div class="body"><div class="row ${S.subCur === 0 ? "inv" : ""}">SAR/D-type audio alarm: ${S.alarmSnd ? "ON" : "OFF"}</div>\n(D type = SAR, distress relay, piracy.\n Cannot be rejected. Audible\n alarm required.)</div><div class="help">[ENT]CHANGE [MENU]BACK</div>`;
+  if (s === "printer") b = `<div class="big">PRINTER</div><div class="body"><div class="row ${S.subCur === 0 ? "inv" : ""}">Auto print: ${S.auto ? "ON (all received msgs)" : "OFF (manual)"}</div>\nPaper: OK</div><div class="help">[ENT]CHANGE [MENU]BACK</div>`;
+  if (s === "test") b = `<div class="big">SELF TEST</div><div class="body">ROM ............ OK\nRAM ............ OK\nRECEIVER 518 ... OK\nRECEIVER 490 ... OK\nRECEIVER 4209.5  OK\nANTENNA ........ OK\nPRINTER ........ OK\nMEMORY ${S.msgs.length}/200\n\nRESULT: NORMAL</div><div class="help">[MENU]BACK</div>`;
+  if (s === "ecdis") { const A = S.msgs.filter(m => !m.bad && ["A", "L", "D", "J"].includes(B2(m.id))); S._ec = A; b = `<div class="big">SEND MSI TO ECDIS</div><div class="body" style="font-size:13px">${A.length ? A.slice(0, 12).map((m, i) => `<div class="row ${i === S.subCur ? "inv" : ""}">${m.sent ? "✓" : " "} ${m.id} ${esc(m.txt.split("\n")[2] || m.txt.split("\n")[1]).slice(0, 26)}</div>`).join("") : "(no nav warnings)"}</div><div class="help">[▲▼]SELECT [ENT]SEND [MENU]BACK</div>`; }
+  if (s === "info") b = `<div class="big">SYSTEM INFO</div><div class="body">Model NX-T1 (ECADEMY trainer)\nNAVAREA XI · Philippines\nMsgs received: ${S.rx}\nRejected/not rx: ${S.rej}\nMemory: ${S.msgs.length}/200</div><div class="help">[MENU]BACK</div>`;
+  return b; }
+const esc = t => String(t).replace(/[&<>]/g, c => ({"&":"&amp;", "<":"&lt;", ">":"&gt;"}[c]));
+/* ---------- keys ---------- */
+function key(k) {
+  if (k === "pwr") { S.pwr = !S.pwr; S.alarmOn = false; render(); return; } if (!S.pwr) return;
+  if (S.alarmOn) { S.alarmOn = false; S.tr.d = true; tasks(); if (k !== "ent" && k !== "left" && k !== "right") { render(); return; } }
+  if (k === "dimp") { S.dim = Math.max(0, S.dim - 1); return render(); } if (k === "dimm") { S.dim = Math.min(3, S.dim + 1); return render(); }
+  if (S.pop) { if (k === "left" || k === "right") S.pop.c = 1 - S.pop.c; else if (k === "ent") { if (S.pop.c) openMsg(S.pop.m); S.pop = null; } else if (k === "menu") S.pop = null; return render(); }
+  if (k === "list") { S.scr = "list"; S.cur = 0; return render(); }
+  if (k === "print") { const m = S.scr === "view" ? S.view : S.scr === "list" ? S.msgs[S.cur] : S.msgs[0]; if (m) { printMsg(m); S.tr.print = true; tasks(); } return; }
+  if (S.scr === "main") { if (k === "menu") { S.scr = "menu"; S.menuCur = 0; } }
+  else if (S.scr === "list") { if (k === "up") S.cur = Math.max(0, S.cur - 1); if (k === "down") S.cur = Math.min(S.msgs.length - 1, S.cur + 1); if (k === "ent" && S.msgs[S.cur]) openMsg(S.msgs[S.cur]); if (k === "menu") S.scr = "main"; }
+  else if (S.scr === "view") { if (k === "up") S.vscroll = Math.max(0, S.vscroll - 1); if (k === "down") S.vscroll++; if (k === "menu") S.scr = "list"; }
+  else if (S.scr === "menu") { if (k === "up") S.menuCur = (S.menuCur + MENU.length - 1) % MENU.length; if (k === "down") S.menuCur = (S.menuCur + 1) % MENU.length; if (k === "menu") S.scr = "main";
+    if (k === "ent") { if (S.menuCur === 0) { S.scr = "list"; S.cur = 0; } else { S.scr = "sub"; S.sub = ["", "rx", "freq", "alarm", "printer", "test", "ecdis", "info"][S.menuCur]; S.subCur = 0; } } }
+  else if (S.scr === "sub") { const s = S.sub;
+    if (k === "menu") { S.scr = "menu"; return render(); }
+    if (s === "rx") { const n = S._items.length; if (k === "right" || k === "down") S.subCur = (S.subCur + 1) % n; if (k === "left" || k === "up") S.subCur = (S.subCur + n - 1) % n;
+      if (k === "ent") { const [g, c] = S._items[S.subCur]; if (g === "st") { S.st[S.freq][c] = !S.st[S.freq][c]; } else if (MUST.includes(c)) flash(`${c} cannot be rejected`); else S.ty[c] = !S.ty[c]; checkSetup(); } }
+    if (s === "freq") { if (k === "up") S.subCur = (S.subCur + 2) % 3; if (k === "down") S.subCur = (S.subCur + 1) % 3; if (k === "ent") S.freq = [518, 490, 4209.5][S.subCur]; }
+    if (s === "alarm" && k === "ent") S.alarmSnd = !S.alarmSnd;
+    if (s === "printer" && k === "ent") S.auto = !S.auto;
+    if (s === "ecdis") { const A = S._ec || []; if (k === "up") S.subCur = Math.max(0, S.subCur - 1); if (k === "down") S.subCur = Math.min(A.length - 1, S.subCur + 1); if (k === "ent" && A[S.subCur]) sendECDIS(A[S.subCur]); } }
+  render(); }
+function flash(t) { const L = $("lcd"), d = document.createElement("div"); d.className = "pop"; d.style.top = "auto"; d.style.bottom = "26px"; d.style.zIndex = 5; d.textContent = t; L.appendChild(d); setTimeout(() => d.remove(), 1300); }
+function openMsg(m) { S.view = m; S.vscroll = 0; S.scr = "view"; m.read = true; S.tr.open = true; decode(m); tasks(); }
+function decode(m) { const b1 = B1(m.id), b2 = B2(m.id), b34 = m.id.slice(2), stn = (STN[m.f] || {})[b1] || "?";
+  const act = {A:"Plot on ECDIS / chart (user chart or manual update), inform OOW and Master, record in GMDSS radio log.", L:"Plot on ECDIS / chart, inform OOW and Master.", D:"ALARM: inform Master immediately, keep lookout, assist if possible, report to MRCC. Log it.", B:"Inform Master, review passage plan and weather routing.", E:"Use for passage planning and weather watch.", J:"Cross-check GNSS position with radar / visual fixes during the period.", Z:"No action.", T:"No action."}[b2] || "Read and note.";
+  $("dec").innerHTML = `<table class="dec"><tr><td>Header</td><td><b>ZCZC ${m.id}</b></td></tr><tr><td>B1 station</td><td><b>${b1}</b> = ${stn} (${m.f} kHz)</td></tr><tr><td>B2 type</td><td><b>${b2}</b> = ${TYPES[b2]}${MUST.includes(b2) ? " · <b>cannot be rejected</b>" : ""}</td></tr><tr><td>B3B4 serial</td><td><b>${b34}</b>${b34 === "00" ? " = <b>00: always printed</b>, used for urgent / important messages" : " (01–99)"}</td></tr><tr><td>DTG</td><td>${esc(m.txt.split("\n")[0])}</td></tr><tr><td>Error rate</td><td>${m.err.toFixed(1)}% ${m.err > 33 ? "· <b style='color:#ff6b7d'>too high: not accepted, wait for repeat</b>" : m.err > 4 ? "· check text" : "· good"}</td></tr><tr><td>Action</td><td>${act}</td></tr></table>`;
+  if (m.id !== "MZ00") S.tr.decode = true; }
+function sendECDIS(m) { try { const k = "ecademy_navtex_inbox", L = JSON.parse(localStorage.getItem(k) || "[]"); if (!L.some(q => q.id === m.id && q.t === m.txt)) L.unshift({id:m.id, t:"ZCZC " + m.id + "\n" + m.txt + "\nNNNN", at:utc(simT)}); localStorage.setItem(k, JSON.stringify(L.slice(0, 30))); } catch (e) {}
+  m.sent = true; S.tr.ecdis = true; tasks(); flash(`${m.id} sent to ECDIS`); }
+function checkSetup() { const st = S.st[518]; S.tr.st = st.M && st.C && !st.D; S.tr.ty = !S.ty.I && S.ty.J; tasks(); }
+/* ---------- training tasks ---------- */
+const TASKS = [["st", "Station set-up for MANILA → CEBU: on 518 kHz select M (Manila) and C (Cebu); Davao (D) is out of range, keep it OFF. MENU ▸ Rx Setting."],
+  ["ty", "Message types: keep J (GNSS) ON, switch I (spare) OFF. Try to switch OFF A, B, D or L and see why you cannot."],
+  ["open", "When the 'Received new msg' window appears select YES, or use LIST ▸ ENT to open a message."],
+  ["decode", "Decode a header (B1 B2 B3B4) with the decoder panel."],
+  ["d", "A D-type (SAR / distress relay) message sounds the alarm: silence it with any key and read the message."],
+  ["print", "Print a message with PRINT (printer AUTO / manual in MENU ▸ Printer)."],
+  ["ecdis", "MENU ▸ Send to ECDIS: send a navigational warning, then plot it in the ECDIS (USER CH ▸ NAVTEX ▸ plot)."]];
+function tasks() { const n = TASKS.filter(([k]) => S.tr[k]).length; $("tdone").textContent = `${n} / ${TASKS.length}`; $("tasks").innerHTML = TASKS.map(([k, t], i) => `<div class="task ${S.tr[k] ? "done" : ""}"><span>${S.tr[k] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t}</span></div>`).join(""); }
+/* ---------- loop ---------- */
+function loop(now) { const dt = Math.min(1, (now - last) / 1000); last = now; if (S.pwr) { simT += dt * acc; while (queue.length && queue[0].m * 60 <= simT) receive(queue.shift()); } $("clk").textContent = utc(simT); requestAnimationFrame(loop); }
+document.querySelectorAll("[data-k]").forEach(b => b.onclick = () => key(b.dataset.k));
+document.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => { acc = +b.dataset.acc; document.querySelectorAll("[data-acc]").forEach(x => x.classList.toggle("on", x === b)); });
+$("nextmsg").onclick = () => { if (queue.length) { simT = Math.max(simT, queue[0].m * 60); } };
+$("restart").onclick = () => reset(); $("tear").onclick = () => { $("paper").innerHTML = ""; };
+document.addEventListener("keydown", e => { const m = {ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right", Enter:"ent", Escape:"menu", l:"list", L:"list", p:"print", P:"print"}[e.key]; if (m) { e.preventDefault(); key(m); } });
+reset(); requestAnimationFrame(loop);
+window.NX = {S:() => S, key, MSGS};
+</script><script id="fitjs">(function(){const wrap=document.querySelector(".wrap"),dev=wrap.firstElementChild,box=document.createElement("div");box.className="fitbox";wrap.insertBefore(box,dev);box.appendChild(dev);dev.style.width="1000px";
+const side=wrap.querySelector(".side"),hd=document.querySelector("header"),ft=document.querySelector(".foot");
+function fit(){dev.style.transform="none";const w=dev.offsetWidth,h=dev.offsetHeight,narrow=innerWidth<=900;
+const availH=innerHeight-(hd?hd.offsetHeight:0)-(ft?ft.offsetHeight:0)-28,availW=narrow?innerWidth-24:innerWidth-24-12-Math.min(460,Math.max(300,innerWidth*0.3));
+let s=Math.min(1.3,availW/w,narrow?9:availH/h);s=Math.max(0.3,s);dev.style.transform="scale("+s+")";box.style.width=w*s+"px";box.style.height=h*s+"px";
+if(side)side.style.maxHeight=narrow?"none":(innerHeight-(hd?hd.offsetHeight:0)-(ft?ft.offsetHeight:0)-28)+"px";}
+addEventListener("resize",fit);fit();setTimeout(fit,300);window.ECADEMY_FIT=fit;})();</script></body></html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY Hand Flare Training</title>
+<style>
+:root{--bg:#0d1417;--panel:#121b1f;--line:#2a3a41;--tx:#e6eef0;--mut:#9fb2b8;--acc:#5ee6a8;--hi:#f2c14e}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:#0a1013;color:var(--tx);font:16px/1.55 "Segoe UI",Arial,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#070b0d;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.14em;color:#ff5a6a}header .sub{color:var(--mut);font-size:13px}header .sp{flex:1}
+.btn{background:#1a252a;color:#e8f0f2;border:1px solid #3e535c;border-radius:4px;padding:7px 14px;cursor:pointer;font:600 13.5px "Segoe UI",Arial;letter-spacing:.02em}.btn:hover{border-color:#8fb3bf}.btn.on{background:#21404a;border-color:#7fd6ee;color:#fff}
+.btn.big{font-size:15px;padding:9px 22px}.btn.go{background:#1f5a3f;border-color:#3f9a6f}.btn:disabled{opacity:.4;cursor:default}
+.steps{display:flex;gap:4px;padding:8px 14px;overflow-x:auto;background:#0c1316;border-bottom:1px solid var(--line)}
+.steps button{flex:0 0 auto;background:transparent;border:1px solid #2a3a41;color:#b9c8cc;border-radius:3px;padding:5px 11px;font:600 12.5px "Segoe UI",Arial;cursor:pointer;white-space:nowrap;position:relative}
+.steps button.on{background:#e8eef0;color:#0b1215;border-color:#e8eef0}.steps button.ok{border-color:#3f9a6f}.steps button.ok::after{content:"";position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:#5ee6a8}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,1fr);gap:12px;padding:12px;min-height:0}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+.stage{background:#05090b;border:1px solid var(--line);border-radius:6px;position:relative;overflow:hidden;min-height:440px;display:flex;align-items:center;justify-content:center}
+.stage svg,.stage canvas{max-width:100%;max-height:100%;display:block}
+.text{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 20px;overflow-y:auto}
+.text h2{margin:0 0 2px;font-size:24px;color:#fff;font-weight:700}.text .kick{color:var(--mut);font-size:13.5px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.text p{margin:8px 0}.text b{color:var(--hi);font-weight:700}
+.lead{font-size:19px;font-weight:600;color:#fff;line-height:1.45}
+.key{border-left:4px solid var(--hi);background:#1a1a12;padding:9px 12px;margin:12px 0;font-size:15px}.key::before{content:"KEY POINT";display:block;font:800 11px Arial;letter-spacing:.14em;color:var(--hi);margin-bottom:3px}
+.warn{border-left:4px solid #e0533f;background:#211112;padding:9px 12px;margin:12px 0;font-size:15px}.warn::before{content:"CAUTION";display:block;font:800 11px Arial;letter-spacing:.14em;color:#ff7a66;margin-bottom:3px}
+.note{border-left:4px solid #4fa3c7;background:#0f1d24;padding:9px 12px;margin:12px 0;font-size:14.5px}
+table.cmp{width:100%;border-collapse:collapse;font-size:14.5px;margin:8px 0}table.cmp th,table.cmp td{border:1px solid #2a3a41;padding:6px 8px;text-align:left;vertical-align:top}table.cmp th{background:#18242a;color:#dfe8ea;font-weight:700}table.cmp td:first-child{color:var(--mut);width:28%}
+.part{display:flex;gap:10px;align-items:flex-start;padding:6px 4px;border-bottom:1px solid #22313a;cursor:pointer;font-size:14.5px}.part i{font:700 12px Arial;font-style:normal;border:1.5px solid #9fb2b8;color:#dfe8ea;border-radius:50%;width:22px;height:22px;flex:0 0 22px;display:grid;place-items:center}.part.on{background:#18262c}.part.seen i{background:#2f7a55;border-color:#5ee6a8}
+.ctrl{position:absolute;left:10px;right:10px;bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;background:rgba(5,9,11,.92);border:1px solid #2a3a41;border-radius:4px;padding:7px;font-size:14px}
+.ctrl input[type=range]{width:220px}
+.chk{list-style:none;margin:8px 0;padding:0;counter-reset:c}.chk li{padding:8px 10px 8px 40px;position:relative;border:1px solid #2a3a41;border-radius:4px;margin:5px 0;font-size:14.5px;cursor:pointer}
+.chk li::before{counter-increment:c;content:counter(c);position:absolute;left:9px;top:8px;width:21px;height:21px;border-radius:50%;border:1.5px solid #6f8790;color:#dfe8ea;font:700 11px Arial;display:grid;place-items:center}
+.chk li.done{border-color:#2f7a55;background:#0e2219;color:#bfe8d2}.chk li.done::before{background:#2f7a55;border-color:#5ee6a8}.chk li.now{border-color:var(--hi);background:#1e1a0c}
+.q{border:1px solid #2a3a41;border-radius:4px;padding:10px;margin:10px 0}.q h4{margin:0 0 6px;font-size:15px}.q label{display:block;padding:6px 8px;border-radius:3px;cursor:pointer;font-size:14.5px;border:1px solid transparent}.q label:hover{border-color:#3e535c}
+.q label.right{background:#0e2219;border-color:#2f7a55}.q label.wrong{background:#2a1214;border-color:#a33}.q .why{display:none;font-size:13.5px;color:#cfe;margin-top:6px}
+nav{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:9px 14px;background:#070b0d;border-top:1px solid var(--line)}
+.foot{text-align:center;padding:5px;color:#c9b27a;font-size:11px;background:#070b0d}
+.prog{flex:1;height:5px;background:#1d2a30;border-radius:3px;overflow:hidden;max-width:420px}.prog i{display:block;height:100%;background:#5ee6a8}
+.toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#0f2a1f;border:1px solid #3f9a6f;color:#d9ffe9;padding:8px 16px;border-radius:4px;font-weight:600;z-index:60;display:none;font-size:14px}
+.cap{position:absolute;left:12px;top:10px;font:600 12px Arial;color:#8fa6ad;letter-spacing:.06em}
+</style></head><body>
+<header><b>ECADEMY</b><span>RED HAND FLARE TRAINING</span><span class="sub">Pyrotechnic distress signal · basic course</span><span class="sp"></span><span class="sub" id="pct"></span><button class="btn" id="reset">START AGAIN</button></header>
+<div class="steps" id="steps"></div>
+<main><div class="stage" id="stage"></div><div class="text" id="text"></div></main>
+<nav><button class="btn big" id="back">&#9664; BACK</button><div class="prog"><i id="pbar"></i></div><button class="btn big go" id="next">NEXT &#9654;</button></nav>
+<div class="foot">TRAINING ONLY · ECADEMY HF-1 is a generic training model, not a real product · follow the instructions on the flare, SOLAS and your company SMS</div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id), D2R = Math.PI / 180;
+const ST = {i:0, seen:{}, parts:{}, fire:0, quiz:{}, insp:0, hl:0, scen:null};
+function toast(s) { const t = $("toast"); t.textContent = s; t.style.display = "block"; clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = "none", 2200); }
+// ============ per-pixel shaded red hand flare (ECADEMY HF-1, modelled on a typical SOLAS red hand flare) ============
+const FW = 150, FH = 600, FCX = 75, FS = 2, VSQ = .72;
+function fRad(y, o) { return fRad0(y, o) * 1.5; }
+function fRad0(y, o) { // profile; y: 0 top
+  const capOff = o.cap === false;
+  if (!capOff) { if (y < 6) return 0; if (y < 10) return 19 + (y - 6) * .8; if (y < 52) return 22.5; if (y < 56) return 23.5; }
+  else { if (y < 40) return 0; if (y < 46) return 8; if (y < 56) return 15; }
+  if (y < 60) return 21; if (y < 330) return 20.5; if (y < 336) return 21.5 + (y - 330) * .2; if (y < 580) { const k = (y - 336) % 48; return 22.5 + (k < 6 ? -k * .6 : k > 42 ? -(48 - k) * .6 : 0) - (y - 336) / 244 * 1.2; } if (y < 592) return 21 - (y - 580) * .3; if (y < 596) return 17.4 * Math.sqrt(Math.max(0, 1 - Math.pow((y - 592) / 4, 2))); return 0; }
+function fMat(y, o) { if (o.cap === false && y < 56) return y < 46 ? "striker" : "fuse"; if (y < 56) return "cap"; if (y < 72) return "band"; if (y < 334) return "label"; return "grip"; }
+function labTex() { const c = document.createElement("canvas"); c.width = 360; c.height = 1050; const g = c.getContext("2d"); g.fillStyle = "#f05a12"; g.fillRect(0, 0, 360, 1050);
+  g.save(); g.translate(180, 525); g.rotate(-Math.PI / 2); g.fillStyle = "#111"; g.textAlign = "center"; g.font = "900 54px Arial"; g.fillText("RED HAND FLARE", 0, -40); g.font = "800 30px Arial"; g.fillText("SOLAS  ·  ECADEMY HF-1", 0, 4); g.font = "600 24px Arial"; g.fillText("15 000 cd  ·  60 s  ·  TRAINING MODEL", 0, 42); g.restore();
+  g.fillStyle = "#fff"; g.fillRect(250, 40, 90, 970); g.fillStyle = "#111"; g.font = "700 20px Arial"; g.save(); g.translate(300, 525); g.rotate(-Math.PI / 2); g.textAlign = "center"; g.fillText("1 REMOVE CAP  2 PULL / TWIST STRIKER  3 HOLD DOWNWIND", 0, -10); g.fillText("DO NOT LOOK AT FLAME  ·  EXPIRY 06 / 2029", 0, 22); g.restore();
+  for (let k = 0; k < 3; k++) { g.fillStyle = "#111"; g.fillRect(262, 120 + k * 290, 66, 66); g.fillStyle = "#f05a12"; g.beginPath(); g.moveTo(295, 130 + k * 290); g.lineTo(318, 176 + k * 290); g.lineTo(272, 176 + k * 290); g.fill(); }
+  g.fillStyle = "#111"; g.beginPath(); g.moveTo(60, 20); g.lineTo(80, 40); g.lineTo(40, 40); g.fill(); g.beginPath(); g.moveTo(60, 1030); g.lineTo(80, 1010); g.lineTo(40, 1010); g.fill(); return g.getImageData(0, 0, 360, 1050); }
+let LT = null; const FCACHE = {};
+function flareImg(o = {}) { const key = JSON.stringify(o); if (FCACHE[key]) return FCACHE[key]; if (!LT) LT = labTex();
+  const W = FW * FS, H = FH * FS, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"), id = g.createImageData(W, H), d = id.data;
+  const L1 = nrm([-.6, -.4, .7]), L2 = nrm([.7, -.1, .7]), HV = nrm([L1[0], L1[1], L1[2] + 1]);
+  for (let py = 0; py < H; py++) { const y = py / FS, r = fRad(y, o); if (r <= 0) continue; const dr = fRad(y + .5, o) - fRad(y - .5, o), m = fMat(y, o);
+    for (let px = 0; px < W; px++) { const x = px / FS - FCX; if (Math.abs(x) >= r) continue; const sx = x / r, phi = Math.asin(sx), n = nrm([sx, -dr, Math.cos(phi)]);
+      let alb = [.9, .3, .05], spec = .35, gl = 40;
+      if (m === "cap") { alb = [.86, .24, .04]; spec = .5; gl = 60; if ((Math.floor((phi + 1.6) * 14)) % 2 === 0 && y > 12 && y < 50) alb = alb.map(a => a * .82); }
+      else if (m === "band") { alb = [.93, .9, .86]; if (y > 66) alb = [.85, .2, .05]; }
+      else if (m === "label") { if (Math.abs(phi) < 1.05) { const tx = Math.floor((phi / 1.05 * .5 + .5) * 359), ty = Math.floor((y - 72) / 262 * 1049), ti = (ty * 360 + tx) * 4; alb = [LT.data[ti] / 255, LT.data[ti + 1] / 255, LT.data[ti + 2] / 255]; spec = .25; gl = 30; } }
+      else if (m === "grip") { alb = [.92, .3, .05]; spec = .45; gl = 45; }
+      else if (m === "striker") { alb = [.12, .12, .12]; spec = .2; } else if (m === "fuse") { alb = [.55, .5, .45]; spec = .1; }
+      const d1 = Math.max(0, dt(n, L1)), d2 = Math.max(0, dt(n, L2)), sp = Math.pow(Math.max(0, dt(n, HV)), gl), rim = Math.pow(1 - n[2], 3);
+      const k = (py * W + px) * 4; for (let ch = 0; ch < 3; ch++) d[k + ch] = Math.min(255, 255 * Math.pow(Math.max(0, alb[ch] * (.08 + .9 * d1 + .22 * d2) + spec * sp + .12 * rim), 1 / 1.3));
+      d[k + 3] = Math.abs(x) > r - .7 ? 255 * (r - Math.abs(x)) / .7 : 255; } }
+  g.putImageData(id, 0, 0); FCACHE[key] = c.toDataURL(); return FCACHE[key]; }
+function nrm(v) { const l = Math.hypot(...v) || 1; return v.map(a => a / l); } function dt(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function flareSVG(o = {}) { const w = o.w || 100, h = w * FH * VSQ / FW; return `<svg viewBox="0 0 ${FW} ${FH}" width="${w}" height="${h}" preserveAspectRatio="none"><defs><radialGradient id="fsh"><stop offset="0" stop-color="#000" stop-opacity=".6"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs><ellipse cx="${FCX}" cy="${FH - 2}" rx="40" ry="6" fill="url(#fsh)"/><image href="${flareImg(o)}" width="${FW}" height="${FH}"/></svg>`; }
+// ============ fire / smoke particle system ============
+const PS = []; let LAST = 0;
+function emit(x, y, wind, n) { for (let k = 0; k < n; k++) { const sm = Math.random() < .55; PS.push({x:x + (Math.random() - .5) * 4, y:y, vx:(Math.random() - .5) * 30 + wind * (sm ? 40 : 15), vy:-(sm ? 40 + Math.random() * 40 : 90 + Math.random() * 110), life:0, max:sm ? 2.6 + Math.random() * 2 : .25 + Math.random() * .35, sm, r:sm ? 6 + Math.random() * 6 : 3 + Math.random() * 4}); } }
+function stepPS(dt) { for (let i = PS.length - 1; i >= 0; i--) { const p = PS[i]; p.life += dt; if (p.life > p.max) { PS.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; if (p.sm) { p.vy *= .99; p.r += dt * 18; } } }
+function drawPS(g, night) { g.save(); PS.filter(p => p.sm).forEach(p => { const a = (1 - p.life / p.max) * (night ? .28 : .5); const gr = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); const cc = night ? "120,60,50" : "200,195,190"; gr.addColorStop(0, `rgba(${cc},${a})`); gr.addColorStop(1, `rgba(${cc},0)`); g.fillStyle = gr; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 7); g.fill(); });
+  g.globalCompositeOperation = "lighter"; PS.filter(p => !p.sm).forEach(p => { const f = p.life / p.max, gr = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.4); gr.addColorStop(0, `rgba(255,${230 - f * 160},${200 - f * 190},${1 - f})`); gr.addColorStop(.4, `rgba(255,40,20,${.7 * (1 - f)})`); gr.addColorStop(1, "rgba(255,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(p.x, p.y, p.r * 2.4, 0, 7); g.fill(); }); g.restore(); }
+function flame(g, x, y, t, scale = 1) { g.save(); g.globalCompositeOperation = "lighter"; const fl = 1 + Math.sin(t * 37) * .08 + Math.sin(t * 23) * .06;
+  let gr = g.createRadialGradient(x, y, 0, x, y, 260 * scale * fl); gr.addColorStop(0, "rgba(255,60,40,.55)"); gr.addColorStop(.25, "rgba(255,30,20,.22)"); gr.addColorStop(1, "rgba(255,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, 260 * scale * fl, 0, 7); g.fill();
+  gr = g.createRadialGradient(x, y - 4, 0, x, y - 4, 22 * scale * fl); gr.addColorStop(0, "rgba(255,255,240,1)"); gr.addColorStop(.35, "rgba(255,160,140,.95)"); gr.addColorStop(1, "rgba(255,30,20,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y - 4, 22 * scale * fl, 0, 7); g.fill(); g.restore(); }
+// ============ scenes ============
+function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.height, HZ = 170, lit = ST.fire >= 5, night = true;
+  let gr = g.createLinearGradient(0, 0, 0, HZ); gr.addColorStop(0, "#02040a"); gr.addColorStop(1, "#141c2c"); g.fillStyle = gr; g.fillRect(0, 0, W, HZ);
+  for (let i = 0; i < 90; i++) { g.fillStyle = `rgba(255,255,255,${.2 + (i % 5) / 8})`; g.fillRect((i * 97.3) % W, (i * 41.7) % (HZ - 20), 1, 1); }
+  gr = g.createLinearGradient(0, HZ, 0, H); gr.addColorStop(0, "#101a26"); gr.addColorStop(1, "#02060b"); g.fillStyle = gr; g.fillRect(0, HZ, W, H - HZ);
+  for (let i = 0; i < 110; i++) { const f = i / 110, y = HZ + 3 + Math.pow(f, 1.8) * (H - HZ), w = 6 + f * 40, x = ((i * 131.7 + t * (4 + f * 12)) % (W + 120)) - 60; g.strokeStyle = `rgba(120,140,160,${.05 + f * .1})`; g.lineWidth = .5 + f * 1.4; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + w / 2, y - 1, x + w, y); g.stroke(); }
+  // ship lights on the horizon (masthead x2, sidelight)
+  const sx = 120 + Math.min(1, t / 40) * 60; g.fillStyle = "#fff"; g.fillRect(sx, HZ - 14, 2, 2); g.fillRect(sx + 14, HZ - 20, 2, 2); g.fillStyle = "#2f2"; g.fillRect(sx + 4, HZ - 6, 2, 2);
+  if (lit && ST.fire >= 6) { g.fillStyle = "#e33"; g.fillRect(sx + 10, HZ - 6, 2, 2); g.fillStyle = "#cfe"; g.font = "11px Arial"; g.fillText("ship alters course towards you (red and green sidelights visible)", sx - 60, HZ + 18); }
+  else { g.fillStyle = "#8fa6ad"; g.font = "11px Arial"; g.fillText("ship lights on the horizon", sx - 20, HZ + 18); }
+  // liferaft
+  const rx = 500, ry = 360, bob = Math.sin(t * 1.3) * 3; g.save(); g.translate(rx, ry + bob);
+  gr = g.createRadialGradient(-20, -50, 5, 0, -25, 90); gr.addColorStop(0, lit ? "#ff7a52" : "#7a3410"); gr.addColorStop(1, lit ? "#5a1404" : "#240a02"); g.fillStyle = gr; g.beginPath(); g.moveTo(-80, 0); g.quadraticCurveTo(-78, -84, 0, -86); g.quadraticCurveTo(78, -84, 80, 0); g.closePath(); g.fill();
+  g.fillStyle = "#0a0a0a"; g.beginPath(); g.ellipse(0, 6, 88, 15, 0, 0, 7); g.fill(); g.fillStyle = "#050302"; g.beginPath(); g.moveTo(-60, -2); g.quadraticCurveTo(-56, -50, -20, -52); g.lineTo(-20, -2); g.closePath(); g.fill();
+  const pc = lit ? ["#e2581a", "#7a2008"] : ["#4a1a06", "#180600"]; let pg = g.createLinearGradient(-52, -40, -28, -10); pg.addColorStop(0, pc[0]); pg.addColorStop(1, pc[1]); g.fillStyle = pg; g.beginPath(); g.roundRect(-54, -36, 26, 34, 6); g.fill();
+  pg = g.createRadialGradient(-44, -46, 1, -42, -44, 10); pg.addColorStop(0, lit ? "#e8a080" : "#3a2018"); pg.addColorStop(1, lit ? "#6a2a18" : "#120806"); g.fillStyle = pg; g.beginPath(); g.arc(-42, -44, 9, 0, 7); g.fill();
+  g.fillStyle = lit ? "#2a0c06" : "#0a0402"; g.beginPath(); g.arc(-42, -47, 9.5, Math.PI, 0); g.fill(); g.restore();
+  // arm + flare held out on lee side
+  const hx = rx - 70, hy = ry - 40 + bob; g.strokeStyle = lit ? "#c8481a" : "#3a1606"; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(rx - 50, ry - 30 + bob); g.lineTo(hx, hy); g.stroke(); g.fillStyle = lit ? "#5a2010" : "#140804"; g.beginPath(); g.arc(hx, hy, 6, 0, 7); g.fill();
+  if (ST.fire >= 3) { g.save(); g.translate(hx, hy); g.rotate(-.5); g.fillStyle = lit ? "#d84a14" : "#5a2008"; g.fillRect(-5, -44, 10, 52); g.restore(); }
+  const fx = hx - Math.sin(.5) * 44, fy = hy - Math.cos(.5) * 44;
+  if (lit) { emit(fx, fy, -1, 6); stepPS(dt); drawPS(g, night); flame(g, fx, fy, t); g.fillStyle = "rgba(255,40,30,.08)"; g.fillRect(0, HZ, W, H - HZ); } else { stepPS(dt); drawPS(g, night); }
+  g.fillStyle = "#cfe"; g.font = "bold 12px Arial"; g.textAlign = "left"; g.fillText("WIND", 20, 30); g.strokeStyle = "#cfe"; g.lineWidth = 2; g.beginPath(); g.moveTo(80, 26); g.lineTo(30 + 70, 26); g.moveTo(110, 26); g.lineTo(70, 26); g.lineTo(78, 21); g.moveTo(70, 26); g.lineTo(78, 31); g.stroke(); g.font = "11px Arial"; g.fillText("from the right: flare held on the LEE side (left)", 120, 30); }
+function sceneHand(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.height; g.fillStyle = "#06090c"; g.fillRect(0, 0, W, H);
+  const s = ST.fire; const img = sceneHand.img || (sceneHand.img = {}); const key = s >= 1 ? "off" : "on"; if (!img[key]) { img[key] = new Image(); img[key].src = flareImg({cap:s < 1}); }
+  g.save(); g.translate(W / 2 + 40, H / 2 + 40); g.rotate(s >= 4 ? -.6 : -.15); const sc = .62; if (img[key].complete) g.drawImage(img[key], -FCX * sc, -FH * sc * VSQ * .55, FW * sc, FH * sc * VSQ);
+  if (s >= 1 && s < 2) { const cap = flareImg({}); }
+  if (s === 1 || s === 2) { g.fillStyle = "#cfe"; g.font = "12px Arial"; g.fillText(s === 1 ? "cap off: striker exposed" : "striker pulled / twisted", 30, -FH * sc * .55 + 20); }
+  g.restore();
+  if (s >= 4) { const fx = W / 2 + 40 + Math.sin(-.6) * FH * .62 * VSQ * .55, fy = H / 2 + 40 - Math.cos(-.6) * FH * .62 * VSQ * .55; emit(fx, fy, -.6, 5); stepPS(dt); drawPS(g, true); flame(g, fx, fy, t, .7); } else { stepPS(dt); drawPS(g, true); } }
+// ============ lessons ============
+const L = [];
+L.push({t:"1  What is a red hand flare", stage:() => `<div style="display:flex;gap:40px;align-items:center">${flareSVG({w:110})}<div style="max-width:300px;font:14px/1.7 Consolas,monospace;color:#dfe8ea;background:#060a0d;border:1px solid #3e535c;padding:12px"><div style="color:#8fa6ad;font-weight:700">SOLAS LSA CODE 3.2</div>Colour        BRIGHT RED<br>Intensity     ≥ 15 000 cd<br>Burning time  ≥ 1 minute<br>Under water   burns after 10 s<br>              in 100 mm of water<br>Carried       6 lifeboat / A pack<br>              3 liferaft B pack</div></div>`,
+ text:() => `<h2>What is a red hand flare?</h2><div class="kick">A pyrotechnic distress signal, held in the hand</div>
+ <p class="lead">A red hand flare burns with a very bright <b>red light</b> for at least <b>one minute</b>. It tells a nearby ship or aircraft: <b>"We are here and we need help."</b></p>
+ <p>It is used from a <b>liferaft or lifeboat</b> when you <b>can see</b> a ship or aircraft, especially at <b>night</b>. A red flare is a recognised <b>distress signal</b> (COLREG Annex IV).</p>
+ <h3 style="margin:14px 0 4px;font-size:15px;color:#fff">How many are required (SOLAS / LSA Code)</h3><table class="cmp"><tr><th>Location</th><th>Red hand flares</th><th>Rocket parachute flares</th><th>Buoyant smoke</th></tr><tr><td>Lifeboat</td><td><b>6</b></td><td>4</td><td>2</td></tr><tr><td>Liferaft, SOLAS A pack</td><td><b>6</b></td><td>4</td><td>2</td></tr><tr><td>Liferaft, SOLAS B pack</td><td><b>3</b></td><td>2</td><td>1</td></tr><tr><td>Bridge (ship)</td><td>-</td><td><b>12</b> (SOLAS III/6.3)</td><td>-</td></tr></table>
+ <p style="font-size:14px">SOLAS A pack: liferafts on ships on international voyages (most cargo ships). SOLAS B pack: allowed only for certain ships, e.g. on short international voyages.</p>
+ <table class="cmp"><tr><th>Signal</th><th>LSA Code performance</th></tr><tr><td>Red hand flare</td><td>at least 15 000 cd, at least 1 min, burns after 10 s under 100 mm of water</td></tr><tr><td>Rocket parachute flare</td><td>reaches at least 300 m, at least 30 000 cd, at least 40 s</td></tr><tr><td>Buoyant smoke signal</td><td>orange smoke for at least 3 min, also in calm water</td></tr></table>
+ <div class="key">Hand flare = short range, for the <b>final approach</b>. Rocket parachute flare = long range, goes up to 300 m. Orange smoke = daytime signal.</div>`});
+const PARTS = [[1, "Cap", "Protects the striker from moisture and accidental firing. Remove it only when you are ready to fire.", [75, 30], [190, 30]],
+ [2, "Striker / ignition", "Under the cap. Depending on the maker: pull the tab, twist, or strike. This lights the flare.", [75, 48], [190, 80]],
+ [3, "Flame end", "The top. The flame and hot drops come out here. Always point it away from you and the raft.", [40, 60], [-50, 60]],
+ [4, "Instruction label", "Pictograms and short instructions. Read them in drills, not for the first time in the dark.", [75, 200], [190, 200]],
+ [5, "Expiry date", "Usually about 3 to 4 years from manufacture. Expired flares must be replaced and disposed of safely.", [95, 300], [190, 300]],
+ [6, "Handle / grip", "Ribbed grip for a firm hold with a wet hand. Hold only here, at arm's length.", [45, 460], [-50, 460]]];
+L.push({t:"2  The parts", stage:() => `<svg viewBox="-110 0 360 600" width="330" height="430" preserveAspectRatio="none"><image href="${flareImg({})}" width="${FW}" height="${FH}" preserveAspectRatio="none"/>${PARTS.map(([n, a, b, p, q]) => { const on = ST.hl === n, c = on ? "#f2c14e" : "#9fb2b8"; return `<g data-pp="${n}" style="cursor:pointer"><circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${c}"/><line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="${c}" stroke-width="${on ? 2 : 1.2}"/><circle cx="${q[0]}" cy="${q[1]}" r="10" fill="#05090b" stroke="${c}" stroke-width="1.5"/><text x="${q[0]}" y="${q[1] + 4}" text-anchor="middle" font-family="Arial" font-weight="700" font-size="11" fill="${c}">${n}</text></g>`; }).join("")}</svg>`,
+ text:() => `<h2>The parts of a hand flare</h2><div class="kick">Select each part (6 parts).</div>${PARTS.map(([n, a, b]) => `<div class="part ${ST.parts[n] ? "seen" : ""} ${ST.hl === n ? "on" : ""}" data-p="${n}"><i>${n}</i><div><b>${a}</b><br>${b}</div></div>`).join("")}`,
+ bind:() => { const pick = n => { ST.hl = n; ST.parts[n] = true; if (Object.keys(ST.parts).length === PARTS.length) mark(); show(); }; document.querySelectorAll("[data-p]").forEach(p => p.onclick = () => pick(+p.dataset.p)); document.querySelectorAll("[data-pp]").forEach(p => p.onclick = () => pick(+p.dataset.pp)); }});
+const FIRE = ["Read the instructions on the flare (it is dark: practise in drills).", "Remove the cap.", "Pull / twist the striker as the label shows.", "Hold the flare firmly by the grip, at arm's length.", "Point it up and away, on the LEE side (wind behind you), outside the raft, and wait: it ignites in 1 to 2 seconds.", "Keep it pointing away and downwind. Do not look into the flame. Hot drops fall: keep them away from the raft and people."];
+L.push({t:"3  How to fire", anim:true, stage:() => `<canvas id="cv" width="760" height="440"></canvas><div class="ctrl">${FIRE.map((s, i) => `<button class="btn ${ST.fire > i ? "on" : ""}" data-f="${i}">${i + 1}</button>`).join("")}<button class="btn" data-f="r">RESET</button></div>`,
+ text:() => `<h2>How to fire a hand flare</h2><div class="kick">Select the steps in order (buttons under the picture or the list).</div><ul class="chk">${FIRE.map((s, i) => `<li data-f="${i}" class="${ST.fire > i ? "done" : ST.fire === i ? "now" : ""}">${s}</li>`).join("")}</ul>
+ <div class="warn">The flame is about 1 000 °C. Molten residue can burn through the liferaft. Never fire it inside the canopy.</div>`,
+ bind:() => document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { const v = b.dataset.f; if (v === "r") { ST.fire = 0; PS.length = 0; return show(); } const i = +v; if (i !== ST.fire) return toast("Follow the steps in order."); ST.fire++; if (ST.fire === FIRE.length) mark(); show(); })});
+L.push({t:"4  When to use it", anim:true, stage:() => `<canvas id="cv" width="760" height="440"></canvas><div class="ctrl"><button class="btn" data-u="fire">FIRE THE FLARE NOW</button><button class="btn" data-u="r">RESET</button></div>`,
+ text:() => `<h2>When to use it</h2><div class="kick">Night, in the liferaft. A ship's lights are on the horizon.</div>
+ <p>Use a flare only when a ship or aircraft is <b>close enough to see it</b>, or when you see or hear one. You have only <b>6 hand flares</b>: do not waste them.</p>
+ <p>Hold it on the <b>lee side</b>, high, at arm's length, so that smoke and hot drops blow <b>away</b> from the raft.</p>
+ <p>When they have seen you, the ship will usually <b>alter course</b> towards you: you will see <b>both</b> sidelights (red and green).</p>
+ <div class="key">Daytime: use the <b>orange smoke</b> signal. Night: the <b>red hand flare</b>. At long range: <b>rocket parachute flare</b>.</div>`,
+ bind:() => document.querySelectorAll("[data-u]").forEach(b => b.onclick = () => { if (b.dataset.u === "r") { ST.fire = 0; PS.length = 0; ST.useT = 0; } else { ST.fire = 6; ST.useT = performance.now(); setTimeout(() => { if (ST.i === 3) mark(); }, 4000); } })});
+L.push({t:"5  Safety", stage:() => `<div style="display:flex;gap:30px;align-items:center">${flareSVG({w:80})}<table class="cmp" style="max-width:420px"><tr><th>DO</th><th>DO NOT</th></tr><tr><td style="color:#bfe8d2;width:50%">Hold at arm's length, downwind, outside the raft</td><td style="color:#ffb3a8">Point it at people, the canopy or the raft</td></tr><tr><td style="color:#bfe8d2">Wear gloves if available</td><td style="color:#ffb3a8">Look into the flame (it damages night vision)</td></tr><tr><td style="color:#bfe8d2">Hold it until it burns out, then drop it in the sea</td><td style="color:#ffb3a8">Throw it while still burning near the raft</td></tr><tr><td style="color:#bfe8d2">Keep spare flares dry and in their container</td><td style="color:#ffb3a8">Use expired flares (they may fail or explode)</td></tr></table></div>`,
+ text:() => `<h2>Safety</h2><div class="kick">Pyrotechnics can injure you if handled wrongly.</div>
+ <p>A hand flare burns at about <b>1 000 °C</b>. Hot slag can drop from the burning end.</p>
+ <p>If a flare does <b>not ignite</b>, hold it pointing away for <b>30 seconds</b>, then throw it into the sea. Do not look into the end.</p>
+ <div class="warn">Never fire a distress flare except in distress (or in an authorised drill with the coast authority informed). A flare is a distress signal and will start a rescue.</div>`});
+const INSP = [["Check the quantity: lifeboat and SOLAS A pack = 6 red hand flares, 4 rocket parachute flares, 2 buoyant smoke signals; SOLAS B pack = 3, 2, 1. Bridge: 12 rocket parachute flares.", null], ["Check the expiry date on each flare (usually 3 to 4 years).", null], ["Check the container is watertight and not damaged; no corrosion or swelling.", null], ["Record the expiry dates in the LSA inspection record; order replacements before expiry.", null], ["Land expired pyrotechnics ashore through an approved disposal facility. Never throw them overboard.", null]];
+L.push({t:"6  Inspection and expiry", stage:() => `<div style="display:flex;gap:16px;align-items:flex-end">${[0, 1, 2, 3, 4, 5].map(k => flareSVG({w:56})).join("")}</div>`,
+ text:() => `<h2>Inspection and expiry</h2><div class="kick">Select each step in order.</div><ul class="chk">${INSP.map((s, i) => `<li data-n="${i}" class="${ST.insp > i ? "done" : ST.insp === i ? "now" : ""}">${s[0]}</li>`).join("")}</ul><h3 style="margin:12px 0 4px;font-size:15px;color:#fff">Required quantities</h3><table class="cmp"><tr><th>Location</th><th>Red hand flares</th><th>Rocket parachute flares</th><th>Buoyant smoke</th></tr><tr><td>Lifeboat</td><td><b>6</b></td><td>4</td><td>2</td></tr><tr><td>Liferaft, SOLAS A pack</td><td><b>6</b></td><td>4</td><td>2</td></tr><tr><td>Liferaft, SOLAS B pack</td><td><b>3</b></td><td>2</td><td>1</td></tr><tr><td>Bridge (ship)</td><td>-</td><td><b>12</b> (SOLAS III/6.3)</td><td>-</td></tr></table>`,
+ bind:() => document.querySelectorAll("[data-n]").forEach(li => li.onclick = () => { const i = +li.dataset.n; if (i !== ST.insp) return toast("Follow the steps in order."); ST.insp++; if (ST.insp === INSP.length) mark(); show(); })});
+const QZ = [["A red hand flare must burn for at least...", ["10 seconds", "1 minute", "5 minutes"], 1, "SOLAS LSA Code: at least 1 minute, at least 15 000 cd."],
+ ["When should you use a hand flare?", ["As soon as you board the raft", "When a ship or aircraft is close enough to see it", "Every hour"], 1, "You have few flares. Use them when they can be seen."],
+ ["On which side of the raft do you hold it?", ["Windward (wind in your face)", "Lee side (wind behind you)", "Inside the canopy"], 1, "Downwind, so smoke and hot drops blow away."],
+ ["What daytime signal is better than a hand flare?", ["Orange smoke signal", "Torch", "Whistle"], 0, "Smoke is easier to see by day."],
+ ["How many red hand flares are in a lifeboat or a SOLAS A pack liferaft?", ["2", "6", "12"], 1, "6 hand flares, 4 rocket parachute flares, 2 buoyant smoke signals. SOLAS B pack: 3, 2, 1."],
+ ["How many rocket parachute flares must be carried on or near the bridge?", ["4", "6", "12"], 2, "SOLAS III/6.3: at least 12 rocket parachute flares on or near the navigation bridge."],
+ ["A liferaft with a SOLAS B pack carries how many red hand flares?", ["3", "6", "4"], 0, "SOLAS B pack: 3 hand flares, 2 rocket parachute flares, 1 buoyant smoke signal."],
+ ["A flare does not ignite. You should...", ["Look into the end to check it", "Hold it pointing away for about 30 s, then throw it into the sea", "Put it back in the bag"], 1, "It may still fire late (hang-fire)."],
+ ["What do you do with expired flares?", ["Throw them overboard", "Land them ashore for approved disposal", "Keep them as spares"], 1, "Expired pyrotechnics are hazardous waste."]];
+L.push({t:"7  Quiz", stage:() => `<div style="text-align:center">${flareSVG({w:90})}<div style="font:700 22px Arial;color:#fff;margin-top:6px" id="qs"></div></div>`,
+ text:() => `<h2>Check your understanding</h2><div class="kick">Select one answer for each question.</div>${QZ.map((q, i) => `<div class="q"><h4>${i + 1}. ${q[0]}</h4>${q[1].map((o, j) => `<label data-q="${i}" data-o="${j}" class="${ST.quiz[i] != null ? (j === q[2] ? "right" : ST.quiz[i] === j ? "wrong" : "") : ""}">${String.fromCharCode(65 + j)}. ${o}</label>`).join("")}<div class="why" style="${ST.quiz[i] != null ? "display:block" : ""}">${q[3]}</div></div>`).join("")}`,
+ bind:() => { document.querySelectorAll("[data-q]").forEach(l => l.onclick = () => { const i = +l.dataset.q; if (ST.quiz[i] != null) return; ST.quiz[i] = +l.dataset.o; if (Object.keys(ST.quiz).length === QZ.length) mark(); show(); }); qscore(); }});
+L.push({t:"Real and simplified", stage:() => `<div style="text-align:center">${flareSVG({w:110})}</div>`,
+ text:() => `<h2>What is real in this training</h2><p><b>Real (SOLAS Chapter III, LSA Code 3.2 and 4.1.5, COLREG Annex IV):</b> red hand flare at least 15 000 cd for at least 1 minute, still burning after 10 s immersed in 100 mm of water, not causing discomfort or danger when held as instructed; 6 hand flares, 4 rocket parachute flares and 2 buoyant smoke signals in lifeboats and SOLAS A pack liferafts (SOLAS B pack: 3, 2, 1); 12 rocket parachute flares on or near the bridge (SOLAS III/6.3); rocket parachute flare at least 300 m, 30 000 cd, 40 s; buoyant smoke at least 3 min; red flare is a distress signal; use downwind, at arm's length; replace before expiry and dispose of expired pyrotechnics ashore.</p>
+ <p><b>Simplified:</b> the ECADEMY HF-1 is a <b>generic training model</b>, not a real product. Ignition methods (pull tab, twist cap, striker) differ between makers. Always follow the <b>instructions on the flare</b>, SOLAS and your <b>company SMS</b>.</p>`});
+function qscore() { const n = Object.keys(ST.quiz).length, ok = Object.entries(ST.quiz).filter(([i, o]) => QZ[i][2] === o).length; const e = $("qs"); if (e) e.textContent = n ? `Score ${ok} / ${QZ.length}${n === QZ.length ? (ok >= 6 ? "  Passed" : "  Review the lessons and try again") : ""}` : "Answer the questions"; }
+function mark() { if (!ST.seen[ST.i]) { ST.seen[ST.i] = true; toast(L[ST.i].t.replace(/^\d+\s+/, "") + ": completed"); } steps(); }
+function steps() { $("steps").innerHTML = L.map((l, i) => `<button class="${i === ST.i ? "on" : ""} ${ST.seen[i] ? "ok" : ""}" data-s="${i}">${l.t}</button>`).join(""); document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => go(+b.dataset.s));
+  const n = Object.keys(ST.seen).length; $("pbar").style.width = (n / L.length * 100) + "%"; $("pct").textContent = `${n} of ${L.length} lessons completed`; }
+function show() { const l = L[ST.i]; $("stage").innerHTML = l.stage(); $("text").innerHTML = l.text(); if (l.bind) l.bind(); steps(); $("back").disabled = ST.i === 0; $("next").innerHTML = ST.i === L.length - 1 ? "FINISH" : "NEXT &#9654;"; }
+function go(i) { if (![1, 2, 3, 5, 6].includes(ST.i)) ST.seen[ST.i] = true; ST.i = Math.max(0, Math.min(L.length - 1, i)); ST.fire = 0; PS.length = 0; show(); }
+$("next").onclick = () => { if (ST.i === L.length - 1) { ST.seen[ST.i] = true; steps(); return toast("Hand flare training completed."); } go(ST.i + 1); };
+$("back").onclick = () => go(ST.i - 1);
+$("reset").onclick = () => { Object.assign(ST, {i:0, seen:{}, parts:{}, fire:0, quiz:{}, insp:0, hl:0}); PS.length = 0; show(); };
+function anim(now) { const dt = Math.min(.05, (now - LAST) / 1000); LAST = now; const c = $("cv"); if (c) { if (ST.i === 2) sceneHand(c, now / 1000, dt); else if (ST.i === 3) sceneUse(c, now / 1000, dt); } requestAnimationFrame(anim); }
+show(); requestAnimationFrame(anim);
+window.HFT = {ST, go, L};
+
+</script></body></html>

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY Autopilot &amp; Gyro Repeater</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}.btn.red{border-color:#a04040}.btn.red.on{background:#5a1a1a}
+select,input{background:#0b1215;color:#fff;border:1px solid #445a63;border-radius:4px;padding:4px 6px;font:inherit}
+.wrap{display:flex;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:clip}.fitbox>*{transform-origin:0 0}
+.side{flex:1 1 320px;min-width:300px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.side{max-height:none!important}}
+/* console */
+.con{width:1400px;background:#9fbcb0;border-radius:12px;padding:22px;box-shadow:inset 0 0 60px #6f8e82;display:grid;grid-template-columns:470px 1fr;gap:22px}
+.plate{background:linear-gradient(#2a2c2e,#141516);color:#d8dcde;font:600 20px "Courier New",monospace;padding:6px 40px;border:3px solid #a8aeb2;position:relative;width:max-content;margin:0 auto 10px}.plate::before,.plate::after{content:"";position:absolute;top:50%;margin-top:-7px;width:14px;height:14px;border-radius:50%;background:radial-gradient(#eee,#888)}.plate::before{left:8px}.plate::after{right:8px}
+.rep{background:#a9c7bb;border-radius:8px;padding:14px;box-shadow:0 6px 12px #0005,inset 0 0 0 2px #88a89b}
+.repin{background:#151617;padding:12px;border-radius:4px;position:relative}
+canvas#rep{display:block;width:420px;height:420px}
+.ann{display:flex;margin-top:8px}.ann span{background:#f5e12a;color:#111;font:800 22px Arial;padding:4px 12px}.ann span+span{margin-left:6px}
+.ap{background:#1b1c1e;border-radius:10px;padding:16px 20px;box-shadow:0 8px 16px #0006;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;position:relative}
+.ap .brand{grid-column:1/-1;display:flex;justify-content:space-between;color:#b8bcc0;font:700 16px Arial}.ap .brand b{font:italic 700 18px Arial;color:#ddd}
+.note{background:#e8dc2a;color:#111;font:800 13px Arial;padding:4px 10px;width:max-content}
+canvas#aps{display:block;width:520px;height:300px;border-radius:4px;box-shadow:0 0 0 6px #050505}
+.apk{display:grid;grid-template-columns:repeat(3,auto);gap:10px 18px;align-items:center;justify-items:center;color:#eee;font:800 15px Arial}
+.tk{background:none;border:0;color:#eee;font:800 16px Arial;cursor:pointer;padding:6px 8px;border-radius:6px}.tk:hover{background:#2a2c2e}.tk:active{transform:translateY(1px)}.tk.lit{color:#ffe36a;text-shadow:0 0 8px #ffb800}
+.knob{grid-column:1/-1;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#3a3c3e,#0c0d0e 70%);box-shadow:0 6px 10px #000,inset 0 0 0 6px #222;position:relative;cursor:grab;touch-action:none}
+.knob i{position:absolute;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a2c2e,#0a0a0a);box-shadow:0 2px 3px #000;left:73px;top:73px}
+.stand{grid-column:1/-1;display:grid;grid-template-columns:230px 430px 1fr 250px;gap:22px;align-items:center;background:#8eab9f;border-radius:10px;padding:14px 20px;box-shadow:inset 0 0 30px #6d897e}
+.sel{display:flex;flex-direction:column;align-items:center;gap:6px}
+.selsw{position:relative;width:200px;height:140px}.selsw span{position:absolute;font:800 18px Arial;color:#1a1a1a}
+.selk{position:absolute;left:55px;top:44px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3c3e,#0a0a0a);box-shadow:0 4px 8px #0008,0 0 0 6px #222;cursor:pointer;transition:transform .25s}
+.selk i{position:absolute;left:31px;top:-14px;width:28px;height:70px;background:linear-gradient(90deg,#111,#3a3a3a,#111);border-radius:8px 8px 4px 4px;box-shadow:0 3px 5px #000}.selk i::after{content:"";position:absolute;left:11px;top:6px;width:6px;height:16px;background:#e8e8e8;border-radius:3px}
+.selsw .on{color:#0a5a2a;text-decoration:underline}
+.egr{background:#2a2f33;border-radius:8px;padding:10px;color:#e8ecee;display:flex;flex-direction:column;gap:8px;align-items:center;box-shadow:0 4px 8px #0006}.egr .t{font:800 12px Arial;letter-spacing:.06em;text-align:center}.egr .rd{font:700 22px Consolas,monospace;color:#ffd020}.egr .nb{display:flex;gap:10px}.egr .nb button{width:96px;height:56px;border-radius:8px;font:900 15px Arial;cursor:pointer;border:3px solid #111}.egr .p{background:#c83030;color:#fff}.egr .s{background:#2a9a4a;color:#fff}.egr.off{opacity:.45}
+canvas#rai{display:block;width:420px;height:200px}
+.wheelw{display:flex;flex-direction:column;align-items:center;gap:6px}
+#wheel{width:290px;height:290px;cursor:grab;touch-action:none}
+.wb{display:flex;gap:8px}
+.lbl2{font:800 14px Arial;color:#1a2a24;letter-spacing:.06em}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}.task.cur{background:#16303a}
+.small{color:var(--mut);font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0}
+.clock{font:700 16px Consolas,monospace;color:var(--acc)}.ok{color:#7cf0a0}.bad{color:#ff8080}
+.q{margin:6px 0;padding:6px;border:1px solid #22323a;border-radius:6px}.q label{display:block;cursor:pointer}
+.order{font:700 18px Consolas,monospace;color:#ffe36a}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style><style id="real3d">/* ===== ECADEMY 3D realism layer ===== */
+body{background:radial-gradient(ellipse at 30% 20%,#16232a 0%,#0b1114 55%,#06090b 100%) fixed!important}
+.dev,.frame,.ap,.rep,.mount .dev,.pad0{position:relative;box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -4px 8px rgba(0,0,0,.55),inset 2px 0 0 rgba(255,255,255,.05),inset -2px 0 0 rgba(0,0,0,.35),0 30px 60px rgba(0,0,0,.6),0 10px 18px rgba(0,0,0,.45)!important}
+.dev,.frame,.ap{isolation:isolate}
+.dev::before,.frame::before,.ap::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(170deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 35%,rgba(0,0,0,0) 65%,rgba(0,0,0,.28) 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.018) 1px 3px);z-index:-1}
+.wall,.con,.mount,.stand{box-shadow:inset 0 0 80px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25),0 20px 40px rgba(0,0,0,.5)!important;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 2px,rgba(0,0,0,.02) 2px 4px)!important}
+/* screens: recessed bezel + glass glare */
+.bez,.lcdw,.seg,.disp,.repin,.bezel{position:relative;box-shadow:inset 0 6px 14px rgba(0,0,0,.85),inset 0 -2px 0 rgba(255,255,255,.12),0 1px 0 rgba(255,255,255,.15)!important}
+.bez::after,.lcdw::after,.seg::after,.disp::after,.repin::after{content:"";position:absolute;inset:6%;border-radius:4px;pointer-events:none;z-index:3;background:linear-gradient(155deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 28%,rgba(255,255,255,0) 42%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.18),transparent 60%)}
+canvas#lcd,canvas#scr,canvas#aps,canvas#rep,.lcd{box-shadow:0 0 0 2px #050505,0 0 18px rgba(0,0,0,.6)!important}
+/* hard keys */
+.k,.kb,.ob,.tk,.pad button,.dim button{transition:transform .06s,box-shadow .06s}
+.k,.kb{box-shadow:0 5px 0 #050607,0 8px 14px rgba(0,0,0,.65),inset 0 2px 0 rgba(255,255,255,.28),inset 0 -4px 6px rgba(0,0,0,.55)!important;background-image:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%),radial-gradient(circle at 50% 40%,#43484c,#16191b)!important;text-shadow:0 1px 0 #000}
+.k:active,.kb:active{transform:translateY(4px)!important;box-shadow:0 1px 0 #050607,0 2px 4px rgba(0,0,0,.6),inset 0 2px 4px rgba(0,0,0,.6)!important}
+.ob{box-shadow:0 6px 0 #6a3a08,0 10px 16px rgba(0,0,0,.6),inset 0 3px 0 rgba(255,255,255,.55),inset 0 -6px 10px rgba(120,60,0,.55)!important}
+.ob:active{transform:translateY(5px)!important;box-shadow:0 1px 0 #6a3a08,0 2px 5px rgba(0,0,0,.6),inset 0 3px 6px rgba(0,0,0,.4)!important}
+.pad{box-shadow:0 8px 14px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.18),inset 0 -6px 12px rgba(0,0,0,.7),0 0 0 3px #0a0b0c!important;background:radial-gradient(circle at 50% 35%,#3a3f43,#141618 65%,#0a0b0c)!important}
+.pad button:active{transform:scale(.9)}
+.knob,.lock,.selk{box-shadow:0 10px 18px rgba(0,0,0,.75),0 0 0 4px #1a1b1c,0 0 0 6px #4a4d50,inset 0 3px 2px rgba(255,255,255,.22),inset 0 -6px 10px rgba(0,0,0,.8)!important}
+.knob{background:conic-gradient(from 0deg,#2a2c2e,#55595c,#2a2c2e,#5c6063,#2a2c2e,#55595c,#2a2c2e)!important}
+.plate{text-shadow:0 1px 0 rgba(255,255,255,.25),0 -1px 0 #000;box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.3)!important}
+.placard,.note,.ann span,.tag{box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.paper{box-shadow:0 10px 18px rgba(0,0,0,.55),inset 0 -20px 30px rgba(0,0,0,.08)!important}
+.cover{box-shadow:inset 0 4px 10px #000,0 2px 0 rgba(255,255,255,.12)!important}
+#wheel{filter:drop-shadow(0 14px 12px rgba(0,0,0,.6))}
+canvas#rai{filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.led i{box-shadow:inset 0 1px 3px #000,0 1px 0 rgba(255,255,255,.15)}
+</style></head><body>
+<header><b>ECADEMY</b><span>AUTOPILOT &amp; GYRO REPEATER TRAINER</span><span class="sub">· heading control · course change · hand / auto change-over (training)</span><span class="sp"></span>
+<span class="small">LT</span><span class="clock" id="clk">--</span><span class="small">SIM</span>
+<button class="btn" data-acc="0">❚❚</button><button class="btn on" data-acc="1">×1</button><button class="btn" data-acc="3">×3</button><button class="btn" data-acc="10">×10</button><button class="btn" id="restart">↺ RESTART</button></header>
+<div class="wrap">
+ <div class="con" id="dev">
+  <div><div class="plate">COMPASS REPEATER</div>
+   <div class="rep"><div class="repin"><canvas id="rep" width="420" height="420"></canvas></div>
+    <div class="ann"><span>GYRO ANNUAL ON</span><span>24 APRIL 2026</span></div></div></div>
+  <div><div class="plate">AUTO STEERING UNIT</div>
+   <div class="ap"><div class="brand"><span>ECADEMY marine</span><b>NAVIPILOT N-45</b></div>
+    <div><div class="note" style="margin-bottom:8px">NOTE: TUNING DO NOT TOUCH</div><canvas id="aps" width="520" height="300"></canvas><div class="note" style="margin-top:10px">NOTE: YAW MOTION DO NOT TOUCH</div></div>
+    <div class="apk"><button class="tk" data-k="sethdg">SET HDG</button><button class="tk" data-k="preset">PRESET</button><button class="tk" data-k="accept">ACCEPT</button>
+     <div class="knob" id="knob" title="click left / right half, mouse wheel or drag to turn"><i style="transform:translate(0,-62px)"></i><i style="transform:translate(59px,-19px)"></i><i style="transform:translate(36px,50px)"></i><i style="transform:translate(-36px,50px)"></i><i style="transform:translate(-59px,-19px)"></i></div>
+     <button class="tk" data-k="take">TAKE<br>OVER</button><button class="tk" data-k="gear" style="font-size:26px">⚙</button><button class="tk" data-k="mute" style="font-size:24px">🔇</button></div>
+   </div></div>
+  <div class="stand">
+   <div class="sel"><div class="lbl2">STEERING MODE SELECTOR</div><div class="selsw" style="height:160px"><span id="sl_h" style="left:-14px;top:110px">HAND</span><span id="sl_o" style="left:82px;top:0">OFF</span><span id="sl_a" style="left:162px;top:110px">AUTO</span><div class="selk" id="selk"><i></i></div></div><div class="small" style="color:#1a2a24;text-align:center">click left / right half to turn<br>OFF = emergency (local) steering</div></div>
+   <div style="display:flex;flex-direction:column;align-items:center"><div class="lbl2">RUDDER ANGLE INDICATOR</div><canvas id="rai" width="420" height="200"></canvas></div>
+   <div class="wheelw"><div class="lbl2">HELM (follow-up)</div><svg id="wheel" viewBox="-150 -150 300 300"></svg><div class="wb"><button class="btn" data-w="-5">◀ 5° P</button><button class="btn" data-w="0">MIDSHIPS</button><button class="btn" data-w="5">S 5° ▶</button></div></div>
+   <div class="egr off" id="egr"><div class="t">STEERING GEAR ROOM<br>LOCAL CONTROL (NFU)</div><div class="small" style="color:#aab">heading (gyro repeater)</div><div class="rd" id="eg_h">085.1°</div><div class="small" style="color:#aab">rudder</div><div class="rd" id="eg_r">0.0°</div>
+    <div class="nb"><button class="p" id="nfuP">◀ PORT</button><button class="s" id="nfuS">STBD ▶</button></div><div class="small" style="color:#aab;text-align:center">hold = rudder moves<br>release = rudder stays</div></div>
+  </div>
+ </div>
+ <div class="side">
+  <div class="card"><h3>MASTER'S / PILOT'S ORDER</h3><div class="order" id="order">—</div><div class="small" id="orderh"></div></div>
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>INSTRUCTOR</h3>
+   <div class="row">Speed <input type="range" id="spd" min="2" max="18" step="0.5" style="width:120px"><b id="spdv"></b> Sea / yaw <select id="sea"><option>calm</option><option selected>moderate</option><option>rough</option></select></div>
+   <div class="row">Wind on port bow (weather helm) <input type="range" id="wind" min="-6" max="6" step="0.5" style="width:120px"><b id="windv"></b></div>
+   <div class="row small">Faults: <button class="btn red" data-f="gyro">Gyro failure</button><button class="btn red" data-f="steer">Steering gear failure (rudder stuck)</button></div>
+   <div class="small" id="truth"></div></div>
+  <div class="card"><h3>QUICK QUIZ</h3><div id="quiz"></div><button class="btn" id="quiz_go">SUBMIT</button> <span id="quiz_r" class="small"></span></div>
+  <div class="card"><h3>HOW TO (this training unit)</h3><div class="small">
+   <b>HAND → AUTO:</b> steady the ship, mode selector to AUTO, press <b>TAKE OVER</b> — the autopilot keeps the present heading (HDG mode).<br>
+   <b>Course change:</b> <b>SET HDG</b> → turn the <b>knob</b> to the new course (click left/right half = 1°, mouse wheel = 1°, Shift+wheel = 10°, or drag) → <b>ACCEPT</b>. The autopilot puts on rudder, the ship turns and the gyro repeater card rotates.<br>
+   <b>PRESET:</b> choose turn limit — RUDDER limit or RATE OF TURN — knob to change, ACCEPT.<br>
+   <b>Mode selector:</b> HAND · OFF (centre) · AUTO. <b>OFF</b> = bridge steering disconnected — <b>emergency steering</b> from the steering gear room with the local NFU buttons (hold PORT / STBD, release = rudder stays), orders by phone from the bridge.<br><b>AUTO → HAND:</b> mode selector to HAND, steer with the helm (drag the wheel or buttons). Rudder order = wheel angle (follow-up).<br>
+   <b>⚙</b> brightness / palette · <b>🔇</b> silence alarm. The repeater has an outer 360° card and an inner fine card (one turn = 10°).</div></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · simplified ship-turning model (Nomoto) and generic autopilot logic · NOT a manufacturer's interface · NOT FOR NAVIGATION</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const wrap360 = a => ((a % 360) + 360) % 360, dA = (a, b) => ((a - b + 540) % 360) - 180;
+const ORDERS = [
+ {txt:"Hand steering: steady on 085", chk:() => S.sel === "HAND" && S.wt && steady(85, 3), task:"hand1"},
+ {txt:"Change over to AUTO — keep present heading", chk:() => S.sel === "AUTO" && S.ap.mode === "HDG" && Math.abs(dA(S.ap.set, 85)) < 4 && steady(S.ap.set, 2), task:"auto"},
+ {txt:"Come to starboard — steer 120", chk:() => S.ap.mode === "HDG" && Math.abs(dA(S.ap.set, 120)) < 0.6 && steady(120, 1.5), task:"c120"},
+ {txt:"Port — steer 045", chk:() => S.ap.mode === "HDG" && Math.abs(dA(S.ap.set, 45)) < 0.6 && steady(45, 1.5), task:"c045"},
+ {txt:"PRESET rate of turn 20°/min, then steer 090", chk:() => S.ap.tmode === "ROT" && S.ap.rot === 20 && Math.abs(dA(S.ap.set, 90)) < 0.6 && steady(90, 1.5), task:"rot"},
+ {txt:"Approaching traffic — change over to HAND, steer 090", chk:() => S.sel === "HAND" && steady(90, 3), task:"hand2"},
+ {txt:"Bridge steering failure drill — selector OFF, steer 090 by NFU from the steering gear room", chk:() => S.sel === "OFF" && S.nfuUsed && steady(90, 4), task:"emer"}];
+const TASKS = [
+ ["hand1", "Hand steering with the helm: steady on 085° (±3°)."],
+ ["auto", "Change over HAND → AUTO: selector to AUTO, press TAKE OVER, ship keeps the heading."],
+ ["c120", "Course change to starboard: SET HDG → knob 120.0 → ACCEPT. Watch the repeater turn."],
+ ["c045", "Course change to port: SET HDG → 045.0 → ACCEPT."],
+ ["rot", "PRESET rate of turn 20°/min (ACCEPT), then change course to 090."],
+ ["hand2", "Change over AUTO → HAND (traffic / restricted waters) and steady on 090°."],
+ ["emer", "Emergency steering drill (SOLAS V/26 — every 3 months): selector OFF, steer by NFU from the steering gear room, steady 090° (±4°)."],
+ ["gyro", "Instructor gyro failure: silence the alarm and take HAND steering (the repeater freezes)."],
+ ["steer", "Steering gear failure: notice OFF HEADING alarm, silence it and report to the Master."],
+ ["quiz", "Answer the quick quiz."]];
+const QUIZ = [
+ ["When must the OOW switch from automatic to manual steering? (SOLAS V/24)", ["only at night", "in good time before hazardous situations — high traffic, restricted visibility, close-quarters", "never", "only when the autopilot fails"], 1],
+ ["After prolonged use of the autopilot, manual steering must be:", ["removed", "tested, and also before entering areas requiring special caution", "logged only", "locked"], 1],
+ ["Why is the inner card of the gyro repeater useful?", ["it shows magnetic heading", "fine reading — one revolution = 10°, so small heading changes are easy to see", "it shows rudder angle", "it shows speed"], 1],
+ ["The autopilot keeps 3° of starboard rudder while heading is steady. Most likely cause:", ["gyro error", "weather helm — wind / current pushing the bow to port (bias)", "wrong set heading", "rudder failure"], 1],
+ ["Who may change autopilot tuning parameters (RG, CR, …)?", ["any rating", "only as set by the Master / service engineer — 'TUNING DO NOT TOUCH'", "the cook", "the pilot always"], 1]];
+let S, acc = 1, last = performance.now(), audio = null;
+function reset() { const tr = S ? S.tr : {};
+  S = {t:0, hdg:85.1, r:0, rud:0, ord:0, spd:12, sel:"HAND", sea:"moderate", wind:1.5, noise:0, f:{gyro:false, steer:false}, ghdg:85.1,
+    ap:{mode:"OFF", set:85.1, edit:null, tmode:"RUD", rl:20, rot:30, RG:1.4, CR:1.0, I:0, turning:false, offT:0}, alarms:[], dim:100, pal:1, gear:false, ord_i:0, stT:0, tr};
+  $("spd").value = S.spd; $("sea").value = S.sea; $("wind").value = S.wind; tasks(); }
+function beep(f = 2400, l = 0.15, v = 0.05) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = f; g.gain.value = v; o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + l); } catch (e) {} }
+setInterval(() => { if (S.alarms.some(a => !a.ack)) beep(); }, 700);
+function raise(id, txt) { if (!S.alarms.some(a => a.id === id)) S.alarms.push({id, txt, ack:false}); }
+function clearA(id) { S.alarms = S.alarms.filter(a => a.id !== id); }
+// ---------- physics ----------
+let stdyT = 0;
+function steady(tg, tol) { return Math.abs(dA(S.hdg, tg)) <= tol && Math.abs(S.r) < 0.08 && stdyT > 12; }
+function phys(dt) {
+  const K = 0.032 * S.spd / 12, T = 16, seaA = {calm:0.3, moderate:1.6, rough:4}[S.sea];
+  S.noise += (-S.noise * 0.08 + (Math.random() - 0.5) * seaA * 0.9) * dt;
+  // rudder actuator
+  if (!S.f.steer) { const dr = S.ord - S.rud; S.rud += Math.max(-2.5 * dt, Math.min(2.5 * dt, dr)); }
+  S.r += ((K * (S.rud - S.wind + S.noise)) - S.r) / T * dt; S.hdg = wrap360(S.hdg + S.r * dt);
+  if (!S.f.gyro) S.ghdg = S.hdg;
+  // control
+  const A = S.ap;
+  if (S.sel === "HAND") { S.ord = wheelOrd; A.mode = "OFF"; A.edit = null; }
+  else if (S.sel === "OFF") { A.mode = "OFF"; A.edit = null; S.ord = nfu ? nfu * 35 : S.rud; }
+  else if (A.mode === "HDG") {
+    if (S.f.gyro) { S.ord = 0; }
+    else { const err = dA(A.set, S.ghdg); if (Math.abs(err) < 4) A.I = Math.max(-8, Math.min(8, A.I + 0.02 * err * dt)); let d = A.RG * err * 1.1 - A.CR * S.r * 14 + A.I;
+      if (A.tmode === "ROT") { const rmax = A.rot / 60; if (Math.abs(S.r) > rmax * 0.95 && Math.sign(S.r) === Math.sign(err)) d = -A.CR * (S.r - Math.sign(S.r) * rmax) * 60 + A.I; }
+      const lim = A.tmode === "RUD" ? A.rl : 35; S.ord = Math.max(-lim, Math.min(lim, d));
+      if (Math.abs(err) < 2) { A.turning = false; } if (!A.turning && Math.abs(err) > 8) A.offT += dt; else A.offT = 0; if (A.offT > 20) raise("OFF", "OFF HEADING ALARM"); else if (Math.abs(err) < 5) clearA("OFF"); } }
+  else { S.ord = 0; }
+  if (S.f.gyro) raise("GYRO", "HEADING SENSOR FAIL (GYRO 1)"); else clearA("GYRO");
+  stdyT = Math.abs(S.r) < 0.08 ? stdyT + dt : 0; }
+// ---------- orders / tasks ----------
+function done(k) { if (!S.tr[k]) { S.tr[k] = true; tasks(); beep(1500, 0.08, 0.03); } }
+function orders() { const o = ORDERS[S.ord_i]; if (!o) { $("order").textContent = "All orders completed ✔"; $("orderh").textContent = "Use the instructor faults for the alarm exercises."; return; }
+  $("order").textContent = "“" + o.txt + "”"; $("orderh").textContent = `Order ${S.ord_i + 1} of ${ORDERS.length} · present heading ${S.ghdg.toFixed(1)}° · steady ${Math.min(12, stdyT).toFixed(0)} / 12 s`;
+  if (o.chk()) { done(o.task); S.ord_i++; stdyT = 0; beep(1200, 0.1, 0.03); } }
+function tasks() { const n = TASKS.filter(t => S.tr[t[0]]).length; $("tdone").textContent = n + " / " + TASKS.length;
+  $("tasks").innerHTML = TASKS.map((t, i) => `<div class="task ${S.tr[t[0]] ? "done" : ""}"><span>${S.tr[t[0]] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t[1]}</span></div>`).join(""); }
+// ---------- autopilot keys ----------
+function key(k) { const A = S.ap; beep(3500, 0.03, 0.015);
+  if (k === "mute") { S.alarms.forEach(a => a.ack = true); if (S.f.gyro && S.sel === "HAND") done("gyro"); if (S.f.steer && S.alarms.some(a => a.id === "OFF")) done("steer"); return; }
+  if (k === "gear") { S.gear = !S.gear; return; }
+  if (S.gear) { if (k === "accept") S.gear = false; return; }
+  if (k === "take") { if (S.sel !== "AUTO") { flash("SELECTOR NOT IN AUTO — switch to AUTO first"); return; } if (S.f.gyro) { flash("HEADING SENSOR FAIL"); return; } A.mode = "HDG"; A.set = Math.round(S.ghdg * 10) / 10; A.I = 0; A.turning = false; flash("HDG MODE · SET " + A.set.toFixed(1) + "°"); return; }
+  if (k === "sethdg") { if (A.mode !== "HDG") { flash("NOT IN HDG MODE — TAKE OVER first"); return; } A.edit = {type:"hdg", val:A.set, t:S.t}; return; }
+  if (k === "preset") { if (S.sel !== "AUTO") { flash("SELECTOR NOT IN AUTO"); return; } A.edit = {type:"preset", sub:A.tmode, rl:A.rl, rot:A.rot, t:S.t}; return; }
+  if (k === "accept") { if (!A.edit) return;
+    if (A.edit.type === "hdg") { const nv = wrap360(Math.round(A.edit.val * 10) / 10); A.set = nv; A.turning = true; A.offT = 0; flash("NEW HEADING " + nv.toFixed(1) + "° ACCEPTED"); }
+    else { A.tmode = A.edit.sub; A.rl = A.edit.rl; A.rot = A.edit.rot; flash("TURN MODE: " + (A.tmode === "RUD" ? "RUDDER LIMIT " + A.rl + "°" : "RATE OF TURN " + A.rot + "°/min")); }
+    A.edit = null; } }
+function knobTurn(n) { const A = S.ap; if (S.gear) { S.dim = Math.max(10, Math.min(100, S.dim + n * 10)); return; } if (!A.edit) { flash(A.mode === "HDG" ? "Press SET HDG first" : "TAKE OVER / SET HDG first"); return; } A.edit.t = S.t;
+  if (A.edit.type === "hdg") A.edit.val = wrap360(A.edit.val + n);
+  else { if (Math.abs(n) >= 10) A.edit.sub = A.edit.sub === "RUD" ? "ROT" : "RUD"; else if (A.edit.sub === "RUD") A.edit.rl = Math.max(5, Math.min(35, A.edit.rl + Math.sign(n) * 5)); else A.edit.rot = Math.max(5, Math.min(90, A.edit.rot + Math.sign(n) * 5)); } }
+let FL = null; function flash(t) { FL = {t, until:performance.now() + 2200}; }
+document.querySelectorAll(".tk").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); key(b.dataset.k); }));
+// knob interactions
+const kn = $("knob"); let kAng = 0, kDrag = null;
+kn.addEventListener("pointerdown", e => { const r = kn.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2; kDrag = {a:Math.atan2(e.clientY - cy, e.clientX - cx), acc:0, moved:false, x:e.clientX, cx, cy}; kn.setPointerCapture(e.pointerId); });
+kn.addEventListener("pointermove", e => { if (!kDrag) return; const a = Math.atan2(e.clientY - kDrag.cy, e.clientX - kDrag.cx); let d = a - kDrag.a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; kDrag.a = a; kDrag.acc += d * 180 / Math.PI; while (Math.abs(kDrag.acc) >= 12) { const s = Math.sign(kDrag.acc); kDrag.acc -= s * 12; knobTurn(s); kDrag.moved = true; kAng += s * 12; } });
+kn.addEventListener("pointerup", e => { if (kDrag && !kDrag.moved) { const s = e.clientX < kDrag.cx ? -1 : 1; knobTurn(s); kAng += s * 12; } kDrag = null; });
+kn.addEventListener("wheel", e => { e.preventDefault(); const s = e.deltaY < 0 ? 1 : -1, n = e.shiftKey ? 10 * s : s; knobTurn(n); kAng += n * 12; }, {passive:false});
+// selector
+$("selk").addEventListener("pointerdown", e => { const r = $("selk").getBoundingClientRect(), L = ["HAND", "OFF", "AUTO"], i = L.indexOf(S.sel), ni = Math.max(0, Math.min(2, i + (e.clientX < r.left + r.width / 2 ? -1 : 1))); if (ni === i) return; S.sel = L[ni]; beep(700, 0.08, 0.05);
+  if (S.sel === "AUTO") { S.ap.mode = "STBY"; flash("SELECTOR AUTO — press TAKE OVER"); } else if (S.sel === "HAND") { wheelOrd = Math.round(S.rud); flash("HAND STEERING"); } else { S.ap.mode = "OFF"; S.ap.edit = null; flash("OFF — EMERGENCY STEERING FROM STEERING GEAR ROOM"); } });
+let nfu = 0; [["nfuP", -1], ["nfuS", 1]].forEach(([id, d]) => { const b = $(id); b.addEventListener("pointerdown", e => { e.preventDefault(); if (S.sel !== "OFF") { flash("LOCAL CONTROL ONLY WITH SELECTOR IN OFF"); return; } nfu = d; S.nfuUsed = true; }); ["pointerup", "pointerleave", "pointercancel"].forEach(t => b.addEventListener(t, () => nfu = 0)); });
+// wheel
+let wheelOrd = 0, wDrag = null; const wsvg = $("wheel");
+(function () { let p = '<rect x="-78" y="-108" width="156" height="200" rx="4" fill="#26292c" stroke="#45494d" stroke-width="2"/>';
+  for (const [x, y] of [[-68, -98], [68, -98], [-68, 82], [68, 82]]) p += `<circle cx="${x}" cy="${y}" r="5" fill="#666"/>`;
+  const arc = (a0, a1, col) => { const P = a => [Math.sin(a * Math.PI / 180) * 60, -12 - Math.cos(a * Math.PI / 180) * 60]; const [x0, y0] = P(a0), [x1, y1] = P(a1); return `<path d="M${x0} ${y0} A60 60 0 0 1 ${x1} ${y1}" stroke="${col}" stroke-width="12" fill="none"/>`; };
+  p += arc(-70, -2, "#b02a2a") + arc(2, 70, "#1a8a3a");
+  for (let d = -35; d <= 35; d += 5) { const a = d * 2 * Math.PI / 180; p += `<line x1="${Math.sin(a) * 68}" y1="${-12 - Math.cos(a) * 68}" x2="${Math.sin(a) * (d % 10 ? 74 : 78)}" y2="${-12 - Math.cos(a) * (d % 10 ? 74 : 78)}" stroke="#eee" stroke-width="${d % 10 ? 1 : 2}"/>`; }
+  p += '<line id="wptr" x1="0" y1="-12" x2="0" y2="-84" stroke="#ff2a2a" stroke-width="3"/>';
+  let h = '<circle r="122" fill="none" stroke="#0c0c0c" stroke-width="26"/><circle r="131" fill="none" stroke="#3a3a3a" stroke-width="1.5"/><circle r="113" fill="none" stroke="#3a3a3a" stroke-width="1.5"/><rect x="-124" y="-24" width="248" height="48" rx="10" fill="#0e0e0e" stroke="#3a3a3a" stroke-width="1.5"/><circle r="36" fill="#1a1a1a" stroke="#000" stroke-width="3"/><circle r="17" fill="#6a5a4a"/><polygon points="0,-6 5,-3 5,3 0,6 -5,3 -5,-3" fill="#c8c8c8"/>';
+  wsvg.innerHTML = `<g>${p}</g><g id="wg">${h}</g>`; })();
+wsvg.addEventListener("pointerdown", e => { const r = wsvg.getBoundingClientRect(); wDrag = {cx:r.left + r.width / 2, cy:r.top + r.height / 2, a:Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2))}; wsvg.setPointerCapture(e.pointerId); });
+wsvg.addEventListener("pointermove", e => { if (!wDrag) return; const a = Math.atan2(e.clientY - wDrag.cy, e.clientX - wDrag.cx); let d = a - wDrag.a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; wDrag.a = a; if (S.sel === "HAND") { S.wt = true; wheelOrd = Math.max(-35, Math.min(35, wheelOrd + d * 180 / Math.PI / 3)); } });
+wsvg.addEventListener("pointerup", () => wDrag = null);
+document.querySelectorAll("[data-w]").forEach(b => b.onclick = () => { if (S.sel !== "HAND") { flash("SELECTOR NOT IN HAND"); return; } const v = +b.dataset.w; S.wt = true; wheelOrd = v === 0 ? 0 : Math.max(-35, Math.min(35, wheelOrd + v)); });
+// ---------- drawing ----------
+const rc = $("rep"), rg = rc.getContext("2d"), ac = $("aps"), ag = ac.getContext("2d"), ri = $("rai"), rr = ri.getContext("2d");
+function drawRep() { const g = rg, W = 420, c = 210, h = S.ghdg, br = 0.5 + S.dim / 200; g.clearRect(0, 0, W, W); g.fillStyle = "#0e0f10"; g.fillRect(0, 0, W, W);
+  g.beginPath(); g.arc(c, c, 200, 0, 7); g.fillStyle = "#1c1d1f"; g.fill(); g.lineWidth = 10; g.strokeStyle = "#333"; g.stroke();
+  const lit = `rgba(240,240,250,${br})`;
+  // outer card
+  g.save(); g.translate(c, c); g.rotate(-h * Math.PI / 180);
+  for (let d = 0; d < 360; d++) { const a = d * Math.PI / 180, L = d % 10 === 0 ? 16 : d % 5 === 0 ? 11 : 6; g.strokeStyle = lit; g.lineWidth = d % 10 === 0 ? 2 : 1; g.beginPath(); g.moveTo(Math.sin(a) * 160, -Math.cos(a) * 160); g.lineTo(Math.sin(a) * (160 + L), -Math.cos(a) * (160 + L)); g.stroke(); }
+  g.beginPath(); g.arc(0, 0, 160, 0, 7); g.strokeStyle = "#a8a8ff"; g.lineWidth = 1.5; g.stroke();
+  for (let d = 0; d < 360; d += 10) { g.save(); g.rotate(d * Math.PI / 180); g.fillStyle = lit; g.font = (d % 90 === 0 ? "bold 21px" : "bold 15px") + " Arial"; g.textAlign = "center"; g.fillText(String(d).padStart(3, "0"), 0, -182); g.restore(); }
+  g.save(); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(0, -192); g.lineTo(-8, -176); g.lineTo(8, -176); g.restore();
+  g.restore();
+  // inner fine card (1 turn = 10°)
+  g.save(); g.translate(c, c); g.rotate(-(h % 10) * 36 * Math.PI / 180); g.beginPath(); g.arc(0, 0, 150, 0, 7); g.fillStyle = "#151617"; g.fill();
+  for (let i = 0; i < 100; i++) { const a = i * 3.6 * Math.PI / 180, L = i % 10 === 0 ? 14 : i % 5 === 0 ? 10 : 5; g.strokeStyle = lit; g.lineWidth = i % 10 === 0 ? 2 : 1; g.beginPath(); g.moveTo(Math.sin(a) * 150, -Math.cos(a) * 150); g.lineTo(Math.sin(a) * (150 - L), -Math.cos(a) * (150 - L)); g.stroke(); }
+  for (let i = 0; i < 10; i++) { g.save(); g.rotate(i * 36 * Math.PI / 180); g.fillStyle = lit; g.font = "bold 20px Arial"; g.textAlign = "center"; g.fillText(String(i), 0, -118); g.restore(); }
+  g.restore();
+  g.beginPath(); g.arc(c, c, 100, 0, 7); g.fillStyle = "#101112"; g.fill();
+  g.fillStyle = `rgba(230,230,230,${br})`; g.font = "bold 20px Arial"; g.textAlign = "center"; g.fillText("ECADEMY Marine", c, c - 50);
+  const bx = (x, t) => { g.strokeStyle = "#aaa"; g.lineWidth = 2; g.strokeRect(x - 28, c - 30, 56, 56); g.fillStyle = "#333"; g.fillRect(x - 25, c - 27, 50, 50); g.fillStyle = "#eee"; g.font = "bold 13px Arial"; g.fillText("DIM", x, c - 6); g.fillText(t, x, c + 12); };
+  bx(c - 110 + 50, "−"); bx(c + 110 - 50, "+");
+  g.strokeStyle = "#888"; g.strokeRect(c - 110, c + 50, 220, 30); g.fillStyle = S.f.gyro && Math.floor(performance.now() / 400) % 2 ? "#ff4040" : "#eee"; g.font = "bold 20px Arial"; g.fillText(S.f.gyro ? "GYRO FAIL" : "GYRO", c, c + 73);
+  g.fillStyle = "#ffd020"; g.fillRect(c - 2, 6, 4, 60); g.beginPath(); g.moveTo(c - 10, 6); g.lineTo(c + 10, 6); g.lineTo(c, 20); g.fill();
+  g.fillStyle = "#eee"; g.beginPath(); g.moveTo(14, c); g.lineTo(34, c - 10); g.lineTo(34, c + 10); g.fill(); g.font = "bold 22px Arial"; g.fillText("N", 50, c + 8); }
+const repHit = e => { const r = rc.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 420, y = (e.clientY - r.top) / r.height * 420; if (y > 180 && y < 240) { if (x > 132 && x < 188) S.dim = Math.max(10, S.dim - 10); if (x > 232 && x < 288) S.dim = Math.min(100, S.dim + 10); } };
+rc.addEventListener("pointerdown", repHit);
+function drawAP() { const g = ag, W = 520, H = 300, night = S.pal === 0, A = S.ap; const bg = night ? "#14101c" : "#efe9f6", tx = night ? "#d8d0e8" : "#241c30", hi = night ? "#7cf0a0" : "#1a9a4a", dimc = night ? "#8a80a0" : "#6a6078";
+  g.fillStyle = bg; g.fillRect(0, 0, W, H); g.globalAlpha = 1;
+  const T = (x, y, s, sz, col = tx, al = "left", w = "bold") => { g.font = `${w} ${sz}px "Segoe UI",Arial,sans-serif`; g.textAlign = al; g.fillStyle = col; g.fillText(s, x, y); };
+  const mode = S.sel !== "AUTO" ? "OFF" : A.mode === "HDG" ? (S.f.gyro ? "HDG FAIL" : "HDG") : "STBY";
+  T(16, 34, mode, 26, mode === "HDG" ? hi : mode === "STBY" ? "#c08000" : mode === "OFF" ? hi : "#d02020");
+  if (S.sel === "HAND") T(120, 34, "HAND STEERING", 14, dimc, "left", "600"); if (S.sel === "OFF") T(90, 34, "EMERGENCY STEERING", 13, "#d02020", "left", "700");
+  T(16, 66, "GYRO 1", 14); T(16, 82, "HEADING", 14, tx, "left", "600"); T(300, 100, S.ghdg.toFixed(1) + "°", 62, hi, "right");
+  const editing = A.edit && A.edit.type === "hdg", blink = Math.floor(performance.now() / 350) % 2;
+  T(16, 132, editing ? "PRESET" : "SET", 14, editing ? "#c06000" : tx); T(16, 148, "HEADING", 14, editing ? "#c06000" : tx, "left", "600");
+  T(300, 168, (editing ? A.edit.val : A.set).toFixed(1) + "°", 52, editing ? (blink ? "#d06000" : tx) : tx, "right");
+  if (editing) T(16, 186, "turn knob · ACCEPT", 12, "#c06000", "left", "600");
+  // right panel: rudder & ROT or settings
+  g.strokeStyle = dimc; g.lineWidth = 1; g.strokeRect(318, 14, 190, 180);
+  if (S.gear) { T(330, 36, "Brightness", 14); T(330, 58, S.dim + "%", 16); g.fillStyle = "#fff"; g.fillRect(330, 66, 160 * S.dim / 100, 22); g.strokeRect(330, 66, 160, 22); T(330, 116, "Palette", 14);
+    ["☾", "◐", "☀"].forEach((s, i) => { const x = 340 + i * 54; g.strokeStyle = i === S.pal ? hi : dimc; g.lineWidth = i === S.pal ? 3 : 1; g.strokeRect(x, 128, 40, 40); T(x + 20, 156, s, 22, tx, "center"); }); T(330, 186, "knob: brightness · ACCEPT: close", 10, dimc, "left", "600"); }
+  else if (A.edit && A.edit.type === "preset") { T(330, 38, "PRESET TURN MODE", 13, "#c06000"); T(330, 66, (A.edit.sub === "RUD" ? "▶ " : "  ") + "RUDDER LIMIT  " + A.edit.rl + "°", 13, tx, "left", "600"); T(330, 90, (A.edit.sub === "ROT" ? "▶ " : "  ") + "RATE OF TURN  " + A.edit.rot + "°/min", 13, tx, "left", "600"); T(330, 124, "knob: change value", 11, dimc, "left", "600"); T(330, 140, "Shift+wheel / drag 10 steps:", 11, dimc, "left", "600"); T(330, 154, "switch RUD ⇄ ROT", 11, dimc, "left", "600"); T(330, 182, "ACCEPT to set", 12, "#c06000"); }
+  else { T(330, 36, "RUDDER", 13); const cx = 413, cy = 106; g.strokeStyle = dimc; g.beginPath(); g.arc(cx, cy, 60, Math.PI, 2 * Math.PI); g.stroke();
+    for (let d = -35; d <= 35; d += 5) { const a = (d - 90) * Math.PI / 180; g.beginPath(); g.moveTo(cx + Math.cos(a) * 60, cy + Math.sin(a) * 60); g.lineTo(cx + Math.cos(a) * (d % 10 ? 54 : 50), cy + Math.sin(a) * (d % 10 ? 54 : 50)); g.stroke(); }
+    const ar = (S.rud - 90) * Math.PI / 180; g.strokeStyle = "#d02020"; g.lineWidth = 3; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(ar) * 56, cy + Math.sin(ar) * 56); g.stroke();
+    const ao = (S.ord - 90) * Math.PI / 180; g.fillStyle = "#2060d0"; g.beginPath(); g.arc(cx + Math.cos(ao) * 64, cy + Math.sin(ao) * 64, 4, 0, 7); g.fill(); g.lineWidth = 1;
+    T(cx, cy + 22, (S.rud < -0.5 ? "P " : S.rud > 0.5 ? "S " : "") + Math.abs(S.rud).toFixed(1) + "°", 16, tx, "center"); T(330, 150, "ROT " + (S.r * 60 >= 0 ? "S " : "P ") + Math.abs(S.r * 60).toFixed(1) + "°/min", 13, tx, "left", "600");
+    T(330, 170, A.tmode === "RUD" ? "Rudder limit " + A.rl + "°" : "ROT limit " + A.rot + "°/min", 12, dimc, "left", "600"); T(330, 186, "● order  ― actual", 10, dimc, "left", "600"); }
+  // tuning info
+  g.strokeStyle = dimc; g.strokeRect(14, 200, 300, 60); T(20, 216, "RG    CR    Timer   Level   Phase   Bias   INF", 11, tx, "left", "600"); T(20, 236, `${A.RG.toFixed(1)}   ${A.CR.toFixed(1)}     0         5         0       ${A.I.toFixed(1)}    10`, 12, tx, "left", "600"); T(20, 254, "Tuning Info", 12, tx);
+  // bottom icon bar
+  g.fillStyle = night ? "#221a30" : "#ded4ea"; g.fillRect(0, 270, W, 30); ["⌂", "🔔", "⚙", "≡"].forEach((s, i) => T(60 + i * 130, 292, s, 18, (i === 2 && S.gear) ? hi : tx, "center"));
+  const un = S.alarms.find(a => !a.ack); if (un || S.alarms.length) { const a = un || S.alarms[0]; g.fillStyle = un && blink ? "#d02020" : "#a03030"; g.fillRect(318, 200, 190, 60); T(413, 224, "⚠ ALARM", 14, "#fff", "center"); T(413, 244, a.txt.slice(0, 24), 11, "#fff", "center", "600"); }
+  if (FL && performance.now() < FL.until) { g.fillStyle = night ? "#3a2a50" : "#2a1e3a"; g.fillRect(40, 116, 440, 40); T(260, 142, FL.t, 15, "#fff", "center"); }
+  ac.style.filter = `brightness(${0.45 + S.dim / 180})`; }
+function drawRAI() { const g = rr, W = 420, H = 200, cx = 210, cy = 180; g.clearRect(0, 0, W, H); g.fillStyle = "#151617"; g.beginPath(); g.arc(cx, cy, 175, Math.PI, 2 * Math.PI); g.fill();
+  g.fillStyle = "#b02020"; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 170, Math.PI * 1.5 - 45 * Math.PI / 180, Math.PI * 1.5); g.fill(); g.fillStyle = "#1a8a3a"; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 170, Math.PI * 1.5, Math.PI * 1.5 + 45 * Math.PI / 180); g.fill();
+  g.fillStyle = "#151617"; g.beginPath(); g.arc(cx, cy, 140, 0, 7); g.fill();
+  for (let d = -45; d <= 45; d += 5) { const a = (d - 90) * Math.PI / 180; g.strokeStyle = "#eee"; g.lineWidth = d % 10 ? 1 : 2; g.beginPath(); g.moveTo(cx + Math.cos(a) * 170, cy + Math.sin(a) * 170); g.lineTo(cx + Math.cos(a) * (d % 10 ? 155 : 148), cy + Math.sin(a) * (d % 10 ? 155 : 148)); g.stroke(); if (d % 10 === 0 || Math.abs(d) === 35) { g.fillStyle = "#eee"; g.font = "bold 13px Arial"; g.textAlign = "center"; g.fillText(String(Math.abs(d)), cx + Math.cos(a) * 128, cy + Math.sin(a) * 128 + 5); } }
+  g.fillStyle = "#eee"; g.font = "bold 18px Arial"; g.fillText("PORT", cx - 110, cy - 10); g.fillText("STBD", cx + 110, cy - 10);
+  const ao = (S.ord - 90) * Math.PI / 180; g.strokeStyle = "#5aa0ff"; g.lineWidth = 3; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(ao) * 150, cy + Math.sin(ao) * 150); g.stroke(); g.setLineDash([]);
+  const a = (S.rud - 90) * Math.PI / 180; g.strokeStyle = "#ffd020"; g.lineWidth = 6; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * 160, cy + Math.sin(a) * 160); g.stroke(); g.beginPath(); g.arc(cx, cy, 12, 0, 7); g.fillStyle = "#888"; g.fill();
+  g.fillStyle = "#cfd"; g.font = "bold 14px Consolas,monospace"; g.textAlign = "left"; g.fillText("ORDER " + (S.ord < 0 ? "P" : "S") + Math.abs(S.ord).toFixed(1) + "°", 12, 20); g.textAlign = "right"; g.fillText("ACTUAL " + (S.rud < 0 ? "P" : "S") + Math.abs(S.rud).toFixed(1) + "°", 408, 20);
+  $("wg").setAttribute("transform", `rotate(${wheelOrd * 3})`); $("wptr").setAttribute("transform", `rotate(${wheelOrd * 2} 0 -12)`); }
+// ---------- loop ----------
+function loop(now) { const rdt = Math.min(0.1, (now - last) / 1000); last = now; let dt = rdt * acc; while (dt > 0) { const h = Math.min(0.1, dt); dt -= h; S.t += h; phys(h); }
+  if (S.ap.edit && S.t - S.ap.edit.t > 30) { S.ap.edit = null; flash("PRESET TIMEOUT — not accepted"); }
+  drawRep(); drawAP(); drawRAI(); orders(); kn.style.transform = `rotate(${kAng}deg)`; $("selk").style.transform = `rotate(${({HAND:-70, OFF:0, AUTO:70})[S.sel]}deg)`; ["h", "o", "a"].forEach((k, i) => $("sl_" + k).classList.toggle("on", ["HAND", "OFF", "AUTO"][i] === S.sel)); $("egr").classList.toggle("off", S.sel !== "OFF"); $("eg_h").textContent = S.ghdg.toFixed(1) + "°"; $("eg_r").textContent = (S.rud < -0.2 ? "P " : S.rud > 0.2 ? "S " : "") + Math.abs(S.rud).toFixed(1) + "°";
+  const m = 15 * 60 + S.t / 60; $("clk").textContent = String(Math.floor(m / 60) % 24).padStart(2, "0") + ":" + String(Math.floor(m % 60)).padStart(2, "0") + ":" + String(Math.floor(S.t % 60)).padStart(2, "0");
+  $("spdv").textContent = S.spd + " kn"; $("windv").textContent = (S.wind >= 0 ? "port " : "stbd ") + Math.abs(S.wind) + "°";
+  $("truth").textContent = `True heading ${S.hdg.toFixed(1)}° · ROT ${(S.r * 60).toFixed(1)}°/min · rudder ${S.rud.toFixed(1)}° · steering ${S.sel}`;
+  requestAnimationFrame(loop); }
+$("spd").oninput = () => S.spd = +$("spd").value; $("sea").onchange = () => S.sea = $("sea").value; $("wind").oninput = () => S.wind = +$("wind").value;
+document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { S.f[b.dataset.f] = !S.f[b.dataset.f]; b.classList.toggle("on", S.f[b.dataset.f]); if (b.dataset.f === "steer" && S.f.steer) S.ap.turning = false; });
+document.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => { acc = +b.dataset.acc; document.querySelectorAll("[data-acc]").forEach(q => q.classList.toggle("on", q === b)); });
+$("restart").onclick = () => { S = null; wheelOrd = 0; reset(); document.querySelectorAll("[data-f]").forEach(b => b.classList.remove("on")); };
+$("quiz").innerHTML = QUIZ.map((q, i) => `<div class="q"><b>${i + 1}. ${q[0]}</b>${q[1].map((o, j) => `<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join("")}</div>`).join("");
+$("quiz_go").onclick = () => { let n = 0; QUIZ.forEach((q, i) => { const v = document.querySelector(`input[name=q${i}]:checked`); if (v && +v.value === q[2]) n++; }); $("quiz_r").innerHTML = `<span class="${n === QUIZ.length ? "ok" : "bad"}">${n} / ${QUIZ.length} correct</span>`; if (n === QUIZ.length) done("quiz"); };
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; if (e.key === "ArrowLeft") knobTurn(e.shiftKey ? -10 : -1); if (e.key === "ArrowRight") knobTurn(e.shiftKey ? 10 : 1); if (e.key === "Enter") key("accept"); });
+(function () { const wrap = document.querySelector(".wrap"), dev = $("dev"), box = document.createElement("div"); box.className = "fitbox"; wrap.insertBefore(box, dev); box.appendChild(dev);
+  const side = wrap.querySelector(".side"), hd = document.querySelector("header"), ft = document.querySelector(".foot");
+  function fit() { dev.style.transform = "none"; const w = dev.offsetWidth, h = dev.offsetHeight, narrow = innerWidth <= 900, avH = innerHeight - hd.offsetHeight - ft.offsetHeight - 28, avW = narrow ? innerWidth - 24 : innerWidth - 36 - Math.min(400, Math.max(300, innerWidth * 0.26));
+    const s = Math.max(0.25, Math.min(1.1, avW / w, narrow ? 9 : avH / h)); dev.style.transform = `scale(${s})`; box.style.width = w * s + "px"; box.style.height = h * s + "px"; side.style.maxHeight = narrow ? "none" : avH + "px"; }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300); })();
+reset();
+window.AP = {S:() => S, key, knobTurn, setWheel:v => wheelOrd = v};
+requestAnimationFrame(loop);
+</script></body></html>

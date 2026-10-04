@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY Weather Fax Receiver</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8;
+ --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .3 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(ellipse at 30% 20%,#16232a,#06090b);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:12px}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}.btn.sm{padding:2px 7px;font-size:11px}
+.clock{font:700 15px "Courier New",monospace;color:#9ff0c8;background:#05100b;border:1px solid #234;border-radius:4px;padding:3px 8px}
+.wrap{display:flex;gap:14px;padding:12px;align-items:flex-start;justify-content:center}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:clip}.fitbox>*{transform-origin:0 0}
+.side{flex:1 1 300px;min-width:280px;max-width:420px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.side{max-height:none!important}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.ref{color:#c4d2d6;font-size:12px}.ref b{color:#ffd479}
+#dev{width:max-content}
+/* stage: bridge bulkhead laminate */
+.stage{width:900px;padding:14px 0 22px;border-radius:6px;background:var(--noise),linear-gradient(100deg,#eadfca,#e2d4bb 40%,#e9dcc4 70%,#dccdb1);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 30px 60px rgba(0,0,0,.65);position:relative;overflow:hidden;color:#222}
+.stage::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg,rgba(150,120,80,.05) 0 3px,transparent 3px 11px);pointer-events:none}
+.cables{position:absolute;left:0;top:0;width:900px;height:90px;pointer-events:none}
+.placard{position:absolute;right:8px;top:40px;background:#fff;border:2px solid #c23;border-radius:2px;padding:5px 9px;font:700 9.5px/1.45 Arial;color:#222;width:122px;box-shadow:0 2px 3px rgba(0,0,0,.25);z-index:4}.placard b{display:block;color:#c23;font-size:10.5px;margin-bottom:2px}
+.idpl{position:absolute;left:10px;top:40px;width:118px;line-height:1.3;background:#f6f6f0;border:1px solid #888;border-radius:2px;padding:3px 9px;font:800 12px Arial;color:#1d2f50;z-index:4}
+.unit{position:relative;margin:0 auto;width:800px;height:392px;border-radius:7px;background:var(--noise),linear-gradient(#2b2c2e,#1e1f21 40%,#19191b);box-shadow:inset 0 2px 0 rgba(255,255,255,.12),inset 0 -3px 5px rgba(0,0,0,.6),0 16px 26px rgba(0,0,0,.55)}
+.vents{position:absolute;left:120px;right:120px;top:84px;display:flex;justify-content:space-between}.vents i{width:85px;height:7px;border-radius:2px;background:#050505;box-shadow:inset 0 2px 2px #000,0 1px 0 rgba(255,255,255,.08)}
+.vents.bt{top:auto;bottom:6px;left:330px;right:330px}.vents.bt i{width:60px;height:5px}
+.ubrand{position:absolute;left:62px;top:100px;font:900 17px "Arial Black",Arial;letter-spacing:.14em;color:#d9dadb;text-shadow:0 1px 0 #000}
+.sticker{position:absolute;left:350px;top:96px;width:118px;padding:8px 6px;background:linear-gradient(#f4ddca,#e9c9b0);border:1px solid #b99a83;font:700 10px/1.25 "Comic Sans MS","Segoe Print",cursive;color:#c0312b;text-align:center;transform:rotate(-1deg);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.sticker::before,.sticker::after{content:"";position:absolute;top:13px;width:5px;height:5px;border-radius:50%;background:#7b6a5c}.sticker::before{left:6px}.sticker::after{right:6px}
+.cpanel{position:absolute;left:44px;right:44px;top:136px;height:236px;border-radius:5px;background:var(--noise),linear-gradient(#0f1011,#151618);box-shadow:inset 0 3px 8px #000,inset 0 -1px 0 rgba(255,255,255,.08),0 1px 0 rgba(255,255,255,.08);display:grid;grid-template-columns:292px 132px 234px;gap:10px;padding:20px 14px 16px;color:#e8e8e8}
+.lcdw{padding:5px;border-radius:3px;background:#2a2b2d;box-shadow:inset 0 2px 5px #000}
+#lcd{margin:0;height:84px;padding:5px 8px;background:linear-gradient(#c8dc93,#b4cb7c);color:#1f2a0e;font:700 13.5px/1.42 "Courier New",monospace;border-radius:2px;white-space:pre;overflow:hidden;box-shadow:inset 0 0 10px rgba(40,60,0,.35);filter:brightness(var(--dim,1))}
+#lcd.off{background:#8c9a6c;color:transparent;filter:none;box-shadow:inset 0 0 12px rgba(0,0,0,.35)}
+#lcd .inv{background:#1f2a0e;color:#c8dc93}#lcd .bl{animation:bl2 .8s steps(1) infinite}@keyframes bl2{50%{opacity:0}}
+@keyframes bl{to{filter:brightness(1.35)}}
+.prow{display:flex;align-items:flex-end;gap:22px;margin-top:12px}
+.rocker{display:flex;flex-direction:column;align-items:center;font:700 10.5px/1.1 Arial;color:#ddd;cursor:pointer;text-align:center}
+.rocker i{display:block;width:30px;height:42px;margin:3px 0;border-radius:3px;background:linear-gradient(#1a1a1a,#0a0a0a);border:2px solid #444;position:relative;box-shadow:inset 0 2px 4px #000}
+.rocker i::after{content:"";position:absolute;left:3px;right:3px;top:3px;height:17px;border-radius:2px;background:linear-gradient(#3a3a3a,#111);box-shadow:0 2px 2px #000;transition:.15s}
+.rocker.on i::after{top:auto;bottom:3px;background:linear-gradient(#111,#3a3a3a)}
+.model{font:700 12px Arial;letter-spacing:.04em;color:#e4e4e4;margin-bottom:6px}
+.mcol{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.tunebox{display:flex;align-items:center;gap:5px;border:1.5px solid #bbb;border-radius:3px;padding:4px 6px 4px 4px}.tbar{width:16px;height:58px;border:1px solid #888;border-radius:2px;display:flex;flex-direction:column-reverse;gap:3px;padding:3px}.tbar i{flex:1;background:#2a2a2a;border-radius:1px}.tbar i.on{background:#ff9a2e;box-shadow:0 0 6px #ff8a1a}
+.tunebox span{font:700 12px Arial}
+.ledrow{display:flex;flex-direction:column;gap:8px;position:absolute;left:470px;top:22px}
+.ledl{display:flex;align-items:center;gap:6px;font:700 11.5px Arial}.ledl i{width:12px;height:5px;border-radius:1px;background:#2b2b2b;box-shadow:inset 0 1px 1px #000}.ledl i.on{background:#ffb02e;box-shadow:0 0 7px #ff9a1a}#Lrx.on{background:#ff4a2e;box-shadow:0 0 8px #f42}
+.knobs{display:flex;gap:18px;margin-top:8px}.knobs>div{display:flex;flex-direction:column;align-items:center}
+.kl{font:700 12px Arial;color:#e4e4e4;margin-bottom:5px}
+.knob{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a4a4a,#0d0d0d 70%);box-shadow:0 2px 4px #000,inset 0 0 0 3px #1b1b1b,0 0 0 6px rgba(255,255,255,0);position:relative;cursor:pointer}
+.knob::after{content:"";position:absolute;left:17px;top:3px;width:4px;height:11px;border-radius:2px;background:#eee;transform-origin:2px 16px;transform:rotate(var(--r,0deg))}
+.knob.dots{background:radial-gradient(circle at 35% 30%,#4a4a4a,#0d0d0d 70%)}
+.kdots{position:relative}.kdots::before{content:"";position:absolute;inset:-9px;border-radius:50%;background:radial-gradient(circle,#ddd 1.4px,transparent 1.6px) 0 0/100% 100%;mask:conic-gradient(from 225deg,#000 0 270deg,transparent 270deg);-webkit-mask:conic-gradient(from 225deg,#000 0 270deg,transparent 270deg);opacity:.0}
+.kp{display:grid;grid-template-columns:repeat(5,42px);grid-auto-rows:42px;gap:6px;justify-content:end;align-content:start;position:relative}
+.key{user-select:none;cursor:pointer;border-radius:5px;background:linear-gradient(#1d1e20,#0e0f10);border:1.6px solid #d9d9d9;box-shadow:0 2px 0 #000,inset 0 1px 0 rgba(255,255,255,.12);color:#f2f2f2;font:800 15px Arial;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;line-height:1}
+.key.f{font-size:14px;letter-spacing:-.02em}.key small{font:800 11px Arial;display:block}
+.key svg{width:34px;height:34px;position:absolute}.key{position:relative}
+.key:active,.key.dn{transform:translateY(2px);box-shadow:0 0 0 #000;background:linear-gradient(#2a2b2e,#141516)}
+.pflbl{position:absolute;right:0;top:186px;font:700 10.5px Arial;color:#ddd;width:92px;border-left:1.5px solid #ddd;border-bottom:1.5px solid #ddd;height:9px;padding-left:4px;line-height:14px}
+.door{position:absolute;left:62px;right:62px;top:362px;height:222px;border-radius:4px;background:var(--noise),linear-gradient(#262729,#1c1d1f);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 2px 4px rgba(0,0,0,.6);border:1px solid #111}
+.win{position:absolute;left:30px;right:30px;top:118px;height:66px;border-radius:2px;background:#0b0b0c;box-shadow:inset 0 3px 6px #000}
+.glass{position:absolute;left:68px;right:68px;top:112px;height:56px;border:1.5px solid rgba(200,210,215,.55);background:linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.03) 50%,rgba(255,255,255,.1));z-index:6;pointer-events:none;border-radius:2px}
+.glass::before,.glass::after{content:"";position:absolute;top:6px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ddd,#666)}.glass::before{left:36%}.glass::after{left:64%}
+.gscale{position:absolute;left:30px;right:30px;top:28px;height:8px;background:repeating-linear-gradient(90deg,rgba(40,40,40,.7) 0 1px,transparent 1px 13px);opacity:.8}
+.tbtn{position:absolute;bottom:-22px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bbb,#555 60%,#333);box-shadow:0 2px 3px #000;z-index:7;cursor:pointer}
+.tbtn.need{animation:bl .6s infinite alternate;box-shadow:0 0 12px #fc3}
+.tearb{position:absolute;left:84px;right:84px;top:182px;height:12px;z-index:7;cursor:pointer;background:linear-gradient(#cfd3d6,#7f8488);clip-path:polygon(0 0,100% 0,100% 50%,98% 100%,96% 50%,94% 100%,92% 50%,90% 100%,88% 50%,86% 100%,84% 50%,82% 100%,80% 50%,78% 100%,76% 50%,74% 100%,72% 50%,70% 100%,68% 50%,66% 100%,64% 50%,62% 100%,60% 50%,58% 100%,56% 50%,54% 100%,52% 50%,50% 100%,48% 50%,46% 100%,44% 50%,42% 100%,40% 50%,38% 100%,36% 50%,34% 100%,32% 50%,30% 100%,28% 50%,26% 100%,24% 50%,22% 100%,20% 50%,18% 100%,16% 50%,14% 100%,12% 50%,10% 100%,8% 50%,6% 100%,4% 50%,2% 100%,0 50%)}
+.paperwin{position:relative;margin:28px auto 0;width:620px;height:300px;overflow:hidden;z-index:5;pointer-events:none}
+.paperwin::before{content:"";position:absolute;inset:0 0 auto 0;height:60px;background:linear-gradient(#e6dac2,rgba(230,218,194,0));z-index:2}
+#strip{position:absolute;left:10px;bottom:0;width:600px;display:flex;flex-direction:column;justify-content:flex-end;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.sheet{width:600px;overflow:hidden;background:#f3f1e8;position:relative}.sheet canvas{display:block;width:600px;position:absolute;left:0;top:0}
+.sheet::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.1),transparent 5%,transparent 95%,rgba(0,0,0,.1));pointer-events:none}
+.ptop{position:absolute;left:0;right:0;top:0;height:76px;border-radius:7px 7px 0 0;background:linear-gradient(#323336,#1d1e20);border-bottom:2px solid #0a0a0a;box-shadow:inset 0 2px 0 rgba(255,255,255,.12)}
+.pslot{position:absolute;left:92px;right:92px;top:10px;height:16px;border-radius:3px;background:linear-gradient(#000,#1a1a1a);box-shadow:inset 0 3px 4px #000,0 1px 0 rgba(255,255,255,.1)}
+.ptop .tearb{top:24px}.ptop .glass{top:6px;height:26px}
+.plbl{position:absolute;left:96px;bottom:9px;font:700 10px Arial;letter-spacing:.2em;color:#9a9b9d}
+/* side */
+.tasks{list-style:none;margin:0;padding:0}.tasks li{padding:3px 0 3px 22px;position:relative;font-size:12px;color:#c4d2d6;border-bottom:1px dashed #22313a}.tasks li::before{content:"○";position:absolute;left:3px;color:#567}.tasks li.ok{color:#8bf0bf}.tasks li.ok::before{content:"✔";color:#5ee6a8}
+.tasks li small{display:block;color:#8ea2a9}
+.bar{height:6px;background:#22313a;border-radius:3px;overflow:hidden;margin:4px 0 8px}.bar i{display:block;height:100%;background:var(--acc)}
+table.sch{width:100%;border-collapse:collapse;font-size:12px}table.sch td{padding:3px 4px;border-bottom:1px solid #22313a}table.sch tr.air td{background:#173a2a;color:#bff7d9}table.sch td.t{font-family:"Courier New",monospace;color:#ffd479}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.memlist div{display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #22313a;font-size:12px}.memlist div span{flex:1}
+.legend{display:grid;grid-template-columns:96px 1fr;gap:4px 8px;align-items:center;font-size:12px}.legend canvas{background:#f3f1e8;border-radius:3px;width:96px;height:40px}
+.toast{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#103024;border:1px solid var(--acc);color:#d9ffe9;padding:8px 14px;border-radius:6px;font-weight:600;z-index:60;display:none;max-width:80vw}
+.foot{text-align:center;padding:6px;color:#ffd479;font-size:11px;background:#0a1013;border-top:1px solid var(--line)}
+/* viewer */
+#viewer{position:fixed;inset:0;background:rgba(3,6,8,.92);z-index:50;display:none;flex-direction:column}
+#viewer .vbar{display:flex;gap:8px;align-items:center;padding:8px 12px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#viewer .vbody{flex:1;display:flex;min-height:0}
+#vscroll{flex:1;overflow:auto;position:relative;background:#555}
+#vin{position:relative;margin:10px auto;width:1200px}#vin canvas{position:absolute;left:0;top:0;width:100%}#vsheet{position:relative!important}
+#vpanel{width:400px;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:10px 12px}
+.q{border:1px solid #2c3c43;border-radius:6px;padding:8px;margin-bottom:8px}.q.ok{border-color:#2d8f62;background:#0f2a1f}.q.bad{border-color:#a33}
+.q h4{margin:0 0 4px;font-size:12px;color:#ffd479}.q input{width:90px;background:#071014;border:1px solid #3d5560;color:#fff;border-radius:3px;padding:3px 5px}.q select{background:#071014;color:#fff;border:1px solid #3d5560;border-radius:3px;padding:3px;max-width:100%}
+.q .hint,.q .rev{display:none;margin-top:5px;font-size:11.5px;color:#cfe;background:#0b1a22;border-left:3px solid #7fd6ee;padding:5px 7px}.q .rev{border-color:#ffd479}
+.q .fb{font-size:11.5px;margin-left:6px}
+#vread{font:700 12px "Courier New",monospace;color:#9ff0c8}
+</style></head><body>
+<header><b>ECADEMY</b><span>WEATHER FAX RECEIVER</span><span class="sub">· HF radiofacsimile · schedules · frequency choice · AUTO / MANUAL · LPM / IOC · timer · chart reading</span><span class="sp"></span>
+<span class="clock" id="clk">--:--:-- UTC</span><span class="sub">TIME</span><span id="spd"></span><button class="btn" id="bNext" title="Jump to 20 s before the next broadcast">⏭ NEXT BROADCAST</button><button class="btn" id="bReset">↺ RESET</button></header>
+<div class="wrap">
+<div id="dev"><div class="stage">
+ <div class="idpl">MV ECADEMY<br>TRAINER<br>CALL SIGN 4DTR9</div>
+ <div class="placard"><b>WEATHER FAX ROUTINE</b>1 CHECK STATION SCHEDULE (UTC)<br>2 CHANNEL BY TIME / DISTANCE (TUNE)<br>3 SPD + IOC = AUTO · SET TIMERS (PRG)<br>4 TEAR OFF · FILE · BRIEF OOW / MASTER</div>
+ <div class="paperwin" id="pwin"><div id="strip"></div></div>
+ <div class="unit">
+  <div class="ptop"><div class="pslot"></div><div class="glass" style="left:84px;right:84px"><div class="gscale" style="top:9px"></div></div><div class="tearb" id="bTear" style="left:88px;right:88px" title="Tear bar - click to tear off the chart"></div><div class="tbtn" id="bPaper" style="left:44px;top:8px;bottom:auto" title="Printer cover - open / load paper"></div><div class="tbtn" id="bPaper2" style="right:44px;top:8px;bottom:auto" title="Printer cover - open / load paper"></div><div class="plbl">THERMAL RECORDER · PAPER COVER</div></div>
+  <div class="vents"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="ubrand">ECADEMY</div><div class="sticker">WEATHER CHART<br>RECEIVER</div>
+  <div class="cpanel">
+   <div><div class="lcdw"><pre id="lcd" class="off"></pre></div>
+    <div class="prow"><div class="rocker" id="pwr" title="POWER">POWER<br>ON<i></i>OFF</div><div class="model">FACSIMILE RECEIVER &nbsp;WX-F1</div></div></div>
+   <div class="mcol"><div style="display:flex;gap:10px;align-items:center"><div class="tunebox"><div class="tbar" id="tune"><i></i><i></i><i></i></div><span>TUNE</span></div><div style="display:flex;flex-direction:column;gap:26px"><div class="ledl"><i id="Ltm"></i>TIMER</div><div class="ledl"><i id="Lrx"></i>RCD</div></div></div>
+    <div class="knobs"><div><div class="kl">VOLUME</div><div class="knob" id="vol" title="VOLUME (click left/right or wheel)"></div></div><div><div class="kl">SYNC</div><div class="knob" id="sync" title="SYNC: shifts the picture sideways while recording (click left/right or wheel)"></div></div></div></div>
+   
+   <div class="kp"><div class="key f" data-k="PRG"><span style="position:relative">PRG</span></div><div class="key f" data-k="FRQ"><span style="position:relative">FRQ</span></div><div class="key " data-k="1"><span style="position:relative">1</span></div><div class="key " data-k="2"><svg viewBox="0 0 34 34"><path d="M17 5 L30 28 H4Z" fill="none" stroke="#ddd" stroke-width="1.6"/></svg><span style="position:relative">2</span></div><div class="key " data-k="3"><span style="position:relative">3</span></div><div class="key f" data-k="DIM"><span style="position:relative">DIM</span></div><div class="key f" data-k="CH"><span style="position:relative">CH</span></div><div class="key " data-k="4"><svg viewBox="0 0 34 34"><path d="M4 17 L28 4 V30Z" fill="none" stroke="#ddd" stroke-width="1.6"/></svg><span style="position:relative">4</span></div><div class="key " data-k="5"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="13" fill="none" stroke="#ddd" stroke-width="1.6"/></svg><span style="position:relative">5</span></div><div class="key " data-k="6"><svg viewBox="0 0 34 34"><path d="M30 17 L6 4 V30Z" fill="none" stroke="#ddd" stroke-width="1.6"/></svg><span style="position:relative">6</span></div><div class="key f" data-k="SPD"><span style="position:relative">SPD</span></div><div class="key f" data-k="REV"><span style="position:relative">REV<small>•</small></span></div><div class="key " data-k="7"><span style="position:relative">7</span></div><div class="key " data-k="8"><svg viewBox="0 0 34 34"><path d="M17 29 L30 6 H4Z" fill="none" stroke="#ddd" stroke-width="1.6"/></svg><span style="position:relative">8</span></div><div class="key " data-k="9"><span style="position:relative">9</span></div><div class="key f" data-k="IOC"><span style="position:relative">IOC</span></div><div class="key f" data-k="RCD"><span style="position:relative">RCD</span></div><div class="key " data-k="C"><span style="position:relative">C</span></div><div class="key " data-k="0"><span style="position:relative">0</span></div><div class="key " data-k="E"><span style="position:relative">E</span></div><div class="pflbl">PAPER FEED</div></div>
+  </div>
+  <div class="vents bt"><i></i><i></i></div>
+ </div>
+</div></div>
+<div class="side">
+ <div class="card"><h3>✅ TASKS <span id="tcount" style="float:right;color:#8ea2a9"></span></h3><div class="bar"><i id="tbar"></i></div><ul class="tasks" id="tasks"></ul></div>
+ <div class="card"><h3>📡 STATION SCHEDULE — ECADEMY MET CENTRE 9WX0</h3>
+  <div class="ref" style="margin-bottom:6px">Assigned frequencies: <b>CH01 4316.0</b> · <b>CH02 8467.5</b> · <b>CH03 12745.5</b> · <b>CH04 16971.0</b> kHz. Each product starts with a <b>start signal (5 s)</b> and <b>phasing (30 s)</b>; the chart itself takes about 10 min at 120 LPM.</div>
+  <table class="sch" id="sch"></table><div class="ref" style="margin-top:6px">Speed up time with the buttons at the top (<b>1×</b> = real 120 LPM). ⏭ jumps to just before a broadcast.</div></div>
+ <div class="card"><h3>🗂 RECEIVED CHARTS (MEMORY)</h3><div class="memlist" id="mem"></div>
+  <div class="row" style="margin-top:6px"><button class="btn" id="bView">🔍 OPEN CHART VIEWER</button><button class="btn" id="bSample" title="Instructor: put a surface analysis in memory without waiting">📄 Sample analysis (instructor)</button></div></div>
+ <div class="card"><h3>📖 READ THE CHART</h3><div class="ref">Open a received <b>SURFACE ANALYSIS</b> in the viewer. Plot your ship, then work out pressure, wind, the typhoon's bearing/distance, your semicircle, the avoiding action and whether your 24-h DR is inside the 30-kt radius. Each question has 💡 hints and 👁 worked answers.</div><div class="row" style="margin-top:6px"><button class="btn" id="bRead">📖 START CHART READING</button></div></div>
+ <div class="card"><h3>HOW TO USE THIS RECEIVER</h3><div class="ref">
+  <b>POWER</b> rocker · <b>▲ 2 / ▼ 8</b> step channel (or <b>CH</b> → 1-4 → <b>E</b>) and watch the <b>TUNE</b> bar · <b>FRQ</b> → kHz (<b>REV</b> = decimal point) → <b>E</b> ·
+  <b>SPD</b> AUTO / 60 / 90 / 120 / 240 LPM · <b>IOC</b> AUTO / 576 / 288 — with <b>SPD AUTO</b> the recorder waits for the start signal, phases and stops by itself ·
+  with a fixed SPD you start / stop with <b>RCD</b> (best during PHASING); a split chart is centred with the <b>SYNC</b> knob ·
+  <b>0</b> = PAPER FEED · tear bar under the window = tear off · <b>PRG</b>: 1 timer, 2 memory reprint, 3 print contrast · <b>DIM</b> panel · <b>REV</b> negative print · <b>C</b> clear / back · <b>E</b> enter · door thumbscrews = load paper.</div></div>
+ <div class="card"><h3>📶 CHOOSING THE FREQUENCY</h3><div class="ref">HF propagation changes with <b>time of day</b> and <b>distance</b>. Rule of thumb: <b>daytime → higher frequency</b> (8–17 MHz), <b>night → lower</b> (4–8 MHz); <b>greater distance → higher</b>. Too high = signal skips over you; too low = absorbed in daytime. Step through CH01–CH04, watch the <b>S-meter</b> and choose the strongest, clean signal. Poor signal = speckled, streaky chart.
+  <br><b>General SSB receiver?</b> Tune <b>USB 1.9 kHz below the assigned frequency</b> (e.g. 8467.5 → 8465.6). This dedicated receiver applies the offset itself: enter the <b>assigned</b> frequency.</div></div>
+ <div class="card"><h3>🔣 CHART SYMBOLS</h3><div class="legend" id="legend"></div></div>
+ <div class="card"><h3>INSTRUCTOR — INJECT</h3><div class="row"><button class="btn" id="iPaper">Paper end</button><button class="btn" id="iFade">Signal fading (10 min)</button><button class="btn" id="iScen">New weather scenario</button><button class="btn" id="iDay">+12 h (day/night)</button></div></div>
+ <div class="card"><h3>WHAT IS REAL / SIMPLIFIED</h3><div class="ref"><b>Real:</b> HF radiofacsimile (F3C) broadcasts on a fixed UTC schedule; start signal 300 Hz (IOC 576) / 675 Hz (IOC 288), 30-s phasing, 450 Hz stop signal; 120 LPM standard; wrong LPM = slanted chart, wrong IOC = stretched / squashed chart, no phasing = chart split sideways; USB 1.9 kHz below assigned frequency on general receivers; frequency choice by time and distance; chart symbols (isobars every 4 hPa, H / L, fronts, wind barbs, [GW] / [SW] / [TW] warnings, typhoon forecast circles); Buys Ballot's law and the classic typhoon-avoidance rules for the northern hemisphere.
+  <br><b>Simplified:</b> the station, call sign, frequencies and schedule are <b>fictional</b>; the weather is <b>computer-generated</b> for training; coastlines are rough; the panel is modelled on a typical wall-mounted weather fax recorder, but the menus are generic (real units differ by maker); propagation is a simple model. Always use real met-service charts, the equipment manual and the company SMS.</div></div>
+</div></div>
+<div class="foot">TRAINING SIMULATOR · not a real receiver · fictional station / frequencies / weather · NOT FOR NAVIGATION OR WEATHER ROUTEING</div>
+<div class="toast" id="toast"></div>
+<div id="viewer"><div class="vbar"><b style="color:#7fd6ee;letter-spacing:.1em">CHART VIEWER</b><select id="vsel" class="btn"></select>
+ <button class="btn" data-z="fit">Fit</button><button class="btn" data-z="1">100%</button><button class="btn" data-z="1.5">150%</button><span style="width:10px"></span>
+ <button class="btn on" data-tool="pan">✋ Look</button><button class="btn" data-tool="plot">📍 Plot ship</button><button class="btn" data-tool="div">📏 Dividers</button><button class="btn" id="vclr">Clear marks</button>
+ <span class="sp" style="flex:1"></span><span id="vread"></span><button class="btn" id="vclose">✕ CLOSE</button></div>
+ <div class="vbody"><div id="vscroll"><div id="vin"><canvas id="vsheet"></canvas><canvas id="vover"></canvas></div></div><div id="vpanel"></div></div></div>
+<script>
+"use strict";
+// ===== ECADEMY WEATHER CHART ENGINE (training, synthetic weather) =====
+const LON0 = 100, LON1 = 160, LAT1 = 50, CW = 1200, MG = 20, MW = CW - 2 * MG;
+const D2R = Math.PI / 180, KX = MW / ((LON1 - LON0) * D2R);
+const merc = la => Math.log(Math.tan(Math.PI / 4 + la * D2R / 2));
+const MH = Math.round(KX * merc(LAT1)), CHH = MH + 2 * MG;
+const X = lo => MG + (lo - LON0) * D2R * KX, Y = la => MG + MH - KX * merc(la);
+const LONf = x => LON0 + (x - MG) / KX / D2R, LATf = y => (2 * Math.atan(Math.exp((MG + MH - y) / KX)) - Math.PI / 2) / D2R;
+const RM = 0.4;
+function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// simplified coastlines [lon,lat]
+const LAND = [
+ [[100,51],[141,51],[140.5,48],[138,46],[135.5,43.6],[132,43],[130.7,42.5],[129.7,41],[128.3,39.2],[129.4,37],[129.4,35.5],[129,35.1],[127.5,34.7],[126.3,34.6],[126.5,36],[126.7,37.5],[125.3,37.8],[124.7,39.6],[121.6,39],[121.4,40.6],[120.5,40.3],[119.5,39.8],[117.7,38.9],[118.5,38],[119,37.2],[120.7,37.8],[122.5,37.2],[121,36],[119.5,35],[120.3,34.3],[120.9,32.5],[121.9,31],[121.7,30.5],[122,29.8],[121.5,28.5],[120.5,27.2],[119.6,26],[118.5,24.6],[117,23.6],[115,22.7],[113.6,22.2],[112,21.7],[110.4,21],[110.2,20.3],[109.7,21.5],[108.5,21.6],[106.7,20.7],[105.8,19],[106.6,17.4],[108,16],[109,13.5],[109.2,11.5],[108,10.7],[106.7,10.3],[105,8.6],[104.8,10.2],[103.5,10.6],[102.5,12.2],[100.9,12.7],[100.1,13.4],[100,13.4],[100,12],[99.6,9],[100.3,8.4],[101.3,6.9],[102.3,6.1],[103.4,4.6],[103.5,2.7],[104.3,1.4],[103.6,1.3],[102,2.3],[101,3],[100.3,4.5],[100.3,6.5],[99,7],[99,51]],
+ [[108.6,19.2],[109.5,18.2],[110.5,18.7],[111,19.7],[110.5,20.1],[109.3,20],[108.7,19.5]],
+ [[120.1,23],[120.7,22],[121,22.3],[121.6,24],[121.9,25],[121.3,25.2],[120.6,24.5]],
+ [[129.8,33.3],[130.2,31.4],[131,31.2],[131.7,32.6],[131.5,33.6],[130.9,33.9],[129.9,33.7]],
+ [[132.4,33],[133.3,33.3],[134.3,33.2],[134.7,34],[133.5,34.3],[132.6,33.9]],
+ [[130.9,34],[131.5,34.6],[132.6,35.5],[134,35.5],[135.6,35.6],[136.2,36.3],[136.8,37.3],[137.3,36.8],[138.3,37.2],[139.5,38.4],[140,39.8],[140,40.7],[140.6,41.2],[141.5,41.3],[141.6,40.4],[142,39.4],[141.5,38.3],[140.9,37.5],[141,36.5],[140.6,35.7],[140.4,35],[139.7,35.1],[139,34.8],[138.7,34.6],[137.3,34.6],[136.8,34.4],[136.9,33.5],[135.8,33.5],[135.1,34.2],[135.3,34.6],[134.2,34.7],[133,34.4],[132.3,34.2]],
+ [[140,41.5],[140.2,42.4],[139.8,42.6],[141.4,43.3],[141.8,45.4],[143.2,44.5],[145.3,44.3],[145.5,43.3],[143.8,42.8],[143.3,41.9],[141.5,42.6],[140.5,41.7]],
+ [[141.8,46],[142.5,46.7],[143.5,49.3],[144.5,51],[142.2,51],[142,47.5]],
+ [[120.6,18.5],[121.4,18.6],[122.3,18.4],[122.2,17],[121.6,15.9],[121.6,14.2],[122.7,14],[124,13.6],[124.1,12.6],[123.3,13],[122.5,13.7],[121.8,13.9],[120.9,13.7],[120.6,14.3],[120.9,14.6],[120.6,14.8],[120,15],[119.8,16.3],[120.4,16.5],[120.4,17.6]],
+ [[120.4,13.5],[121.5,13.2],[121.2,12.2],[120.9,12.5],[120.3,13.3]],
+ [[124.3,12.5],[125.7,11.5],[125.2,10.2],[124.8,10],[124.4,10.8],[124.6,11.4],[124.2,12]],
+ [[121.9,11.9],[122.9,11.6],[122.9,10.8],[122,10.5],[121.9,11.4]],
+ [[122.4,10.6],[123.3,10.9],[123.2,9.1],[122.6,9.4],[122.4,10]],
+ [[123.4,11.2],[124.1,10.5],[123.4,9.5],[123.7,10.3]],
+ [[117.2,8.4],[118,8.8],[119.6,10.5],[119.7,11.3],[119.3,10.4],[117.6,8.6],[117.2,8.2]],
+ [[122,6.9],[122.1,7.8],[123.5,7.8],[123.8,8.6],[124.2,8.2],[124.8,9],[125.5,9.8],[126.4,8.5],[126.5,7],[126.2,6.3],[125.6,7],[125.3,5.6],[124.2,6.2],[124,7.2],[123,7.5],[122.2,7]],
+ [[109,1.5],[109.7,2],[111,1.6],[113,3.2],[114.6,4.6],[116,5.9],[117,7],[117.7,6],[119.2,5.3],[118.2,4.4],[117.9,1.4],[118.9,0.9],[117.5,-1],[109,-1]],
+ [[99,3.5],[100.3,2.3],[101.5,1.8],[103,0.5],[104,-1],[98,-1]],
+ [[120,1],[121,1.3],[123,0.9],[124.5,1.2],[125.2,1.6],[124.3,0.4],[121,0.4],[120,0]],
+ [[127.6,26.1],[128.3,26.8],[127.9,26.6]],[[144.6,13.3],[144.95,13.65],[144.8,13.25]]];
+let LANDPATH = null;
+function landPath() { if (LANDPATH) return LANDPATH; const p = new Path2D(); for (const poly of LAND) { poly.forEach(([lo, la], i) => i ? p.lineTo(X(lo), Y(la)) : p.moveTo(X(lo), Y(la))); p.closePath(); } return LANDPATH = p; }
+let LANDCTX = null;
+function isLand(lo, la) { if (!LANDCTX) LANDCTX = document.createElement("canvas").getContext("2d"); return LANDCTX.isPointInPath(landPath(), X(lo), Y(la)); }
+// ---------- scenario ----------
+const TYNAMES = ["TRAINER", "KESTREL", "MARLIN", "ORION", "TALISAY", "AMIHAN", "BALYENA"];
+function mkScen(seed) { const r = rng(seed * 9973 + 17);
+  const sc = {seed,
+    H1:{lon:108 + r() * 8, lat:40 + r() * 5, amp:14 + r() * 6, sig:11},
+    H2:{lon:150 + r() * 8, lat:28 + r() * 5, amp:9 + r() * 5, sig:10},
+    L1:{lon:133 + r() * 7, lat:37 + r() * 4, amp:-(20 + r() * 8), sig:4.2, crs:45 + r() * 20, spd:20 + r() * 10},
+    TD:{lon:111 + r() * 5, lat:10 + r() * 4, amp:-6, sig:3},
+    TY:{lon:127 + r() * 7, lat:14 + r() * 4, pc:935 + Math.round(r() * 25), crs0:290 + r() * 30, spd:9 + Math.round(r() * 5), rec:26 + r() * 18,
+      name:TYNAMES[Math.floor(r() * TYNAMES.length)], no:"26" + String(14 + Math.floor(r() * 9)).padStart(2, "0")},
+    own:{brg:[45, 100, 160, 220, 300, 350][Math.floor(r() * 6)] + (r() - .5) * 20, dist:260 + Math.round(r() * 200), crs:Math.round(r() * 35) * 10, spd:12 + Math.round(r() * 6)}};
+  // typhoon track (1 h steps)
+  const T = sc.TY, tr = []; let lo = T.lon, la = T.lat;
+  for (let h = 0; h <= 130; h++) { const c = h < T.rec ? T.crs0 + (360 - T.crs0) * (h / T.rec) ** 1.5 : 360 + Math.min(45, (h - T.rec) * 1.4);
+    const sp = T.spd * (1 + 0.025 * Math.max(0, h - T.rec)), pc = T.pc - 0.25 * Math.min(h, 24) + 0.7 * Math.max(0, h - 40);
+    tr.push({lon:lo, lat:la, crs:((c % 360) + 360) % 360, spd:Math.round(sp), pc:Math.round(Math.min(1000, pc))});
+    la += sp * Math.cos(c * D2R) / 60; lo += sp * Math.sin(c * D2R) / 60 / Math.cos(la * D2R); }
+  sc.track = tr; return sc; }
+function moveP(p, crs, nm) { const la = p.lat + nm * Math.cos(crs * D2R) / 60; return {lat:la, lon:p.lon + nm * Math.sin(crs * D2R) / 60 / Math.cos((p.lat + la) / 2 * D2R)}; }
+function state(sc, h) { h = Math.max(0, Math.min(126, h)); const L = sc.L1, l1 = moveP(L, L.crs, L.spd * h), fill = 1 + 0.01 * Math.min(h, 20) - 0.012 * Math.max(0, h - 30);
+  const g = [{...sc.H1, lon:sc.H1.lon + 0.06 * h, k:"H"}, {...sc.H2, k:"H"}, {lon:l1.lon, lat:l1.lat, amp:L.amp * fill, sig:L.sig * (1 + h / 120), k:"L", crs:L.crs, spd:L.spd},
+    {...sc.TD, lon:sc.TD.lon - 0.08 * h, amp:sc.TD.amp * Math.max(0.3, 1 - h / 80), k:"TD"}];
+  const i = Math.floor(h), f = h - i, a = sc.track[i], b = sc.track[i + 1], ty = {lon:a.lon + (b.lon - a.lon) * f, lat:a.lat + (b.lat - a.lat) * f, crs:a.crs, spd:a.spd, pc:a.pc, name:sc.TY.name, no:sc.TY.no};
+  const st = {h, g, ty, sc}; ty.dp = Pg(ty.lon, ty.lat, st) - ty.pc; ty.vmax = 6.7 * Math.pow(Math.max(5, 1010 - ty.pc), 0.644);
+  ty.r30 = RM * Math.pow(ty.vmax / 30, 1 / 0.6) * 60; ty.r50 = ty.vmax > 50 ? RM * Math.pow(ty.vmax / 50, 1 / 0.6) * 60 : 0; return st; }
+function Pg(lo, la, st) { let p = 1010; const cl = Math.cos(la * D2R); for (const s of st.g) { const dx = (lo - s.lon) * cl, dy = la - s.lat; p += s.amp * Math.exp(-(dx * dx + dy * dy) / (2 * s.sig * s.sig)); } return p; }
+function P(lo, la, st) { const t = st.ty, cl = Math.cos(la * D2R), dx = (lo - t.lon) * cl, dy = la - t.lat, r = Math.sqrt(dx * dx + dy * dy) + 1e-6; return Pg(lo, la, st) - t.dp * (1 - Math.exp(-Math.pow(RM / r, 1.1))); }
+function wind(lo, la, st) { const e = 0.25, cl = Math.cos(la * D2R);
+  const gx = (Pg(lo + e, la, st) - Pg(lo - e, la, st)) / (2 * e * cl), gy = (Pg(lo, la + e, st) - Pg(lo, la - e, st)) / (2 * e);
+  const f = 2 * 7.292e-5 * Math.sin(Math.max(20, la) * D2R), k = 100 / 111000 / (1.2 * f) * 1.944 * 0.8;
+  let u = -gy * k, v = gx * k; const c = Math.cos(20 * D2R), s = Math.sin(20 * D2R); [u, v] = [u * c - v * s, u * s + v * c];
+  const m = Math.hypot(u, v); if (m > 45) { u *= 45 / m; v *= 45 / m; }
+  const t = st.ty, dx = (lo - t.lon) * cl, dy = la - t.lat, r = Math.hypot(dx, dy) + 1e-6;
+  const vt = (r < RM ? t.vmax * r / RM : t.vmax * Math.pow(RM / r, 0.6)) * Math.exp(-((r / 11) ** 2));
+  const tx = -dy / r, tyy = dx / r, rx = -dx / r, ry = -dy / r; u += vt * (c * tx + s * rx); v += vt * (c * tyy + s * ry);
+  const tw = Math.exp(-r / 4) * t.spd * 0.5; u += tw * Math.sin(t.crs * D2R); v += tw * Math.cos(t.crs * D2R);
+  const sp = Math.hypot(u, v), from = ((Math.atan2(-u, -v) / D2R) + 360) % 360; return {u, v, sp, from}; }
+function waveH(lo, la, st) { let s = 0, n = 0; for (const [a, b] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) { const w = wind(lo + a, la + b, st).sp; s += 0.6 + 0.0028 * w * w; n++; }
+  const t = st.ty, r = Math.hypot((lo - t.lon) * Math.cos(la * D2R), la - t.lat); return Math.min(14, s / n + 2.5 * Math.exp(-r / 5)); }
+function beaufort(kt) { const B = [1, 4, 7, 11, 17, 22, 28, 34, 41, 48, 56, 64]; let i = 0; while (i < B.length && kt >= B[i]) i++; return i; }
+function sailing(a, b) { const dl = b.lat - a.lat, dep = (b.lon - a.lon) * Math.cos((a.lat + b.lat) / 2 * D2R); return {nm:Math.hypot(dl, dep) * 60, brg:((Math.atan2(dep, dl) / D2R) + 360) % 360}; }
+// ---------- drawing helpers ----------
+function contour(field, nx, ny, x0, y0, dx, dy, lev, seg) {
+  for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+    const a = field[j * nx + i], b = field[j * nx + i + 1], c = field[(j + 1) * nx + i + 1], d = field[(j + 1) * nx + i];
+    let k = 0; if (a > lev) k |= 1; if (b > lev) k |= 2; if (c > lev) k |= 4; if (d > lev) k |= 8; if (k === 0 || k === 15) continue;
+    const px = i, py = j, e = {
+      t:() => [x0 + (px + (lev - a) / (b - a)) * dx, y0 + py * dy], r:() => [x0 + (px + 1) * dx, y0 + (py + (lev - b) / (c - b)) * dy],
+      b:() => [x0 + (px + (lev - d) / (c - d)) * dx, y0 + (py + 1) * dy], l:() => [x0 + px * dx, y0 + (py + (lev - a) / (d - a)) * dy]};
+    const T = {1:["l", "t"], 2:["t", "r"], 3:["l", "r"], 4:["r", "b"], 5:["l", "t", "r", "b"], 6:["t", "b"], 7:["l", "b"], 8:["l", "b"], 9:["t", "b"], 10:["t", "r", "l", "b"], 11:["r", "b"], 12:["l", "r"], 13:["t", "r"], 14:["l", "t"]}[k];
+    for (let q = 0; q < T.length; q += 2) seg(e[T[q]](), e[T[q + 1]]()); } }
+class Labels { constructor() { this.r = []; } free(x, y, w, h, pad = 6) { return !this.r.some(q => x < q[0] + q[2] + pad && x + w + pad > q[0] && y < q[1] + q[3] + pad && y + h + pad > q[1]); } add(x, y, w, h) { this.r.push([x, y, w, h]); } }
+function txt(ctx, s, x, y, size, opt = {}) { ctx.font = `${opt.w || 700} ${size}px ${opt.f || "Arial, sans-serif"}`; ctx.textAlign = opt.al || "center"; ctx.textBaseline = "middle";
+  if (opt.bg) { const w = ctx.measureText(s).width + 6, ox = opt.al === "left" ? 0 : opt.al === "right" ? -w : -w / 2; ctx.fillStyle = opt.bg; ctx.fillRect(x + ox - 1, y - size * 0.62, w, size * 1.24); }
+  ctx.fillStyle = opt.c || "#000"; ctx.fillText(s, x + (opt.al === "left" ? 2 : opt.al === "right" ? -2 : 0), y); }
+function box(ctx, lines, x, y, size, opt = {}) { ctx.font = `700 ${size}px Arial`; const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 12, h = lines.length * size * 1.22 + 8;
+  ctx.fillStyle = opt.bg || "#fff"; ctx.fillRect(x, y, w, h); ctx.strokeStyle = opt.c || "#000"; ctx.lineWidth = 2; ctx.strokeRect(x, y, w, h); ctx.fillStyle = opt.c || "#000"; ctx.textAlign = "left"; ctx.textBaseline = "top";
+  lines.forEach((l, i) => ctx.fillText(l, x + 6, y + 5 + i * size * 1.22)); return [x, y, w, h]; }
+function barb(ctx, x, y, from, kt, col = "#000") { ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.stroke();
+  if (kt < 3) { ctx.beginPath(); ctx.arc(x, y, 6.5, 0, 7); ctx.stroke(); return; }
+  const a = from * D2R, ux = Math.sin(a), uy = -Math.cos(a), px = -uy, py = ux, L = 34; // feathers on right (NH convention)
+  const ex = x + ux * L, ey = y + uy * L; ctx.beginPath(); ctx.moveTo(x + ux * 3.5, y + uy * 3.5); ctx.lineTo(ex, ey); ctx.stroke();
+  let k = Math.round(kt / 5) * 5, pos = L; const fx = px * 13 + ux * 5, fy = py * 13 + uy * 5;
+  while (k >= 50) { const bx = x + ux * pos, by = y + uy * pos; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + fx, by + fy); ctx.lineTo(bx - ux * 7, by - uy * 7); ctx.fill(); pos -= 9; k -= 50; }
+  if (pos < L) pos -= 2;
+  while (k >= 10) { const bx = x + ux * pos, by = y + uy * pos; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + fx, by + fy); ctx.stroke(); pos -= 6; k -= 10; }
+  if (k >= 5) { if (pos === L) pos -= 6; const bx = x + ux * pos, by = y + uy * pos; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + fx / 2, by + fy / 2); ctx.stroke(); } }
+function frontPath(ctx, pts, kind) { // pts in px; kind cold|warm|stat|occl
+  ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.stroke();
+  let acc = 0, n = 0; const step = 30;
+  for (let i = 0; i < pts.length - 1; i++) { const [x1, y1] = pts[i], [x2, y2] = pts[i + 1], L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+    let s = step - acc; while (s < L) { const cx = x1 + ux * s, cy = y1 + uy * s; let sym = kind === "stat" ? (n % 2 ? "warm" : "cold") : kind === "occl" ? (n % 2 ? "warm" : "cold") : kind;
+      let side = 1; if (kind === "stat" && sym === "warm") side = -1; const nx = uy * side, ny = -ux * side;
+      ctx.beginPath(); if (sym === "cold") { ctx.moveTo(cx - ux * 8, cy - uy * 8); ctx.lineTo(cx + nx * 13, cy + ny * 13); ctx.lineTo(cx + ux * 8, cy + uy * 8); }
+      else { const a0 = Math.atan2(uy, ux); ctx.arc(cx, cy, 8, a0, a0 + Math.PI, side < 0); } ctx.fill(); n++; s += step; }
+    acc = (acc + L) % step; } }
+function smooth(pts, it = 2) { for (let k = 0; k < it; k++) { const o = [pts[0]]; for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]]; o.push([a[0] * .75 + b[0] * .25, a[1] * .75 + b[1] * .25], [a[0] * .25 + b[0] * .75, a[1] * .25 + b[1] * .75]); } o.push(pts[pts.length - 1]); pts = o; } return pts; }
+function arrowTo(ctx, x, y, crs, len) { const a = crs * D2R, ex = x + Math.sin(a) * len, ey = y - Math.cos(a) * len; ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.sin(a - .45) * 14, ey + Math.cos(a - .45) * 14); ctx.lineTo(ex - Math.sin(a + .45) * 14, ey + Math.cos(a + .45) * 14); ctx.fillStyle = "#000"; ctx.fill(); return [ex, ey]; }
+const C16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"], c16 = d => C16[Math.round(((d % 360) + 360) % 360 / 22.5) % 16], c8 = d => ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(((d % 360) + 360) % 360 / 45) % 8];
+const fmtDM = (v, P, N) => { const m = Math.round(Math.abs(v) * 60); return `${Math.floor(m / 60)}°${String(m % 60).padStart(2, "0")}'${v >= 0 ? P : N}`; }, fmtLat = v => fmtDM(v, "N", "S"), fmtLon = v => fmtDM(v, "E", "W");
+const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const dtg = ms => { const d = new Date(ms); return `${String(d.getUTCDate()).padStart(2, "0")}${String(d.getUTCHours()).padStart(2, "0")}00UTC ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+function baseMap(ctx, dark) { const fg = dark ? "#fff" : "#000"; ctx.fillStyle = dark ? "#000" : "#fff"; ctx.fillRect(0, 0, CW, CHH);
+  ctx.save(); ctx.beginPath(); ctx.rect(MG, MG, MW, MH); ctx.clip();
+  if (!dark) { ctx.fillStyle = "#fff"; ctx.fill(landPath()); }
+  ctx.strokeStyle = fg; ctx.lineWidth = 0.8; ctx.setLineDash([2, 6]);
+  for (let lo = 110; lo < LON1; lo += 10) { ctx.beginPath(); ctx.moveTo(X(lo), MG); ctx.lineTo(X(lo), MG + MH); ctx.stroke(); }
+  for (let la = 10; la < LAT1; la += 10) { ctx.beginPath(); ctx.moveTo(MG, Y(la)); ctx.lineTo(MG + MW, Y(la)); ctx.stroke(); }
+  ctx.setLineDash([]); ctx.lineWidth = 1.6; ctx.stroke(landPath()); ctx.restore();
+  ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.strokeRect(MG, MG, MW, MH);
+  for (let lo = 110; lo < LON1; lo += 10) { txt(ctx, lo + "E", X(lo), MG + MH - 10, 14, {c:fg, bg:dark ? "#000" : "#fff"}); }
+  for (let la = 10; la < LAT1; la += 10) { txt(ctx, la + "N", MG + 4, Y(la), 14, {al:"left", c:fg, bg:dark ? "#000" : "#fff"}); } }
+// ---------- products ----------
+function grid(st, fn, step = 0.25) { const nx = Math.round((LON1 - LON0) / step) + 1, ny = Math.round(LAT1 / step) + 1, f = new Float32Array(nx * ny);
+  for (let j = 0; j < ny; j++) { const la = LAT1 - j * step; for (let i = 0; i < nx; i++) f[j * nx + i] = fn(LON0 + i * step, la, st); } return {f, nx, ny, step}; }
+function drawContours(ctx, G, levels, opt, lab) {
+  for (const lev of levels) {
+    if (opt.noLines && !lab) continue; const segs = []; contour(G.f, G.nx, G.ny, 0, 0, 1, 1, lev, (a, b) => segs.push([a, b]));
+    const toPx = ([i, j]) => [X(LON0 + i * G.step), Y(LAT1 - j * G.step)];
+    ctx.strokeStyle = "#000"; ctx.lineWidth = opt.bold(lev) ? 3.2 : 1.7; ctx.beginPath();
+    const pts = []; for (const [a, b] of segs) { const p = toPx(a), q = toPx(b); ctx.moveTo(...p); ctx.lineTo(...q); pts.push(p); } if (!opt.noLines) ctx.stroke();
+    if (!lab) continue; let n = 0; for (let k = 7; k < pts.length && n < (opt.maxLab || 4); k += 23) { const [x, y] = pts[k]; if (x < 80 || x > CW - 60 || y < 60 || y > CHH - 50) continue; if (opt.sea && isLandPx(Math.round(x), Math.round(y))) continue; const s = opt.fmt(lev), w = s.length * 9 + 6;
+      if (!lab.free(x - w / 2, y - 9, w, 18, 26)) continue; txt(ctx, s, x, y, 15, {bg:"#fff"}); lab.add(x - w / 2, y - 9, w, 18); n++; } } }
+function sysLabels(ctx, st, lab, prog) {
+  for (const s of st.g) { const x = X(s.lon), y = Y(s.lat); if (x < 40 || x > CW - 40 || y < 40 || y > CHH - 40) continue; const pc = Math.round(P(s.lon, s.lat, st));
+    if (s.k === "H") { txt(ctx, "H", x, y, 40, {w:900}); txt(ctx, String(pc), x, y + 30, 17, {bg:"#fff"}); lab.add(x - 30, y - 24, 60, 70); }
+    else if (s.k === "L") { txt(ctx, "L", x, y, 40, {w:900}); txt(ctx, String(pc), x, y + 30, 17, {bg:"#fff"}); lab.add(x - 30, y - 24, 60, 70);
+      let mx = 0; for (let a = 0; a < 360; a += 30) for (const r of [1.5, 3, 4.5]) mx = Math.max(mx, wind(s.lon + r * Math.sin(a * D2R), s.lat + r * Math.cos(a * D2R), st).sp);
+      const wl = mx >= 48 ? "[SW]" : mx >= 34 ? "[GW]" : "[W]"; s.warn = wl;
+      const [ex, ey] = arrowTo(ctx, x + 22, y - 22, s.crs, 46); txt(ctx, `${c8(s.crs)} ${Math.round(s.spd / 5) * 5} KT`, ex + 8, ey - 14, 15, {al:"left", bg:"#fff"}); lab.add(ex + 6, ey - 24, 80, 20); lab.add(x + 18, y - 70, 60, 50);
+      const b = box(ctx, [wl, "DEVELOPING LOW", `${pc}hPa`, `${fmtLat(s.lat).slice(0, 2)}N ${Math.round(s.lon)}E`], x + 50, y + 70, 14); lab.add(...b); }
+    else if (s.k === "TD") { txt(ctx, "TD", x, y, 26, {w:900}); txt(ctx, String(pc), x, y + 24, 15, {bg:"#fff"}); const b = box(ctx, ["[W]", "TD " + pc + "hPa", "ALMOST STNR"], x - 120, y + 10, 13); lab.add(...b); } }
+  // fronts attached to L
+  const L = st.g[2], lx = L.lon, ly = L.lat, F = (pts) => smooth(pts.map(([a, b]) => [X(lx + a), Y(ly + b)]));
+  frontPath(ctx, F([[0, 0], [-2, -2.5], [-4.2, -5.2], [-7.2, -7.4], [-10.5, -8.6]]), "cold");
+  frontPath(ctx, F([[0, 0], [2.5, -1.1], [5, -2.6], [7.8, -3.3]]).reverse(), "warm");
+  frontPath(ctx, F([[-10.5, -8.6], [-14, -9.4], [-18, -9.2], [-22, -10]]), "stat");
+  // typhoon
+  const t = st.ty, x = X(t.lon), y = Y(t.lat); ctx.lineWidth = 4; ctx.strokeStyle = "#000"; ctx.beginPath(); ctx.moveTo(x - 10, y - 10); ctx.lineTo(x + 10, y + 10); ctx.moveTo(x + 10, y - 10); ctx.lineTo(x - 10, y + 10); ctx.stroke();
+  const kind = t.vmax >= 64 ? "TY" : t.vmax >= 48 ? "STS" : t.vmax >= 34 ? "TS" : "TD";
+  const wl = kind === "TY" ? "[TW]" : kind === "TD" ? "[W]" : "[SW]";
+  const lines = [wl, `${kind} ${t.no} ${t.name} (${t.no})`, `${t.pc}hPa`, `${fmtLat(t.lat).replace("°", " ").replace("'", "")} ${fmtLon(t.lon).replace("°", " ").replace("'", "")}`, `${c16(t.crs)} ${t.spd} KT`, `MAX WINDS ${Math.round(t.vmax / 5) * 5} KT`];
+  if (t.r50) lines.push(`50KT WITHIN ${Math.round(t.r50 / 10) * 10}NM`); lines.push(`30KT WITHIN ${Math.round(t.r30 / 10) * 10}NM`);
+  const bx = x + 70 + 260 > CW ? x - 330 : x + 70, b = box(ctx, lines, bx, y + 40 + 200 > CHH ? y - 230 : y + 30, 15); lab.add(...b); lab.add(x - 40, y - 40, 80, 80);
+  ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, t.r30 / 60 * KX * D2R / Math.cos(t.lat * D2R), 0, 7); ctx.stroke(); // 30-kt circle (approx on Mercator)
+  if (!prog) { const sc = st.sc; ctx.setLineDash([10, 7]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); const fc = [24, 48].map(dh => state(sc, st.h + dh).ty);
+      fc.forEach(p => ctx.lineTo(X(p.lon), Y(p.lat))); ctx.stroke(); ctx.setLineDash([6, 6]);
+      fc.forEach((p, i) => { const R = (60 + i * 70) / 60 * KX * D2R / Math.cos(p.lat * D2R); ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), R, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), 5, 0, 7); ctx.fill();
+        txt(ctx, `${(i + 1) * 24}HR FCST`, X(p.lon) + R * 0.75, Y(p.lat) - R * 0.75, 13, {bg:"#fff", al:"left"}); }); ctx.setLineDash([]); }
+  else arrowTo(ctx, x, y, t.crs, 60); }
+function header(ctx, lines, x = 40, y = 40) { return box(ctx, lines, x, y, 19); }
+function legend(ctx) { box(ctx, ["WARNING  [W]  : WARNING (TD / <34KT)", "[GW] : GALE  34-47KT   [SW] : STORM  48-63KT", "[TW] : TYPHOON 64KT+   ISOBARS EVERY 4 hPa"], 40, CHH - 112, 14); }
+const STN = {name:"ECADEMY MET CENTRE", cs:"9WX0"};
+function drawSurface(ctx, st, valid, prog) { baseMap(ctx); const lab = new Labels();
+  const G = grid(st, P), levs = Array.from({length:40}, (_, i) => 940 + i * 4).filter(l => l >= st.ty.pc + 6), o = {bold:l => l % 20 === 0, fmt:l => String(l)};
+  drawContours(ctx, G, levs, o, null);
+  const hb = header(ctx, [prog ? `${prog}-HOUR SURFACE PROGNOSIS` : "SURFACE ANALYSIS", `VALID ${dtg(valid)}`, `${STN.name} ${STN.cs} (TRAINING)`]); lab.add(...hb);
+  legend(ctx); lab.add(40, CHH - 112, 380, 80);
+  sysLabels(ctx, st, lab, !!prog);
+  drawContours(ctx, G, levs, {...o, noLines:true}, lab);
+  if (!prog) { const r = rng(st.sc.seed + Math.round(st.h)); // ship & station observations
+    for (let la = 4; la < 48; la += 5.5) for (let lo = 103; lo < 158; lo += 6.5) { const a = lo + (r() - .5) * 3, b = la + (r() - .5) * 2.5, t = st.ty;
+      if (isLand(a, b) && r() < .6) continue; if (Math.hypot((a - t.lon) * Math.cos(b * D2R), b - t.lat) < 1.4) continue; const x = X(a), y = Y(b); if (!lab.free(x - 18, y - 18, 36, 36, 0)) continue;
+      const w = wind(a, b, st); barb(ctx, x, y, w.from, w.sp); lab.add(x - 18, y - 18, 36, 36); } } }
+function drawWave(ctx, st, valid) { baseMap(ctx); const lab = new Labels();
+  const G = grid(st, waveH, 0.5), levs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12], o = {bold:l => l % 4 === 0, fmt:l => String(l), maxLab:6, sea:true};
+  ctx.save(); const sea = new Path2D(); sea.rect(0, 0, CW, CHH); sea.addPath(landPath()); ctx.clip(sea, "evenodd"); drawContours(ctx, G, levs, o, null); ctx.restore();
+  const hb = header(ctx, ["WAVE ANALYSIS", "SIGNIFICANT WAVE HEIGHT (m)", `VALID ${dtg(valid)}`, `${STN.name} ${STN.cs} (TRAINING)`]); lab.add(...hb);
+  lab.add(...box(ctx, ["ARROW: WAVE DIRECTION", "FIGURES: HEIGHT (m)", "CONTOURS EVERY 1 m"], 40, CHH - 100, 14));
+  const t = st.ty; txt(ctx, "×", X(t.lon), Y(t.lat), 34); lab.add(X(t.lon) - 20, Y(t.lat) - 20, 40, 40); lab.add(...box(ctx, [`${t.no} ${t.name}`, `MAX ${Math.round(waveH(t.lon, t.lat, st))} m`], X(t.lon) + 30, Y(t.lat) + 20, 15));
+  drawContours(ctx, G, levs, {...o, noLines:true}, lab);
+  for (let la = 4; la < 48; la += 4.5) for (let lo = 104; lo < 158; lo += 5) { if (isLand(lo, la)) continue; const x = X(lo), y = Y(la); if (!lab.free(x - 20, y - 20, 40, 40, 0)) continue; const w = wind(lo, la, st), h = waveH(lo, la, st);
+    const a = (w.from + 180) * D2R, ex = x + Math.sin(a) * 24, ey = y - Math.cos(a) * 24; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - Math.sin(a - .5) * 8, ey + Math.cos(a - .5) * 8); ctx.lineTo(ex - Math.sin(a + .5) * 8, ey + Math.cos(a + .5) * 8); ctx.fill(); txt(ctx, h.toFixed(1), x, y + 12, 13, {bg:"#fff"}); lab.add(x - 20, y - 20, 40, 40); } }
+function vnoise(seed) { const R = rng(seed), T = new Float32Array(256 * 256); for (let i = 0; i < T.length; i++) T[i] = R();
+  const n = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, s = t => t * t * (3 - 2 * t), g = (a, b) => T[((b & 255) << 8) | (a & 255)];
+    const a = g(xi, yi), b = g(xi + 1, yi), c = g(xi, yi + 1), d = g(xi + 1, yi + 1), u = s(xf), v = s(yf); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+  return (x, y) => { let s = 0, a = .5, f = 1; for (let o = 0; o < 5; o++) { s += a * n(x * f, y * f); a /= 2; f *= 2.03; } return s; }; }
+function drawSat(ctx, st, valid) { const N = vnoise(st.sc.seed + Math.round(st.h)), W = 300, H = Math.round(CHH / 4), img = new Float32Array(W * H), t = st.ty, L = st.g[2];
+  const front = [[0, 0], [-2, -2.5], [-4.2, -5.2], [-7.2, -7.4], [-10.5, -8.6], [-14, -9.4], [-18, -9.2], [-22, -10]].map(([a, b]) => [L.lon + a, L.lat + b]), warm = [[0, 0], [2.5, -1.1], [5, -2.6], [7.8, -3.3]].map(([a, b]) => [L.lon + a, L.lat + b]);
+  const dseg = (p, q, x, y) => { const vx = q[0] - p[0], vy = q[1] - p[1], k = Math.max(0, Math.min(1, ((x - p[0]) * vx + (y - p[1]) * vy) / (vx * vx + vy * vy))); return Math.hypot(x - p[0] - vx * k, y - p[1] - vy * k); };
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const lo = LONf(i * 4 + 2), la = LATf(j * 4 + 2), n = N(lo / 2.2, la / 2.2), cl = Math.cos(la * D2R);
+    const dx = (lo - t.lon) * cl, dy = la - t.lat, r = Math.hypot(dx, dy), th = Math.atan2(dy, dx);
+    let c = 0; if (r < 0.15) c = 0.2; else if (r < 1.7) c = 1; else c = Math.max(0, Math.exp(-r / 4.5) * (0.6 + 0.6 * Math.cos(2 * th + 4.2 * Math.log(r + .3))) * 1.5);
+    let df = 9; for (let k = 0; k < front.length - 1; k++) df = Math.min(df, dseg(front[k], front[k + 1], lo, la)); for (let k = 0; k < warm.length - 1; k++) df = Math.min(df, dseg(warm[k], warm[k + 1], lo, la) * 0.7);
+    c = Math.max(c, Math.exp(-((df / 1.6) ** 2)) * (0.6 + n * 0.6)); const dl = Math.hypot((lo - L.lon) * cl, la - L.lat); if (dl < 4) c = Math.max(c, (0.85 - dl / 6) * (0.5 + 0.7 * Math.cos(th * 1 + dl)) * (n + .3));
+    c = Math.max(c, Math.exp(-(((la - 8) / 3) ** 2)) * Math.max(0, n * 1.6 - 0.55)); c = Math.max(c, Math.max(0, n * 1.5 - 0.92) * 1.6);
+    img[j * W + i] = Math.min(1, c * (0.75 + 0.5 * n)); }
+  const id = ctx.createImageData(CW, CHH), B = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+  for (let y = 0; y < CHH; y++) for (let x = 0; x < CW; x++) { const fx = Math.min(W - 1.001, Math.max(0, x / 4 - .5)), fy = Math.min(H - 1.001, Math.max(0, y / 4 - .5)), i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j;
+    const val = img[j * W + i] * (1 - u) * (1 - v) + img[j * W + i + 1] * u * (1 - v) + img[(j + 1) * W + i] * (1 - u) * v + img[(j + 1) * W + i + 1] * u * v;
+    const land = isLandPx(x, y) ? 0.13 : 0.03, g = Math.max(land, val), on = g * 16 > B[y & 3][x & 3] + 0.5; const k = (y * CW + x) * 4; const c = on ? 255 : 0; id.data[k] = id.data[k + 1] = id.data[k + 2] = c; id.data[k + 3] = 255; }
+  ctx.putImageData(id, 0, 0);
+  ctx.save(); ctx.beginPath(); ctx.rect(MG, MG, MW, MH); ctx.clip(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2; ctx.stroke(landPath()); ctx.setLineDash([2, 8]);
+  for (let lo = 110; lo < LON1; lo += 10) { ctx.beginPath(); ctx.moveTo(X(lo), MG); ctx.lineTo(X(lo), MG + MH); ctx.stroke(); } for (let la = 10; la < LAT1; la += 10) { ctx.beginPath(); ctx.moveTo(MG, Y(la)); ctx.lineTo(MG + MW, Y(la)); ctx.stroke(); } ctx.restore();
+  box(ctx, ["SATELLITE IMAGE  (IR)", `${dtg(valid)}`, `${STN.name} ${STN.cs} (TRAINING)`], 40, 40, 19); }
+let LANDMASK = null; function isLandPx(x, y) { if (!LANDMASK) { const c = document.createElement("canvas"); c.width = CW; c.height = CHH; const g = c.getContext("2d"); g.fillStyle = "#000"; g.fill(landPath()); LANDMASK = g.getImageData(0, 0, CW, CHH).data; } return LANDMASK[(y * CW + x) * 4 + 3] > 128; }
+function drawSched(ctx, valid, PRODS, FREQS) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, CW, CHH); ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.strokeRect(MG, MG, MW, CHH - 2 * MG);
+  txt(ctx, `${STN.name}  ${STN.cs}`, CW / 2, 80, 40, {w:900}); txt(ctx, "RADIOFACSIMILE BROADCAST SCHEDULE (TRAINING STATION)", CW / 2, 130, 24); txt(ctx, `ISSUED ${dtg(valid)}`, CW / 2, 165, 20);
+  txt(ctx, "FREQUENCIES (kHz, ASSIGNED)  " + FREQS.map(f => f.toFixed(1)).join("   "), CW / 2, 220, 22); txt(ctx, "EMISSION F3C   IOC 576 (SAT: 288)   120 LPM", CW / 2, 255, 20);
+  let y = 320; txt(ctx, "PRODUCT                         IOC / LPM", 100, y, 22, {al:"left", f:"Courier New, monospace"}); y += 14; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(90, y); ctx.lineTo(CW - 90, y); ctx.stroke(); y += 32;
+  PRODS.forEach((p, i) => { txt(ctx, `${p.name.padEnd(31, " ")} ${p.ioc} / ${p.lpm}`, 100, y, 21, {al:"left", f:"Courier New, monospace", w:700}); y += 30;
+    const tl = []; for (let m = i * 15; m < 1440; m += 90) tl.push(String(Math.floor(m / 60)).padStart(2, "0") + String(m % 60).padStart(2, "0"));
+    txt(ctx, tl.slice(0, 8).join(" "), 130, y, 19, {al:"left", f:"Courier New, monospace"}); y += 26; txt(ctx, tl.slice(8).join(" ") + " UTC", 130, y, 19, {al:"left", f:"Courier New, monospace"}); y += 40; });
+  y += 20; ["THE 6-PRODUCT CYCLE REPEATS EVERY 90 MINUTES, 24 HOURS A DAY.", "START SIGNAL 300 Hz (IOC 576) / 675 Hz (IOC 288) 5 s, PHASING 30 s,", "STOP SIGNAL 450 Hz 5 s.  TRAINING TRANSMISSION - NOT FOR NAVIGATION."].forEach(s => { txt(ctx, s, CW / 2, y, 19); y += 30; }); }
+
+</script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const FREQS = [4316.0, 8467.5, 12745.5, 16971.0], STNPOS = {lat:14.6, lon:121.0};
+const PRODS = [{id:"sfc", name:"SURFACE ANALYSIS", ioc:576, lpm:120}, {id:"wave", name:"WAVE ANALYSIS", ioc:576, lpm:120}, {id:"p24", name:"24-HOUR SURFACE PROGNOSIS", ioc:576, lpm:120},
+  {id:"p48", name:"48-HOUR SURFACE PROGNOSIS", ioc:576, lpm:120}, {id:"sat", name:"SATELLITE IMAGE (IR)", ioc:288, lpm:120}, {id:"sch", name:"BROADCAST SCHEDULE", ioc:576, lpm:120}];
+const SLOT = 900, T_START = 5, T_PHASE = 30, H6 = 21600, EPOCH = 172800;
+const TASKS = [["pwr", "Switch ON the receiver", "POWER rocker below the display"], ["best", "Select the best channel (TUNE bar full, 3 segments)", "▲ (2) / ▼ (8) or CH → number → E; time of day and distance decide"],
+ ["auto", "Receive a SURFACE ANALYSIS automatically", "SPD = AUTO and IOC = AUTO; it starts by itself at the start signal"], ["feed", "PAPER FEED and TEAR OFF the chart", "Key 0 = paper feed, then click the tear bar at the paper slot"],
+ ["wave", "Receive the WAVE ANALYSIS", ""], ["p24", "Receive the 24-HOUR PROGNOSIS", ""], ["sat", "Receive the SATELLITE image (IOC 288)", "IOC AUTO recognises the 675 Hz start signal"],
+ ["sched", "Receive the BROADCAST SCHEDULE chart", "Real stations transmit their schedule as a chart"], ["man", "MANUAL reception done right (SPD 120, IOC 576, RCD during PHASING)", ""],
+ ["skew", "See a WRONG SPEED: SPD 60 or 90, RCD, 150+ lines, RCD to stop", "The chart comes out slanted / repeated sideways"], ["ioc", "See a WRONG IOC: SPD 120, IOC 288 on a 576 chart, 150+ lines", "The chart comes out stretched"],
+ ["sync", "Fix a split chart with the SYNC knob", "SPD 120 / IOC 576, RCD outside phasing → turn SYNC until the chart is centred"],
+ ["freq", "Enter a frequency by hand (FRQ, digits, REV = decimal point, E)", "e.g. 12745.5"], ["prog", "Program a TIMER and get an automatic reception", "PRG → 1 → E → HHMM → ▲▼ channel → E"],
+ ["mem", "Reprint a chart from MEMORY", "PRG → 2 → ▲▼ → E"], ["contr", "Change the print CONTRAST", "PRG → 3"], ["dim", "DIM the panel for night watch", "DIM key"], ["plot", "Plot your ship on a received surface analysis", "Chart viewer → 📍"], ["read", "Answer all chart-reading questions correctly", "📖 START CHART READING"]];
+const S = {}, R = {}; let MEM = [], IMG = new Map(), TOAST = 0;
+function init() { Object.assign(S, {on:false, t:Date.now() / 1000, tm:30, ch:1, freq:FREQS[1], mode:"AUTO", lpm:"AUTO", ioc:"AUTO", contr:1, dim:0, rev:false, vol:3, menu:null, flash:null, flashT:0, done:{}, prog:[0, 1, 2, 3].map(() => ({on:false, hh:0, mm:0, ch:1})), lastMin:0, paperEnd:false, fadeUntil:0, seedOff:0, qSum:0, qN:0, bestT:0});
+  Object.assign(R, {st:"idle"}); MEM = []; IMG.clear(); $("strip").innerHTML = ""; SHEETS = []; feed(90); renderTasks(); renderMem(); }
+// ---------- time / broadcast ----------
+const pad2 = n => String(n).padStart(2, "0"), hms = t => { const d = new Date(t * 1000); return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`; }, hm = t => hms(t).slice(0, 5);
+function slotInfo(slot) { const p = PRODS[((slot % 6) + 6) % 6], T = slot * SLOT, k = 576 / p.ioc, n = Math.floor(CHH / k), Tt = 60 / p.lpm; return {slot, T, p, k, n, Tt, img0:T + T_START + T_PHASE, end:T + T_START + T_PHASE + n * Tt}; }
+function phaseAt(t) { const si = slotInfo(Math.floor(t / SLOT)), s = t - si.T; let ph = "idle"; if (s < T_START) ph = "start"; else if (s < T_START + T_PHASE) ph = "phasing"; else if (t < si.end) ph = "image"; else if (t < si.end + 5) ph = "stop"; else if (t < si.end + 15) ph = "black"; return {si, ph, s}; }
+function seedFor(t) { return Math.floor(t / EPOCH) + S.seedOff * 1000; }
+function prodState(si) { const T = si.T, syn = Math.floor((T - 3 * 3600) / H6) * H6; let valid = syn, dh = 0;
+  if (si.p.id === "p24") { dh = 24; valid = syn + 86400; } if (si.p.id === "p48") { dh = 48; valid = syn + 172800; } if (si.p.id === "sat") valid = Math.floor((T - 3600) / 3600) * 3600; if (si.p.id === "sch") valid = T;
+  const base = si.p.id === "sat" ? valid : syn, ep = Math.floor(base / EPOCH) * EPOCH, seed = Math.floor(base / EPOCH) + S.seedOff * 1000, h = (base - ep) / 3600 + dh; return {seed, h, valid, syn}; }
+function renderProduct(si) { const key = si.slot + ":" + S.seedOff; if (IMG.has(key)) return IMG.get(key);
+  const c = document.createElement("canvas"); c.width = CW; c.height = CHH; const g = c.getContext("2d"), ps = prodState(si), sc = mkScen(ps.seed), st = state(sc, ps.h);
+  const id = si.p.id; if (id === "sfc") drawSurface(g, st, ps.valid * 1000); else if (id === "p24") drawSurface(g, st, ps.valid * 1000, 24); else if (id === "p48") drawSurface(g, st, ps.valid * 1000, 48);
+  else if (id === "wave") drawWave(g, st, ps.valid * 1000); else if (id === "sat") drawSat(g, st, ps.valid * 1000); else drawSched(g, ps.valid * 1000, PRODS, FREQS);
+  const d = g.getImageData(0, 0, CW, CHH).data, gray = new Uint8Array(CW * CHH); for (let i = 0; i < gray.length; i++) gray[i] = d[i * 4];
+  const o = {gray, canvas:c, ps, si}; IMG.set(key, o); if (IMG.size > 8) IMG.delete(IMG.keys().next().value); return o; }
+// ---------- propagation ----------
+function ownPos(t) { const ps = prodState(slotInfo(Math.floor(t / SLOT))), sc = mkScen(ps.seed), st = state(sc, Math.max(0, ps.h)); return shipPos(sc, st); }
+function shipPos(sc, st) { let b = sc.own.brg; for (let i = 0; i < 9; i++) { const p = moveP(st.ty, b, sc.own.dist); if (!isLand(p.lon, p.lat) && p.lat > 2 && p.lat < 47 && p.lon > 103 && p.lon < 157) return p; b += 40; } return moveP(st.ty, 90, sc.own.dist); }
+let POSC = {t:-1e9, p:null}; function own() { if (Math.abs(S.t - POSC.t) > 600) POSC = {t:S.t, p:ownPos(S.t)}; return POSC.p; }
+function quality(f, t) { if (!FREQS.includes(f)) return 0; const p = own(), dist = sailing(p, STNPOS).nm, mid = (p.lon + STNPOS.lon) / 2, d = new Date(t * 1000), lh = ((d.getUTCHours() + d.getUTCMinutes() / 60 + mid / 15) % 24 + 24) % 24;
+  const day = Math.max(0, Math.min(1, Math.sin(Math.PI * (lh - 6) / 12) * 1.6 + 0.15)), fot = (4.5 + 7 * day) * (1 + dist / 1500), x = Math.log(f / 1000 / fot);
+  let q = Math.exp(-x * x / (2 * 0.6 * 0.6)); if (f / 1000 > fot * 1.15) q *= Math.exp(-(f / 1000 / fot - 1.15) * 3); q *= 0.9 + 0.1 * Math.sin(t / 41 + f);
+  if (t < S.fadeUntil) q *= 0.25 + 0.2 * Math.sin(t / 9); return Math.max(0, Math.min(1, q)); }
+const sBars = q => Math.round(q * 5);
+// ---------- paper ----------
+const SCL = 600 / CW, MAXROWS = 2500; let SHEETS = [];
+function newSheet() { const w = document.createElement("div"); w.className = "sheet"; const c = document.createElement("canvas"); c.width = CW; c.height = MAXROWS; const g = c.getContext("2d"); g.fillStyle = "#f3f1e8"; g.fillRect(0, 0, CW, MAXROWS); w.appendChild(c); $("strip").appendChild(w);
+  const sh = {w, c, g, rows:0}; SHEETS.push(sh); while (SHEETS.length > 3) SHEETS.shift().w.remove(); setRows(sh, 0); return sh; }
+function setRows(sh, n) { sh.rows = Math.min(MAXROWS, n); sh.w.style.height = (sh.rows * SCL) + "px"; }
+function curSheet() { return SHEETS[SHEETS.length - 1] || newSheet(); }
+function feed(n) { if (S.paperEnd) return; let sh = curSheet(); if (sh.rows + n > MAXROWS) sh = newSheet(); setRows(sh, sh.rows + n); }
+const ROW = new ImageData(CW, 1), INK = [[96, 96, 92], [40, 40, 38], [8, 8, 8]], THR = [110, 165, 215];
+function putRow(sh, vals) { const ink = INK[S.contr], thr = THR[S.contr], d = ROW.data;
+  for (let x = 0; x < CW; x++) { const k = x * 4, v = S.rev ? 255 - vals[x] : vals[x]; if (v < thr) { d[k] = ink[0]; d[k + 1] = ink[1]; d[k + 2] = ink[2]; } else { d[k] = 243; d[k + 1] = 241; d[k + 2] = 232; } d[k + 3] = 255; }
+  sh.g.putImageData(ROW, 0, sh.rows); setRows(sh, sh.rows + 1); }
+// ---------- reception ----------
+const LV = new Uint8Array(CW);
+function sampleLine(j) { const q = R.tuned ? quality(R.freq, R.t0 + j * R.Tr) : 0, np = 0.4 * Math.pow(1 - q, 2.4), streak = Math.random() < (1 - q) * 0.06;
+  R.qs += q; R.qn++;
+  for (let x = 0; x < CW; x++) { const ts = R.t0 + j * R.Tr + (x / CW) * R.Tr; const pa = phaseAt(ts); let v;
+    if (!R.tuned || q < 0.04 || pa.ph === "idle") v = Math.random() < 0.42 ? 0 : 255;
+    else { const si = pa.si; if (pa.ph === "image") { const u = (ts - si.img0) / si.Tt, l = Math.floor(u), xs = Math.min(CW - 1, Math.floor((u - l) * CW)), im = renderProduct(si).gray; v = im[Math.min(CHH - 1, l * si.k + (si.k >> 1)) * CW + xs]; }
+      else if (pa.ph === "start" || pa.ph === "stop") v = ((x >> 2) & 1) ? 0 : 255; else if (pa.ph === "phasing") v = (ts - si.T - T_START) % si.Tt < si.Tt * 0.05 ? 255 : 0; else v = 0;
+      if (Math.random() < np) v = Math.random() < .7 ? 0 : 255; if (streak && x > 300 && x < 700 + Math.random() * 400) v = 0; }
+    LV[x] = v; } return LV; }
+function startRx(o) { Object.assign(R, {st:"rx", qs:0, qn:0, j:0, lines:0, freq:S.freq, tuned:FREQS.includes(S.freq)}, o); if (S.paperEnd) return; R.sheet = newSheet(); feed(0); }
+function stepRx() { if (R.st !== "rx" || S.paperEnd) return; let n = 0;
+  while (R.t0 + (R.j + 1) * R.Tr <= S.t && n < 400) { const v = sampleLine(R.j); for (let r = 0; r < R.m; r++) { if (R.sheet.rows >= MAXROWS - 2) { finishRx("full"); return; } putRow(R.sheet, v); } R.j++; R.lines++; n++;
+    if (R.auto && R.j >= R.n) { finishRx("auto"); return; } } }
+function finishRx(why) { const ok = R.lines > 150, q = R.qn ? R.qs / R.qn : 0; R.st = "idle";
+  if (ok && R.sheet) { const sh = R.sheet, c = document.createElement("canvas"), top = Math.max(0, sh.rows - R.lines * R.m); c.width = CW; c.height = sh.rows - top; c.getContext("2d").drawImage(sh.c, 0, top, CW, c.height, 0, 0, CW, c.height);
+    const si = R.si, aligned = R.aligned && R.m === si.k && Math.abs(R.Tr - si.Tt) < 1e-6, rec = {id:Date.now() + Math.random(), at:S.t, prod:si.p, ps:si ? prodState(si) : null, canvas:c, q, aligned, manual:!R.auto, timer:R.timer, slotT:si.T};
+    MEM.unshift(rec); if (MEM.length > 10) MEM.pop(); renderMem(); flash(why === "auto" ? "RECEPTION COMPLETE - IN MEMORY" : "STOPPED - SAVED TO MEMORY");
+    if (aligned && R.complete !== false) { if (R.auto && si.p.id === "sfc") done("auto"); if (si.p.id === "wave") done("wave"); if (si.p.id === "p24") done("p24"); if (si.p.id === "sat") done("sat"); if (si.p.id === "sch") done("sched"); if (R.timer) done("prog"); if (!R.auto && R.lines > 900) done("man"); }
+    if (!R.auto && R.Tr !== 0.5 && R.lines > 150) done("skew"); if (!R.auto && R.m === 2 && si.k === 1 && R.lines > 150) done("ioc"); } }
+function autoWatch() { if (!S.on || S.mode !== "AUTO" || R.st === "rx" || S.paperEnd) return; const pa = phaseAt(S.t), q = quality(S.freq, S.t);
+  if (q < 0.18) { R.st = "idle"; return; }
+  if (pa.ph === "start" || pa.ph === "phasing") { const si = pa.si; if (R.st !== "lock" || R.lockSlot !== si.slot) { R.st = "lock"; R.lockSlot = si.slot; R.si = si; } }
+  if (R.st === "lock" && pa.ph === "image" && R.lockSlot === pa.si.slot) { const si = pa.si; startRx({auto:true, t0:si.img0, Tr:si.Tt, m:S.ioc === "AUTO" ? si.k : 576 / S.ioc, n:si.n, si, aligned:true, timer:R.timerArm, complete:true}); R.timerArm = false; }
+  else if (R.st === "lock" && pa.ph !== "start" && pa.ph !== "phasing") R.st = "idle"; }
+// ---------- keys ----------
+function flash(s, d = 2.5) { S.flash = s; S.flashT = performance.now() + d * 1000; render(); }
+function done(id) { if (S.done[id]) return; S.done[id] = true; renderTasks(); toast("✔ " + TASKS.find(x => x[0] === id)[1]); }
+function toast(s) { const t = $("toast"); t.textContent = s; t.style.display = "block"; clearTimeout(TOAST); TOAST = setTimeout(() => t.style.display = "none", 2600); }
+function setCh(n) { S.ch = ((n - 1 + FREQS.length) % FREQS.length) + 1; S.freq = FREQS[S.ch - 1]; if (R.st === "rx") flash("FREQ CHANGED DURING RX!"); }
+function key(k) { audioInit(); if (k === "POWER") return power(); if (!S.on) return; click();
+  const M = S.menu, UP = k === "2", DN = k === "8";
+  if (M && M.type === "freq") { if (/^\d$/.test(k) || k === "REV") { if (M.buf.length < 8) M.buf += k === "REV" ? "." : k; return render(); } if (k === "C") { if (M.buf) M.buf = M.buf.slice(0, -1); else S.menu = null; return render(); }
+    if (k === "E") { const f = parseFloat(M.buf); S.menu = null; if (!(f >= 100 && f <= 30000)) return flash("ERROR 100-30000kHz"); S.freq = Math.round(f * 10) / 10; const i = FREQS.indexOf(S.freq); S.ch = i >= 0 ? i + 1 : 0; done("freq");
+      if (i < 0 && FREQS.some(F => Math.abs(F - 1.9 - f) < 0.15)) flash("NO SIG: ENTER ASSIGNED FREQ", 4); return render(); } if (k === "FRQ") { S.menu = null; return render(); } return; }
+  if (M && M.type === "ch") { if (/^[1-4]$/.test(k)) { M.buf = k; return render(); } if (k === "E") { S.menu = null; if (M.buf) setCh(+M.buf); return render(); } if (k === "C" || k === "CH") { S.menu = null; return render(); } return; }
+  if (M && M.type === "menu") { if (k === "1") { S.menu = {type:"prog", sel:0, edit:null}; return render(); } if (k === "2") { if (!MEM.length) { S.menu = null; return flash("MEMORY EMPTY"); } S.menu = {type:"mem", sel:0}; return render(); }
+    if (k === "3") { S.menu = null; S.contr = (S.contr + 1) % 3; done("contr"); return flash("PRINT CONTRAST: " + ["LIGHT", "NORMAL", "DARK"][S.contr]); } if (k === "C" || k === "PRG") { S.menu = null; return render(); } return; }
+  if (M && M.type === "prog") { const P = S.prog[M.sel];
+    if (M.edit) { const E = M.edit; if (E.step === "time") { if (/^\d$/.test(k) && E.buf.length < 4) { E.buf += k; return render(); } if (k === "C") { if (E.buf) E.buf = E.buf.slice(0, -1); else M.edit = null; return render(); }
+        if (k === "E" && E.buf.length === 4) { const hh = +E.buf.slice(0, 2), mm = +E.buf.slice(2); if (hh > 23 || mm > 59) { E.buf = ""; return flash("TIME ERROR"); } E.hh = hh; E.mm = mm; E.step = "ch"; return render(); } return; }
+      if (UP || DN) { E.ch = ((E.ch - 1 + (UP ? 1 : -1) + 4) % 4) + 1; return render(); } if (/^[1-4]$/.test(k)) { E.ch = +k; return render(); } if (k === "E") { Object.assign(P, {on:true, hh:E.hh, mm:E.mm, ch:E.ch}); M.edit = null; return flash(`TIMER ${M.sel + 1} SET ${pad2(P.hh)}${pad2(P.mm)} CH0${P.ch}`); } if (k === "C") { M.edit = null; return render(); } return; }
+    if (UP || DN) { M.sel = (M.sel + (UP ? 3 : 1)) % 4; return render(); } if (k === "E") { M.edit = {step:"time", buf:"", ch:P.ch || S.ch || 1}; return render(); }
+    if (k === "C") { if (P.on) { P.on = false; return render(); } S.menu = null; return render(); } if (k === "PRG") { S.menu = null; return render(); } return; }
+  if (M && M.type === "mem") { if (UP || DN) { if (MEM.length) M.sel = (M.sel + (UP ? MEM.length - 1 : 1)) % MEM.length; return render(); } if (k === "E" && MEM[M.sel]) { S.menu = null; return reprint(MEM[M.sel]); } if (k === "C" || k === "PRG") { S.menu = null; return render(); } return; }
+  const busy = () => R.st === "rx" ? (flash("RECORDING - PRESS RCD TO STOP"), true) : false;
+  switch (k) {
+    case "2": case "8": setCh((S.ch || 1) + (UP ? 1 : -1)); break;
+    case "0": feed(60); S.fed = true; flash("PAPER FEED", 1); break;
+    case "FRQ": S.menu = {type:"freq", buf:""}; break;
+    case "CH": S.menu = {type:"ch", buf:""}; break;
+    case "PRG": S.menu = {type:"menu"}; break;
+    case "DIM": S.dim = (S.dim + 1) % 3; done("dim"); break;
+    case "REV": S.rev = !S.rev; flash(S.rev ? "REVERSE (NEGATIVE) PRINT" : "NORMAL (POSITIVE) PRINT"); break;
+    case "SPD": if (busy()) return; S.lpm = {AUTO:60, 60:90, 90:120, 120:240, 240:"AUTO"}[S.lpm]; S.mode = S.lpm === "AUTO" ? "AUTO" : "MANUAL"; R.st = "idle"; break;
+    case "IOC": if (busy()) return; S.ioc = {AUTO:576, 576:288, 288:"AUTO"}[S.ioc]; break;
+    case "C": S.flash = null; break;
+    case "RCD": if (R.st === "rx") { R.complete = R.auto ? false : R.complete; finishRx("stop"); break; }
+      if (S.mode === "AUTO") return flash("SPD AUTO: WAITS START SIGNAL"); if (S.paperEnd) return flash("PAPER END");
+      { const pa = phaseAt(S.t), Tr = 60 / S.lpm, m = 576 / (S.ioc === "AUTO" ? 576 : S.ioc), si = pa.si; let t0 = S.t, aligned = false;
+        if (pa.ph === "phasing" && quality(S.freq, S.t) > 0.18) { t0 = si.img0; aligned = true; flash("PHASED - WAITING IMAGE"); } else flash("RCD START - NOT PHASED");
+        startRx({auto:false, t0, Tr, m, n:1e9, si:pa.ph === "phasing" || pa.ph === "start" ? si : phaseAt(S.t + 30).si, aligned, timer:false, complete:true}); } break; }
+  render(); }
+function syncTurn(d) { audioInit(); S.syncPos = ((S.syncPos || 0) + d * 12) % 360; $("sync").style.setProperty("--r", S.syncPos + "deg"); if (!S.on) return;
+  if (R.st !== "rx" || R.auto) return flash("SYNC: USE WHILE RECORDING (MANUAL)");
+  R.t0 += d * 0.02 * R.Tr; const fr = (((R.t0 - phaseAt(S.t).si.img0) / 0.5) % 1 + 1) % 1, err = Math.min(fr, 1 - fr);
+  flash(`SYNC ${d > 0 ? "▶" : "◀"}  PHASE ${err < 0.025 ? "CENTRED" : (fr * 100).toFixed(0) + "%"}`, 1.5); if (err < 0.025 && Math.abs(R.Tr - 0.5) < 1e-6 && R.lines > 20) done("sync"); }
+function power() { audioInit(); S.on = !S.on; if (S.on) { done("pwr"); flash("WX-F1 SELF TEST OK", 1.5); } else { if (R.st === "rx") finishRx("off"); S.menu = null; R.st = "idle"; } render(); }
+function reprint(rec) { if (S.paperEnd) return flash("PAPER END"); const sh = newSheet(); let y = 0; const c = rec.canvas; R.reprint = true; flash("REPRINT FROM MEMORY", 3);
+  const step = () => { if (!R.reprint) return; const n = Math.min(24, c.height - y); if (n <= 0) { R.reprint = false; done("mem"); return render(); }
+    sh.g.drawImage(c, 0, y, CW, n, 0, sh.rows, CW, n); setRows(sh, sh.rows + n); y += n; requestAnimationFrame(step); }; step(); }
+// ---------- LCD ----------
+function lcdText() { if (!S.on) return ""; const q = quality(S.freq, S.t), b = sBars(q), sm = "▮".repeat(b) + "▯".repeat(5 - b), pa = phaseAt(S.t), M = S.menu, inv = x => `<span class='inv'>${x}</span>`;
+  if (M && M.type === "freq") return ["FREQ (ASSIGNED, kHz)", `FRQ: ${inv(M.buf + "<span class='bl'>_</span>")}`, "REV=. E=SET C=BACK", "CH01-04 = 9WX0 PRESET"].join("\n");
+  if (M && M.type === "ch") return ["CHANNEL SELECT  (1-4)", `CH: ${inv((M.buf || " ") + "<span class='bl'>_</span>")}`, FREQS.map((f, i) => `${i + 1}:${Math.round(f / 100) / 10}M`).join(" "), "E=SET  C=CANCEL"].join("\n");
+  if (M && M.type === "menu") return ["PROGRAM MENU", "1 TIMER   2 MEMORY", "3 PRINT CONTRAST", "C=EXIT"].join("\n");
+  if (M && M.type === "prog") { const row = i => { const p = S.prog[i]; return `${i === M.sel ? ">" : " "}${i + 1} ${p.on ? "ON " : "OFF"} ${p.on ? pad2(p.hh) + ":" + pad2(p.mm) : "--:--"} ${p.on ? "CH0" + p.ch : "----"}`; };
+    let foot = "▲▼ SEL E=EDIT C=OFF"; if (M.edit) foot = M.edit.step === "time" ? `TIME HHMM: ${inv(M.edit.buf + "<span class='bl'>_</span>")}` : `CH ▲▼: ${inv("CH0" + M.edit.ch)} E=SAVE`;
+    return [`TIMER     UTC ${hm(S.t)}`, row(M.sel), row((M.sel + 1) % 4), foot].join("\n"); }
+  if (M && M.type === "mem") { const r = MEM[M.sel], r2 = MEM[(M.sel + 1) % MEM.length]; return ["MEMORY ▲▼  E=REPRINT", inv(`>${hm(r.at)} ${r.prod.name.slice(0, 17)}`), r2 && r2 !== r ? ` ${hm(r2.at)} ${r2.prod.name.slice(0, 17)}` : "", `${M.sel + 1}/${MEM.length}`].join("\n"); }
+  const L1 = `${S.ch ? "CH0" + S.ch : "MAN "} ${S.freq.toFixed(1).padStart(7)}kHz ${sm}`, L2 = S.mode === "AUTO" ? `AUTO  SPD:AUTO IOC:${S.ioc}` : `MANU  SPD:${S.lpm}  IOC:${S.ioc}`;
+  let st; if (S.paperEnd) st = `<span class='inv bl'>PAPER END - LOAD PAPER</span>`;
+  else if (R.reprint) st = "REPRINTING FROM MEMORY";
+  else if (R.st === "rx") { const pct = R.auto ? Math.min(99, Math.floor(R.j / R.n * 100)) : 0; st = inv(R.auto ? `RCD ${R.si.p.name.slice(0, 13)} ${pct}%` : `RCD MANUAL ${R.lines} LINES`); if (R.t0 > S.t) st = inv("PHASING.. SYNCHRONISED"); }
+  else if (R.st === "lock") st = inv(pa.ph === "start" ? `START ${pa.si.p.ioc === 576 ? "300Hz IOC576" : "675Hz IOC288"}` : "PHASING... 120 LPM");
+  else if (S.mode === "AUTO") st = q < 0.18 ? "NO SIGNAL - CHECK CH" : "STBY: WAIT START SIG"; else st = "MANUAL: RCD TO START";
+  const nx = slotInfo(Math.floor(S.t / SLOT) + 1); let L4 = `${hms(S.t)} NXT ${hm(nx.T).replace(":", "")} ${nx.p.id.toUpperCase()}`;
+  if (S.flash && performance.now() < S.flashT) L4 = inv(S.flash.slice(0, 26));
+  return [L1, L2, st, L4].join("\n"); }
+function render() { const l = $("lcd"); l.classList.toggle("off", !S.on); l.innerHTML = lcdText(); l.style.setProperty("--dim", [1, 0.72, 0.48][S.dim]); const q = S.on ? quality(S.freq, S.t) : 0, pa = phaseAt(S.t);
+  const seg = S.on && pa.ph !== "idle" ? Math.round(q * 3) : 0; [...$("tune").children].forEach((e, i) => e.classList.toggle("on", i < seg));
+  $("Lrx").classList.toggle("on", S.on && (R.st === "rx" || R.reprint || (S.paperEnd && Math.floor(performance.now() / 400) % 2 === 0)));
+  $("Ltm").classList.toggle("on", S.on && S.prog.some(p => p.on)); ["bPaper", "bPaper2"].forEach(id => $(id).classList.toggle("need", S.paperEnd));
+  $("pwr").classList.toggle("on", S.on); $("clk").textContent = hms(S.t) + " UTC"; $("vol").style.setProperty("--r", (-135 + S.vol * 27) + "deg"); }
+// ---------- schedule card ----------
+function renderSched() { const cur = Math.floor(S.t / SLOT); let h = "<tr><td style='color:#8ea2a9'>UTC</td><td style='color:#8ea2a9'>PRODUCT</td><td style='color:#8ea2a9'>IOC</td><td></td></tr>";
+  for (let s = cur; s < cur + 7; s++) { const si = slotInfo(s), air = s === cur && S.t < si.end + 5; h += `<tr class="${air ? "air" : ""}"><td class="t">${hm(si.T)}</td><td>${si.p.name}${air ? " · ON AIR" : ""}</td><td>${si.p.ioc}</td><td>${s > cur || S.t < si.T + 3 ? `<button class="btn sm" data-jump="${si.T}">⏭</button>` : ""}</td></tr>`; }
+  $("sch").innerHTML = h; }
+$("sch").addEventListener("click", e => { const b = e.target.closest("[data-jump]"); if (b) jump(+b.dataset.jump - 20); });
+function jump(t) { if (R.st === "rx") { R.complete = false; finishRx("jump"); } S.t = t; POSC.t = -1e9; flash("TIME → " + hms(t)); renderSched(); }
+function nextBroadcast() { const cur = Math.floor(S.t / SLOT), si = slotInfo(cur); jump((S.t < si.T - 20 ? si.T : slotInfo(cur + 1).T) - 20); }
+function renderTasks() { const n = TASKS.filter(t => S.done[t[0]]).length; $("tasks").innerHTML = TASKS.map(t => `<li class="${S.done[t[0]] ? "ok" : ""}">${t[1]}${t[2] ? `<small>${t[2]}</small>` : ""}</li>`).join(""); $("tcount").textContent = `${n} / ${TASKS.length}`; $("tbar").style.width = (n / TASKS.length * 100) + "%"; }
+function renderMem() { $("mem").innerHTML = MEM.length ? MEM.map((r, i) => `<div><span>${hm(r.at)} · <b>${r.prod.name}</b>${r.sample ? " (sample)" : ""}${r.aligned ? "" : " <span style='color:#f99'>· distorted</span>"}${r.q < .35 ? " <span style='color:#fb7'>· noisy</span>" : ""}</span><button class="btn sm" data-view="${i}">🔍</button></div>`).join("") : "<div><span style='color:#8ea2a9'>Nothing received yet.</span></div>"; }
+$("mem").addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) openViewer(+b.dataset.view); });
+// ---------- legend ----------
+function legendItems() { const L = [["isob", "Isobar (every 4 hPa, bold every 20)"], ["H", "High pressure centre + pressure"], ["L", "Low pressure centre + pressure"], ["cold", "Cold front (triangles point where it moves)"], ["warm", "Warm front"], ["occl", "Occluded front"], ["stat", "Stationary front"], ["b25", "Wind barb: shaft points to where wind comes FROM. Here NW 25 kt (2 full = 20, half = 5)"], ["b55", "Pennant = 50 kt (here NE 55 kt)"], ["ty", "Typhoon centre × with 30-kt wind circle"], ["fc", "Forecast position + probability circle (dashed)"], ["warn", "[GW] gale · [SW] storm · [TW] typhoon warning"]];
+  $("legend").innerHTML = L.map((l, i) => `<canvas width="192" height="80" id="lg${i}"></canvas><div>${l[1]}</div>`).join("");
+  L.forEach((l, i) => { const g = $("lg" + i).getContext("2d"); g.fillStyle = "#f3f1e8"; g.fillRect(0, 0, 192, 80); g.strokeStyle = g.fillStyle = "#000"; const k = l[0];
+    if (k === "isob") { g.lineWidth = 2; g.beginPath(); g.moveTo(10, 55); g.bezierCurveTo(60, 20, 120, 70, 182, 30); g.stroke(); txt(g, "1008", 96, 46, 18, {bg:"#f3f1e8"}); }
+    if (k === "H" || k === "L") { txt(g, k, 96, 32, 40, {w:900}); txt(g, k === "H" ? "1024" : "996", 96, 64, 17); }
+    if (["cold", "warm", "occl", "stat"].includes(k)) frontPath(g, [[12, 50], [180, 50]], k);
+    if (k === "b25") barb(g, 120, 45, 315, 25); if (k === "b55") barb(g, 100, 55, 45, 55);
+    if (k === "ty") { g.lineWidth = 4; g.beginPath(); g.moveTo(86, 30); g.lineTo(106, 50); g.moveTo(106, 30); g.lineTo(86, 50); g.stroke(); g.lineWidth = 2; g.beginPath(); g.arc(96, 40, 32, 0, 7); g.stroke(); }
+    if (k === "fc") { g.setLineDash([6, 5]); g.lineWidth = 2; g.beginPath(); g.arc(110, 40, 30, 0, 7); g.stroke(); g.beginPath(); g.moveTo(20, 70); g.lineTo(110, 40); g.stroke(); g.setLineDash([]); g.beginPath(); g.arc(110, 40, 5, 0, 7); g.fill(); }
+    if (k === "warn") { txt(g, "[GW] [SW] [TW]", 96, 40, 20); } }); }
+// ---------- viewer & chart reading ----------
+const V = {rec:null, tool:"pan", z:"fit", ship:null, dv:[], ex:null};
+function openViewer(i, reading) { if (!MEM.length) return toast("No chart in memory yet - receive one (or use 📄 Sample analysis)."); if (typeof i !== "number") { i = MEM.findIndex(r => r.prod.id === "sfc" && r.aligned); if (i < 0) i = 0; }
+  $("viewer").style.display = "flex"; $("vsel").innerHTML = MEM.map((r, k) => `<option value="${k}">${hm(r.at)} ${r.prod.name}${r.sample ? " (sample)" : ""}</option>`).join(""); $("vsel").value = i; loadRec(MEM[i]); if (reading) setTool("plot"); }
+function loadRec(rec) { V.rec = rec; V.ship = null; V.dv = []; const c = $("vsheet"), o = $("vover"); c.width = o.width = CW; c.height = o.height = rec.canvas.height; c.getContext("2d").drawImage(rec.canvas, 0, 0); zoom(V.z); buildEx(); drawOver(); }
+function zoom(z) { V.z = z; const sc = $("vscroll"), w = z === "fit" ? Math.min(CW, (sc.clientWidth - 24), (sc.clientHeight - 24) * CW / Math.max(1, V.rec ? V.rec.canvas.height : CHH)) : CW * z; $("vin").style.width = Math.max(300, w) + "px"; }
+function setTool(t) { V.tool = t; document.querySelectorAll("[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t)); $("vover").style.cursor = t === "pan" ? "default" : "crosshair"; }
+function evPx(e) { const o = $("vover"), r = o.getBoundingClientRect(); return [(e.clientX - r.left) * CW / r.width, (e.clientY - r.top) * o.height / r.height]; }
+const geoOK = () => V.rec && V.rec.aligned && V.rec.canvas.height >= CHH - 4;
+function drawOver() { const g = $("vover").getContext("2d"); g.clearRect(0, 0, CW, $("vover").height); if (!geoOK()) return;
+  if (V.ship) { const x = X(V.ship.lon), y = Y(V.ship.lat); g.strokeStyle = "#d22"; g.fillStyle = "#d22"; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 9, 0, 7); g.stroke(); g.beginPath(); g.arc(x, y, 2.5, 0, 7); g.fill(); txt(g, "OWN SHIP", x + 14, y - 14, 14, {al:"left", c:"#d22"}); }
+  if (V.dv.length) { g.strokeStyle = "#1560d0"; g.fillStyle = "#1560d0"; g.lineWidth = 2.5; const [a, b] = V.dv; g.beginPath(); g.arc(X(a.lon), Y(a.lat), 4, 0, 7); g.fill();
+    if (b) { g.beginPath(); g.moveTo(X(a.lon), Y(a.lat)); g.lineTo(X(b.lon), Y(b.lat)); g.stroke(); g.beginPath(); g.arc(X(b.lon), Y(b.lat), 4, 0, 7); g.fill(); const s = sailing(a, b); txt(g, `${Math.round(s.nm)} nm / ${String(Math.round(s.brg)).padStart(3, "0")}°T`, (X(a.lon) + X(b.lon)) / 2 + 8, (Y(a.lat) + Y(b.lat)) / 2 - 12, 16, {al:"left", c:"#1560d0", bg:"rgba(255,255,255,.85)"}); } }
+  if (V.ex && V.ex.dr && V.ex.showDR) { const p = V.ex.dr; g.strokeStyle = "#d22"; g.setLineDash([8, 6]); g.lineWidth = 2; g.beginPath(); g.moveTo(X(V.ex.own.lon), Y(V.ex.own.lat)); g.lineTo(X(p.lon), Y(p.lat)); g.stroke(); g.setLineDash([]); txt(g, "24h DR", X(p.lon) + 8, Y(p.lat), 14, {al:"left", c:"#d22"}); } }
+$("vover").addEventListener("mousemove", e => { if (!geoOK()) return $("vread").textContent = V.rec ? "chart distorted - positions unreliable" : ""; const [x, y] = evPx(e); $("vread").textContent = `${fmtLat(LATf(y))}  ${fmtLon(LONf(x))}`; });
+$("vover").addEventListener("click", e => { if (!geoOK()) return toast("This chart is distorted / incomplete - receive it again in AUTO."); const [x, y] = evPx(e), p = {lat:LATf(y), lon:LONf(x)};
+  if (V.tool === "plot") { V.ship = p; checkPlot(); } else if (V.tool === "div") { if (V.dv.length !== 1) V.dv = [p]; else V.dv.push(p); } drawOver(); });
+function buildEx() { const rec = V.rec, P_ = $("vpanel"); V.ex = null;
+  if (!rec || rec.prod.id !== "sfc") { P_.innerHTML = `<h3 style="color:#7fd6ee">CHART READING</h3><div class="ref">Chart reading questions use a <b>SURFACE ANALYSIS</b>. Pick one in the list above (or ask the instructor for a 📄 sample). You can still use 📏 dividers and the cursor position on this chart.</div>`; return; }
+  if (!rec.aligned) { P_.innerHTML = `<h3 style="color:#f99">CHART DISTORTED</h3><div class="ref">This copy was received with wrong LPM / IOC or without phasing, so positions cannot be read. Receive the surface analysis again in <b>AUTO</b> (or MANUAL with 120 LPM, IOC 576, START during PHASING).</div>`; return; }
+  const sc = mkScen(rec.ps.seed), st = state(sc, rec.ps.h), own = shipPos(sc, st), t = st.ty, w = wind(own.lon, own.lat, st), tb = sailing(own, t), rel = ((sailing(t, own).brg - t.crs + 540) % 360) - 180;
+  const rr = rng(sc.seed * 31 + 7), away = sailing(t, own).brg, sg = rr() < .5 ? 1 : -1, off = 55 + rr() * 50, mkC = k => Math.round(((away + k * off) % 360 + 360) % 360 / 5) * 5 % 360; let crs = mkC(sg); { const tst = c => { for (let h = 3; h <= 24; h += 3) { const q = moveP(own, c, sc.own.spd * h); if (isLand(q.lon, q.lat)) return false; } return true; }; if (!tst(crs) && tst(mkC(-sg))) crs = mkC(-sg); } const semi = Math.abs(rel) < 22 ? "path" : rel > 0 ? "right" : "left", dr = moveP(own, crs, sc.own.spd * 24), t24 = state(sc, rec.ps.h + 24).ty, d24 = sailing(dr, t24).nm, r30 = Math.round(t.r30 / 10) * 10;
+  const E = V.ex = {own, st, w, tb, semi, dr, t24, d24, r30, pres:P(own.lon, own.lat, st), crs, spd:sc.own.spd, ok:{}, showDR:false};
+  const SEMI = {right:"DANGEROUS semicircle (right of track)", left:"NAVIGABLE semicircle (left of track)", path:"In the PATH, ahead of the centre"};
+  const ACT = {right:"Put the wind 1–4 points (10–45°) on the STARBOARD BOW and make as much way as possible", left:"Put the wind well on the STARBOARD QUARTER and make as much way as possible", path:"Put the wind about 2 points (20–25°) on the STARBOARD QUARTER, keep it there until well inside the navigable semicircle"};
+  const ACTX = ["Put the wind on the PORT BOW and steam towards the centre", "Stop engines and drift until the typhoon passes", ACT.right, ACT.left, ACT.path];
+  const vt = dtg(rec.ps.valid * 1000);
+  E.Q = [
+   {id:"pres", t:"1 · Pressure at your position (hPa)", inp:"num", ans:E.pres, tol:2.5, unit:"hPa", hint:"Find the two isobars either side of your ship. They are every 4 hPa. Interpolate by how far you are between them. Values increase towards the H, decrease towards the L / ×.", rev:`${E.pres.toFixed(1)} hPa (accept ±2.5).`},
+   {id:"wdir", t:"2 · True wind direction at your position (FROM, °T)", inp:"num", ans:w.from, tol:30, circ:true, hint:"Northern hemisphere: wind blows anticlockwise round a low (typhoon) and clockwise round a high, almost along the isobars but turned 15–30° in towards the low. Check: Buys Ballot's law — back to the wind, low pressure on your LEFT. Nearby ship barbs: the shaft points to where the wind comes FROM.", rev:`${Math.round(w.from)}°T (${c16(w.from)}), accept ±30°.`},
+   {id:"bf", t:"3 · Expected wind force (Beaufort)", inp:"num", ans:beaufort(w.sp), tol:1, hint:"The closer the isobars, the stronger the wind. Compare with the nearest barbs (full feather 10 kt, half 5 kt, pennant 50 kt). Beaufort: 5 = 17–21 kt, 6 = 22–27, 7 = 28–33, 8 = 34–40 (gale), 9 = 41–47, 10 = 48–55, 11 = 56–63, 12 = 64+.", rev:`About ${Math.round(w.sp)} kt → Force ${beaufort(w.sp)} (accept ±1).`},
+   {id:"tbrg", t:"4 · Bearing of the typhoon centre from you (°T)", inp:"num", ans:tb.brg, tol:8, circ:true, hint:"Use 📏 Dividers: click your ship, then the × centre. Or by hand: Δlat and Δlong from the chart grid, departure = Δlong × cos(mean lat), course = tan⁻¹(dep / Δlat).", rev:`${Math.round(tb.brg)}°T (accept ±8°).`},
+   {id:"tdst", t:"5 · Distance to the typhoon centre (nm)", inp:"num", ans:tb.nm, tol:0.15, rel:true, hint:"1° of latitude = 60 nm. On a Mercator chart measure distance on the LATITUDE scale beside the ship, never on the longitude scale. The 📏 dividers do the same.", rev:`${Math.round(tb.nm)} nm (accept ±15%).`},
+   {id:"semi", t:"6 · Where are you relative to the typhoon?", inp:"sel", opts:Object.values(SEMI), ans:SEMI[semi], hint:`Look along the typhoon's track (it is moving ${c16(t.crs)} at ${t.spd} kt — arrow / 24HR FCST). Facing the direction it moves, the RIGHT half is dangerous in the northern hemisphere (winds + forward speed add, and you can be blown into its path).`, rev:`${SEMI[semi]}. Relative bearing of you from the track: ${Math.round(rel)}°.`},
+   {id:"act", t:"7 · Recommended action (northern hemisphere rules)", inp:"sel", opts:ACTX, ans:ACT[semi], hint:"Classic rules: Dangerous (right) semicircle → wind on the starboard bow, make way. Navigable (left) → wind on the starboard quarter. In the path ahead → wind on the starboard quarter until in the navigable semicircle. Always also follow the latest warnings and company / weather-routeing advice.", rev:ACT[semi]},
+   {id:"d24", t:`8 · You steer ${String(E.crs).padStart(3, "0")}°T at ${E.spd} kt. Distance from your 24-h DR to the 24HR FCST centre (nm)?`, inp:"num", ans:d24, tol:0.2, rel:true, hint:`DR = ${E.spd} kt × 24 h = ${E.spd * 24} nm along ${String(E.crs).padStart(3, "0")}°T. Plot it (📏 dividers from your ship), then measure to the 24HR FCST dot. Tip: tick "show DR" below.`, rev:`DR ${fmtLat(dr.lat)} ${fmtLon(dr.lon)} → ${Math.round(d24)} nm (accept ±20%).`},
+   {id:"in30", t:"9 · At that time, will you be inside the 30-kt wind radius?", inp:"sel", opts:["YES - inside the 30-kt radius", "NO - outside the 30-kt radius"], ans:d24 < r30 ? "YES - inside the 30-kt radius" : "NO - outside the 30-kt radius", hint:`Compare your answer 8 with "30KT WITHIN ${r30}NM" in the typhoon box. (The dashed forecast circle shows only where the CENTRE may be, not the wind area — so add a margin!)`, rev:`${Math.round(d24)} nm vs 30-kt radius ${r30} nm → ${d24 < r30 ? "INSIDE: alter course / speed early." : "outside, but keep a good margin (forecast error)."}`}];
+  P_.innerHTML = `<h3 style="color:#7fd6ee;margin:0 0 6px">CHART READING · ${vt}</h3>
+   <div class="q" id="q_plot"><h4>0 · Plot your ship: ${fmtLat(own.lat)}  ${fmtLon(own.lon)}</h4><div class="ref">Choose <b>📍 Plot ship</b> and click the position. Use the 10° grid and the latitude/longitude read-out (top right).</div><span class="fb" id="fb_plot"></span></div>
+   ${E.Q.map(q => `<div class="q" id="q_${q.id}"><h4>${q.t}</h4>${q.inp === "num" ? `<input id="in_${q.id}" type="number" step="any">` : `<select id="in_${q.id}"><option value="">— choose —</option>${q.opts.map(o => `<option>${o}</option>`).join("")}</select>`}
+     <div class="row" style="margin-top:5px"><button class="btn sm" data-chk="${q.id}">✔ CHECK</button><button class="btn sm" data-hint="${q.id}">💡 Hint</button><button class="btn sm" data-rev="${q.id}">👁 Answer</button><span class="fb" id="fb_${q.id}"></span></div>
+     <div class="hint" id="h_${q.id}">${q.hint}</div><div class="rev" id="r_${q.id}">${q.rev}</div></div>`).join("")}
+   <label class="ref"><input type="checkbox" id="showdr"> show my 24-h DR line</label><div class="ref" id="score" style="margin-top:6px"></div>`;
+  $("showdr").onchange = e => { E.showDR = e.target.checked; drawOver(); }; score(); }
+function checkPlot() { const E = V.ex; if (!E) return; const d = sailing(V.ship, E.own).nm; const ok = d <= 30; $("fb_plot").innerHTML = ok ? `<span style="color:#8f8">✔ Plotted (${Math.round(d)} nm off)</span>` : `<span style="color:#f88">✘ ${Math.round(d)} nm away - check latitude/longitude</span>`; $("q_plot").className = "q " + (ok ? "ok" : "bad"); if (ok) { E.ok.plot = true; done("plot"); } score(); }
+$("vpanel").addEventListener("click", e => { const b = e.target; const E = V.ex; if (!E) return;
+  if (b.dataset.hint) { const h = $("h_" + b.dataset.hint); h.style.display = h.style.display === "block" ? "none" : "block"; }
+  if (b.dataset.rev) $("r_" + b.dataset.rev).style.display = "block";
+  if (b.dataset.chk) { const q = E.Q.find(x => x.id === b.dataset.chk), v = $("in_" + q.id).value; let ok;
+    if (q.inp === "num") { const n = parseFloat(v); if (isNaN(n)) return; let d = Math.abs(n - q.ans); if (q.circ) d = Math.min(d, 360 - d); ok = q.rel ? d <= q.ans * q.tol : d <= q.tol; } else ok = v === q.ans;
+    E.ok[q.id] = ok; $("q_" + q.id).className = "q " + (ok ? "ok" : "bad"); $("fb_" + q.id).innerHTML = ok ? "<span style='color:#8f8'>✔ correct</span>" : "<span style='color:#f88'>✘ try again (💡)</span>"; score(); } });
+function score() { const E = V.ex; if (!E) return; const n = ["plot", ...E.Q.map(q => q.id)].filter(k => E.ok[k]).length, tot = E.Q.length + 1; $("score").innerHTML = `<b>Score ${n} / ${tot}</b>`; if (n === tot) { done("read"); $("score").innerHTML += " — 🎉 all correct. Brief the Master: position vs typhoon, semicircle, intended action."; } }
+document.querySelectorAll("[data-z]").forEach(b => b.onclick = () => zoom(b.dataset.z === "fit" ? "fit" : +b.dataset.z));
+document.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+$("vsel").onchange = e => loadRec(MEM[+e.target.value]); $("vclose").onclick = () => $("viewer").style.display = "none"; $("vclr").onclick = () => { V.dv = []; V.ship = null; drawOver(); };
+function sample() { const T = Math.floor(S.t / SLOT) * SLOT; let s = Math.floor(T / SLOT); while (slotInfo(s).p.id !== "sfc") s--; const si = slotInfo(s), im = renderProduct(si);
+  const c = document.createElement("canvas"); c.width = CW; c.height = CHH; const g = c.getContext("2d"); g.fillStyle = "#f3f1e8"; g.fillRect(0, 0, CW, CHH); const id = g.getImageData(0, 0, CW, CHH);
+  for (let i = 0; i < im.gray.length; i++) if (im.gray[i] < THR[1] || Math.random() < 0.002) { id.data[i * 4] = id.data[i * 4 + 1] = id.data[i * 4 + 2] = 40; } g.putImageData(id, 0, 0);
+  MEM.unshift({id:Math.random(), at:si.T + 35, prod:si.p, ps:prodState(si), canvas:c, q:0.9, aligned:true, manual:false, sample:true, slotT:si.T}); renderMem(); toast("Sample surface analysis placed in memory."); }
+// ---------- sound ----------
+let AC = null, OSC, OG, NG, MG_;
+function audioInit() { if (AC) return; try { AC = new (window.AudioContext || window.webkitAudioContext)(); MG_ = AC.createGain(); MG_.gain.value = 0; MG_.connect(AC.destination);
+  OSC = AC.createOscillator(); OSC.type = "sine"; OG = AC.createGain(); OG.gain.value = 0; OSC.connect(OG).connect(MG_); OSC.start();
+  const b = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = AC.createBufferSource(); n.buffer = b; n.loop = true;
+  const bp = AC.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1800; bp.Q.value = 0.6; NG = AC.createGain(); NG.gain.value = 0; n.connect(bp).connect(NG).connect(MG_); n.start(); } catch (e) { AC = null; } }
+function click() { if (!AC || !S.vol) return; const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 2200; g.gain.value = 0.05; o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime + 0.03); }
+let SNDT = 0;
+function sound() { if (!AC) return; const now = AC.currentTime; MG_.gain.setTargetAtTime(S.on ? S.vol / 10 * 0.25 : 0, now, 0.05); if (!S.on) return;
+  const q = quality(S.freq, S.t), pa = phaseAt(S.t); NG.gain.setTargetAtTime(0.15 + (1 - q) * 0.6, now, 0.1);
+  if (q < 0.04 || pa.ph === "idle") { OG.gain.setTargetAtTime(0, now, 0.05); return; } OG.gain.setTargetAtTime(0.5 * q, now, 0.05);
+  if (now < SNDT) return; SNDT = now + 0.5; const si = pa.si;
+  if (pa.ph === "start" || pa.ph === "stop") { OSC.frequency.cancelScheduledValues(now); const c = new Float32Array(64); for (let i = 0; i < 64; i++) c[i] = i % 2 ? 1500 : 2300; OSC.frequency.setValueCurveAtTime(c, now, 0.5); }
+  else if (pa.ph === "phasing" || pa.ph === "black") { OSC.frequency.cancelScheduledValues(now); OSC.frequency.setValueAtTime(2300, now); OSC.frequency.setValueAtTime(1500, now + 0.025); }
+  else { const im = renderProduct(si).gray, l = Math.floor((S.t - si.img0) / si.Tt), row = Math.min(CHH - 1, l * si.k), c = new Float32Array(96); for (let i = 0; i < 96; i++) c[i] = 1500 + 800 * im[row * CW + Math.floor(i * CW / 96)] / 255;
+    OSC.frequency.cancelScheduledValues(now); OSC.frequency.setValueCurveAtTime(c, now, 0.5); } }
+// ---------- loop ----------
+let last = performance.now(), acc = 0, sacc = 0;
+function loop(now) { const dt = Math.min(0.25, (now - last) / 1000); last = now; S.t += dt * S.tm;
+  if (S.on) { const mi = Math.floor(S.t / 60); if (mi !== S.lastMin) { S.lastMin = mi; const md = mi % 1440; S.prog.forEach((p, i) => { if (p.on && p.hh * 60 + p.mm === md) { setCh(p.ch); S.mode = "AUTO"; S.lpm = "AUTO"; S.ioc = "AUTO"; R.timerArm = true; if (R.st !== "rx") R.st = "idle"; flash(`TIMER ${i + 1} START CH0${p.ch}`, 4); } }); }
+    autoWatch(); stepRx();
+    const q = quality(S.freq, S.t), best = Math.max(...FREQS.map(f => quality(f, S.t))); if (q >= 0.55 && q >= best - 0.02) { S.bestT += dt; if (S.bestT > 1) done("best"); } else S.bestT = 0; }
+  sound(); acc += dt; sacc += dt; if (acc > 0.2) { acc = 0; render(); } if (sacc > 1) { sacc = 0; renderSched(); }
+  requestAnimationFrame(loop); }
+// ---------- wiring ----------
+document.querySelectorAll(".key[data-k]").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); b.classList.add("dn"); key(b.dataset.k); }));
+document.addEventListener("pointerup", () => document.querySelectorAll(".key.dn").forEach(b => b.classList.remove("dn")));
+$("pwr").onclick = () => key("POWER");
+$("vol").onclick = e => { audioInit(); const r = e.currentTarget.getBoundingClientRect(); S.vol = Math.max(0, Math.min(10, S.vol + (e.clientX < r.left + r.width / 2 ? -1 : 1))); render(); };
+$("sync").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); syncTurn(e.clientX < r.left + r.width / 2 ? -1 : 1); };
+$("sync").addEventListener("wheel", e => { e.preventDefault(); syncTurn(e.deltaY < 0 ? 1 : -1); });
+$("vol").addEventListener("wheel", e => { e.preventDefault(); S.vol = Math.max(0, Math.min(10, S.vol + (e.deltaY < 0 ? 1 : -1))); render(); });
+$("bTear").onclick = () => { if (R.st === "rx") return toast("Wait - the chart is still printing."); if (!SHEETS.length) return; SHEETS.forEach(s => s.w.remove()); SHEETS = []; if (S.fed) done("feed"); toast(S.fed ? "Chart torn off. File it and brief the bridge team." : "Torn off. Tip: PAPER FEED (0) first so the chart's edge isn't cut."); };
+$("bPaper").onclick = $("bPaper2").onclick = () => { if (S.paperEnd) { S.paperEnd = false; toast("Door open → new paper roll loaded → door closed. Ready."); } else toast("Paper OK (thermal recording paper)."); render(); };
+$("iPaper").onclick = () => { S.paperEnd = true; if (R.st === "rx") { R.complete = false; finishRx("paper"); } toast("PAPER END injected - load a new roll (PAPER COVER)."); render(); };
+$("iFade").onclick = () => { S.fadeUntil = S.t + 600; toast("Signal fading for 10 min (sim time) - try another frequency."); };
+$("iScen").onclick = () => { S.seedOff++; IMG.clear(); POSC.t = -1e9; toast("New weather scenario for the next broadcasts."); };
+$("iDay").onclick = () => jump(S.t + 43200);
+$("bNext").onclick = nextBroadcast; $("bReset").onclick = () => { init(); render(); renderSched(); };
+$("bView").onclick = () => openViewer(); $("bRead").onclick = () => openViewer(undefined, true); $("bSample").onclick = sample;
+$("spd").innerHTML = [1, 10, 30, 60].map(v => `<button class="btn sm" data-tm="${v}">${v}×</button>`).join(" ");
+$("spd").onclick = e => { const b = e.target.closest("[data-tm]"); if (!b) return; S.tm = +b.dataset.tm; document.querySelectorAll("[data-tm]").forEach(x => x.classList.toggle("on", +x.dataset.tm === S.tm)); };
+addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; if (/^\d$/.test(e.key)) key(e.key); if (e.key === ".") key("REV"); if (e.key === "Enter") key("E"); if (e.key === "Escape") { if ($("viewer").style.display === "flex") $("viewer").style.display = "none"; else key("C"); } if (e.key === "ArrowUp") key("2"); if (e.key === "ArrowDown") key("8"); });
+(function () { const wrap = document.querySelector(".wrap"), dev = $("dev"), box = document.createElement("div"); box.className = "fitbox"; wrap.insertBefore(box, dev); box.appendChild(dev);
+  const side = wrap.querySelector(".side"), hd = document.querySelector("header"), ft = document.querySelector(".foot");
+  function fit() { dev.style.transform = "none"; const w = dev.offsetWidth, h = dev.offsetHeight, narrow = innerWidth <= 900, avH = innerHeight - hd.offsetHeight - ft.offsetHeight - 26, avW = narrow ? innerWidth - 24 : innerWidth - 36 - Math.min(360, Math.max(280, innerWidth * 0.22));
+    const s = Math.max(0.3, Math.min(1.6, avW / w, narrow ? 9 : avH / h)); dev.style.transform = `scale(${s})`; box.style.width = w * s + "px"; box.style.height = h * s + "px"; side.style.maxHeight = narrow ? "none" : avH + "px"; if (V.rec) zoom(V.z); }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300); })();
+init(); legendItems(); render(); renderSched(); document.querySelector('[data-tm="30"]').classList.add("on");
+window.WF = {syncTurn, SHEETS:() => SHEETS, S, R, key, jump, nextBroadcast, phaseAt, slotInfo, quality, MEM:() => MEM, openViewer, V, sample, done, FREQS};
+requestAnimationFrame(loop);
+</script></body></html>

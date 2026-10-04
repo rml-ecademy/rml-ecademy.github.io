@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY Full Bridge Simulation</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:#05090b;color:#dfe8ea;font:13px "Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+.top{display:flex;align-items:center;gap:12px;height:34px;padding:0 12px;background:#0a1013;border-bottom:1px solid #22323a;flex:0 0 auto}
+.top b{color:#ff5a6a;letter-spacing:.14em}.top .t{font-weight:700;letter-spacing:.06em}.top .sp{flex:1}.top .w{color:#ffd06a;font-size:11px}
+.clk{font:700 15px Consolas,monospace;color:#5ee6a8}
+.stage{position:relative;flex:1 1 auto;background:#7f9c90}
+.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;visibility:hidden;background:#0d1417}
+.stage iframe.on{visibility:visible;z-index:2}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#1a2a24;font:600 18px Arial}
+.empty h1{font:900 34px Arial;letter-spacing:.18em;margin:0 0 8px;color:#10201a}
+.dock{flex:0 0 auto;display:flex;gap:6px;justify-content:center;align-items:flex-end;padding:6px 10px 8px;background:linear-gradient(#141a1d,#0a0e10);border-top:1px solid #2c3c43;overflow-x:auto}
+.pin{position:relative;flex:0 0 auto;width:84px;height:76px;box-shadow:0 4px 0 #05080a,0 6px 12px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);border-radius:10px;border:1px solid #2c3c43;background:#162024;color:#dfe8ea;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:transform .12s,background .12s}
+.pin:hover{transform:translateY(-4px);background:#1e2c32}
+.pin .ic{line-height:0}.pin .lb{font:700 10.5px Arial;letter-spacing:.06em}
+.pin.on{background:linear-gradient(#1a5a3c,#0f3a26);border-color:#5ee6a8;box-shadow:0 0 14px #5ee6a866,0 4px 0 #05080a}
+.pin .dot{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:#3a4a50}.pin.live .dot{background:#5ee6a8}
+.pin kbd{position:absolute;top:3px;left:6px;font:600 9px Consolas,monospace;color:#7a8a90}
+.load{position:absolute;inset:0;display:none;place-items:center;font:700 16px Arial;color:#fff;background:#0d1417cc;z-index:5}
+.pin.fault .dot{background:#ff3030;box-shadow:0 0 6px #ff3030}.pin.alarm{animation:pal 1s infinite}@keyframes pal{50%{border-color:#ff3030;box-shadow:0 0 16px #ff303099,0 4px 0 #05080a}}
+.vst{font:700 12px Consolas,monospace;color:#7cf0a0;margin-right:10px}.vst.bad{color:#ff6060}
+</style></head><body>
+<div class="top"><b>ECADEMY</b><span class="t" style="white-space:nowrap">FULL BRIDGE · MANILA → CEBU</span><span class="w">training only</span><span class="sp"></span><span id="ship" style="font:700 12px Consolas,monospace;color:#9fe0ff;margin-right:12px"></span><span class="vst" id="vst">VDR: NORMAL</span><span id="cur" style="color:#8ea2a9"></span><span class="clk" id="clk"></span></div>
+<div class="stage" id="stage"><div class="empty" id="empty"><div><h1>ECADEMY BRIDGE</h1><b style="font-size:22px">MV ECADEMY STAR · READY FOR VOYAGE · MANILA → CEBU</b><br><br>All equipment is ON and synchronised to one ship: ECDIS position &amp; speed · gyro / autopilot heading · GPS · AIS · radar · log · echo sounder · NAVTEX · weather fax · BNWAS · VDR, plus the GMDSS radios (SAT-C, MF/HF, VHF).<br>1. <b>ECDIS</b>: load / check the route and START VOYAGE (set speed there = engine order).<br>2. <b>AUTOPILOT</b>: already in AUTO / HDG — change course with SET HDG → knob → ACCEPT, or put ECDIS in TRACK mode to steer the route.<br>3. Watch GPS, AIS targets, echo sounder depth, speed log and the radar follow the same ship.<br><br>Select an equipment from the pinned bar below.<br><span style="font-size:14px">Every unit you open keeps running in the background — switch between them like walking along the console.</span></div></div><div class="load" id="load">Starting equipment…</div></div>
+<div class="dock" id="dock"></div>
+<script>
+"use strict";
+const EQ = [
+ {id:"radar", lb:"RADAR", ic:"📡", file:"ECADEMY_RADAR_ARPA_STANDALONE_20.html", pure:false},
+ {id:"ecdis", lb:"ECDIS", ic:"🗺️", file:"ECADEMY_ECDIS_MANILA_CEBU.html", pure:false},
+ {id:"pilot", lb:"AUTOPILOT / GYRO", ic:"🧭", file:"ECADEMY_AUTOPILOT_GYRO.html", pure:true},
+ {id:"mag", lb:"MAG COMPASS", ic:"", file:"ECADEMY_MAGNETIC_COMPASS.html", pure:true},
+ {id:"gps", lb:"GPS", ic:"🛰️", file:"ECADEMY_GPS_NAVIGATOR.html", pure:true},
+ {id:"ais", lb:"AIS", ic:"📶", file:"ECADEMY_AIS_TRANSPONDER.html", pure:true},
+ {id:"echo", lb:"ECHO SOUNDER", ic:"🌊", file:"ECADEMY_ECHO_SOUNDER.html", pure:true},
+ {id:"log", lb:"SPEED LOG", ic:"⏱️", file:"ECADEMY_SPEED_LOG.html", pure:true},
+ {id:"navtex", lb:"NAVTEX", ic:"📠", file:"ECADEMY_NAVTEX_RECEIVER.html", pure:true},
+ {id:"wefax", lb:"WEATHER FAX", ic:"🗞️", file:"ECADEMY_WEATHER_FAX.html", pure:false, js:"setTimeout(function(){try{if(window.WF&&!WF.S.on){WF.key('POWER');var q=WF.FREQS.map(function(f){return WF.quality(f,WF.S.t)});var b=q.indexOf(Math.max.apply(null,q));WF.S.ch=b+1;WF.S.freq=WF.FREQS[b];}}catch(e){}},600);"},
+ {id:"satc", lb:"SAT-C", ic:"", file:"ECADEMY_SATC.html", pure:false},
+ {id:"mfhf", lb:"MF/HF DSC", ic:"", file:"ECADEMY_MFHF_DSC.html", pure:false},
+ {id:"vhf", lb:"VHF DSC", ic:"", file:"ECADEMY_VHF_DSC.html", pure:false},
+ {id:"bnwas", lb:"BNWAS", ic:"🚨", file:"ECADEMY_BNWAS.html", pure:true},
+ {id:"vdr", lb:"VDR", ic:"📼", file:"ECADEMY_VDR_PANEL.html", pure:true}];
+const PCSS = `.side,header,.foot{display:none!important}.wrap{justify-content:center!important;align-items:center!important;padding:8px!important;min-height:100vh}.fitbox{position:relative!important;top:0!important}body{overflow:hidden}`;
+const PJS = `(function(){try{if(window.VDR){var V=window.VDR.S();V.fail={};V.ack={};}}catch(e){}setTimeout(function(){try{if(window.GPS&&!GPS.S().on)GPS.key("power");if(window.AIS&&!AIS.S().on)AIS.key("power");if(window.ES&&!ES.S().on)ES.key("power");if(window.LOG&&!LOG.S().on)LOG.key("pwr");}catch(e){}},300);function f(){var b=document.querySelector(".fitbox");if(!b)return;var d=b.firstElementChild;d.style.transform="none";var w=d.offsetWidth,h=d.offsetHeight;var s=Math.min((innerWidth-16)/w,(innerHeight-16)/h,1.6);d.style.transform="scale("+s+")";b.style.width=w*s+"px";b.style.height=h*s+"px";}addEventListener("resize",function(){setTimeout(f,0)});addEventListener("load",function(){f();setTimeout(f,450)});setTimeout(f,60);setTimeout(f,450);setTimeout(f,1200);})();`;
+const PURE = "<style>" + PCSS + "</style><script>" + PJS + "<\/script>";
+const DEFS = `<defs><linearGradient id="gHs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a7378"/><stop offset=".5" stop-color="#3a4044"/><stop offset="1" stop-color="#1c2023"/></linearGradient>
+<linearGradient id="gScr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3a44"/><stop offset="1" stop-color="#0a1418"/></linearGradient>
+<linearGradient id="gLcd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd6c4"/><stop offset="1" stop-color="#9ea795"/></linearGradient>
+<radialGradient id="gPpi" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#0c3a1c"/><stop offset="1" stop-color="#03140a"/></radialGradient>
+<radialGradient id="gKnob" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#9aa0a4"/><stop offset=".5" stop-color="#3a3e42"/><stop offset="1" stop-color="#101214"/></radialGradient>
+<linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="2.5" stdDeviation="1.6" flood-opacity=".6"/></filter></defs>`;
+const HS = (x, y, w, h, r = 4) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="url(#gHs)" stroke="#0b0d0e" stroke-width="1"/><rect x="${x + 1}" y="${y + 1}" width="${w - 2}" height="2" rx="1" fill="#fff" opacity=".22"/>`;
+const GL = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#gGlass)"/>`;
+const ICON = {
+ radar:`<g filter="url(#sh)">${HS(3, 4, 42, 40, 5)}<circle cx="24" cy="24" r="16" fill="url(#gPpi)" stroke="#111" stroke-width="2"/><circle cx="24" cy="24" r="10.5" fill="none" stroke="#2c8a4a" stroke-width=".7"/><circle cx="24" cy="24" r="5" fill="none" stroke="#2c8a4a" stroke-width=".7"/><path d="M24 24 L24 8 A16 16 0 0 1 36 13 Z" fill="#5eff8a" opacity=".45"/><line x1="24" y1="24" x2="36" y2="13" stroke="#9fffb8" stroke-width="1.2"/><circle cx="31" cy="20" r="1.3" fill="#ffe36a"/><circle cx="17" cy="30" r="1.1" fill="#8aff9a"/>${GL(8, 8, 32, 16)}</g>`,
+ ecdis:`<g filter="url(#sh)">${HS(2, 7, 44, 34, 3)}<rect x="5" y="10" width="38" height="26" fill="#cfe6f5"/><path d="M5 22 C12 18 15 26 22 21 S33 14 43 18 L43 10 L5 10Z" fill="#e8d9a0" stroke="#8a7a4a" stroke-width=".5"/><path d="M8 32 L18 27 L30 29 L39 24" fill="none" stroke="#d02020" stroke-width="1.2" stroke-dasharray="2 1"/><polygon points="30,29 27,31 28,27" fill="#111"/><rect x="5" y="34" width="38" height="2" fill="#203040"/>${GL(5, 10, 38, 12)}<rect x="20" y="41" width="8" height="3" fill="#1c2023"/></g>`,
+ pilot:`<g filter="url(#sh)">${HS(3, 3, 42, 42, 6)}<circle cx="24" cy="24" r="17" fill="#141516" stroke="#555" stroke-width="1.5"/>${Array.from({length:36}, (_, i) => { const a = i * 10 * Math.PI / 180, r1 = i % 9 === 0 ? 11 : 13.5; return `<line x1="${24 + Math.sin(a) * r1}" y1="${24 - Math.cos(a) * r1}" x2="${24 + Math.sin(a) * 16}" y2="${24 - Math.cos(a) * 16}" stroke="#ddd" stroke-width="${i % 9 === 0 ? 1.2 : .5}"/>`; }).join("")}<path d="M24 9 L21 15 L27 15Z" fill="#ffd020"/><text x="24" y="28" font-family="Arial" font-weight="700" font-size="8" fill="#eee" text-anchor="middle">090</text>${GL(7, 7, 34, 17)}</g>`,
+ mag:`<g filter="url(#sh)"><circle cx="24" cy="24" r="21" fill="#e4e0d6" stroke="#8a8478" stroke-width="1"/><circle cx="24" cy="24" r="17" fill="#b8862a"/><circle cx="24" cy="24" r="14.5" fill="#f6f4ee"/>${Array.from({length:36}, (_, i) => { const a = i * 10 * Math.PI / 180; return `<line x1="${24 + Math.sin(a) * 12}" y1="${24 - Math.cos(a) * 12}" x2="${24 + Math.sin(a) * 14.5}" y2="${24 - Math.cos(a) * 14.5}" stroke="#222" stroke-width="${i % 9 ? .5 : 1.2}"/>`; }).join("")}<path d="M24 12 L26 24 L24 23 L22 24Z" fill="#c01818"/><path d="M24 36 L26 24 L24 25 L22 24Z" fill="#333"/><text x="24" y="20" font-family="Georgia" font-weight="900" font-size="6" fill="#c01818" text-anchor="middle">N</text><rect x="23" y="3" width="2" height="6" fill="#e01818"/><circle cx="5" cy="24" r="3.5" fill="#9aa0a4"/><circle cx="43" cy="24" r="3.5" fill="#9aa0a4"/>${GL(10, 10, 28, 14)}</g>`,
+ gps:`<g filter="url(#sh)">${HS(2, 9, 44, 30, 4)}<rect x="5" y="12" width="26" height="24" fill="url(#gLcd)" stroke="#222" stroke-width="1"/><text x="18" y="21" font-family="Arial" font-weight="700" font-size="5.5" fill="#222" text-anchor="middle">14°23'N</text><text x="18" y="28" font-family="Arial" font-weight="700" font-size="5.5" fill="#222" text-anchor="middle">120°43'E</text><text x="18" y="34" font-family="Arial" font-size="4.5" fill="#333" text-anchor="middle">3D  SOG 12</text>${[0, 1, 2, 3].map(r => [0, 1].map(c => `<rect x="${34 + c * 5}" y="${15 + r * 5}" width="4" height="3.5" rx="1.5" fill="#111" stroke="#555" stroke-width=".4"/>`).join("")).join("")}${GL(5, 12, 26, 12)}</g>`,
+ ais:`<g filter="url(#sh)">${HS(4, 5, 40, 38, 8)}<rect x="8" y="9" width="32" height="20" rx="2" fill="#e6ecf4" stroke="#111" stroke-width="1.5"/><rect x="8" y="9" width="32" height="4" fill="#1e5ad8"/><polygon points="20,24 18,19 22,19" fill="#1a1e28"/><polygon points="31,20 29,15 33,15" fill="none" stroke="#e01818" stroke-width=".9"/><circle cx="24" cy="21" r="6" fill="none" stroke="#a8b4cc" stroke-width=".5"/>${[0, 1, 2].map(i => `<circle cx="${12 + i * 7}" cy="36" r="2.6" fill="#1a1c1e" stroke="#666" stroke-width=".5"/>`).join("")}<circle cx="37" cy="36" r="4.5" fill="#111" stroke="#666" stroke-width=".6"/>${GL(8, 9, 32, 10)}</g>`,
+ echo:`<g filter="url(#sh)">${HS(4, 3, 40, 42, 4)}<rect x="7" y="6" width="22" height="32" fill="#1446c8"/><rect x="21" y="6" width="8" height="32" fill="#e8b84a"/><path d="M7 14 L12 18 L17 23 L21 26" stroke="#fff" stroke-width="1" fill="none"/><rect x="21" y="25" width="8" height="13" fill="#c8401c"/><rect x="21" y="23" width="8" height="2" fill="#f2e046"/><text x="14" y="35" font-family="Arial" font-weight="900" font-size="7" fill="#fff" text-anchor="middle">7.5</text>${[0, 1, 2, 3].map(r => `<rect x="33" y="${8 + r * 6}" width="8" height="4" rx="2" fill="#151718" stroke="#666" stroke-width=".4"/>`).join("")}<circle cx="37" cy="38" r="3.5" fill="url(#gKnob)"/>${GL(7, 6, 22, 14)}</g>`,
+ log:`<g filter="url(#sh)">${HS(2, 9, 44, 30, 6)}<rect x="5" y="12" width="26" height="24" fill="url(#gLcd)" stroke="#222"/><text x="10" y="19" font-family="Arial" font-size="4.5" fill="#333">SPEED STW</text><text x="27" y="27" font-family="Arial" font-weight="900" font-size="9" fill="#222" text-anchor="end">12.0</text><text x="28" y="34" font-family="Arial" font-weight="700" font-size="5" fill="#222" text-anchor="end">46448.88</text><circle cx="39" cy="17" r="5" fill="#111" stroke="#555" stroke-width=".6"/>${[0, 1].map(r => `<rect x="34" y="${25 + r * 5}" width="10" height="3.5" rx="1.7" fill="#151718" stroke="#888" stroke-width=".4"/>`).join("")}${GL(5, 12, 26, 12)}</g>`,
+ navtex:`<g filter="url(#sh)">${HS(2, 8, 44, 32, 4)}<rect x="5" y="4" width="14" height="22" fill="#f4f3ee" stroke="#999" stroke-width=".5"/>${[0, 1, 2, 3, 4].map(i => `<line x1="7" y1="${8 + i * 3.5}" x2="${17 - (i % 2) * 3}" y2="${8 + i * 3.5}" stroke="#555" stroke-width=".7"/>`).join("")}<rect x="4" y="12" width="16" height="2" fill="#111"/><rect x="22" y="12" width="17" height="16" fill="#c9cf8a" stroke="#111" stroke-width="1.2"/><text x="30.5" y="19" font-family="monospace" font-weight="700" font-size="4.5" fill="#1d2410" text-anchor="middle">ZCZC</text><text x="30.5" y="24" font-family="monospace" font-size="4" fill="#1d2410" text-anchor="middle">MA01</text><circle cx="42" cy="17" r="3" fill="#111" stroke="#cfe86a" stroke-width=".6"/><circle cx="42" cy="30" r="2" fill="#151718" stroke="#666" stroke-width=".4"/>${GL(22, 12, 17, 8)}</g>`,
+ wefax:`<g filter="url(#sh)"><rect x="12" y="2" width="24" height="16" fill="#f4f3ee" stroke="#999" stroke-width=".5"/><path d="M14 13 C18 7 24 15 30 8 M15 6 C20 10 26 4 34 9" fill="none" stroke="#444" stroke-width=".8"/><text x="30" y="15" font-family="Arial" font-weight="900" font-size="5" fill="#222">L</text><rect x="3" y="16" width="42" height="28" rx="3" fill="#1d1e20" stroke="#000"/><rect x="9" y="16" width="30" height="2.5" fill="#000"/><rect x="7" y="24" width="15" height="7" fill="#b9cf86"/>${[0, 1, 2, 3].map(r => [0, 1, 2].map(c => `<rect x="${26 + c * 5.5}" y="${23 + r * 5}" width="4.4" height="4" rx=".6" fill="none" stroke="#ddd" stroke-width=".6"/>`).join("")).join("")}<circle cx="11" cy="37" r="2.3" fill="#333" stroke="#777" stroke-width=".5"/><circle cx="18" cy="37" r="2.3" fill="#333" stroke="#777" stroke-width=".5"/></g>`,
+ satc:`<g filter="url(#sh)">${HS(2, 6, 44, 30, 3)}<rect x="5" y="9" width="38" height="20" fill="#1530a8"/><rect x="5" y="9" width="38" height="3.5" fill="#d8dce8"/><text x="7" y="17.5" font-family="Consolas,monospace" font-size="3.6" fill="#fff">TRANSMIT  EGC</text><text x="7" y="22" font-family="Consolas,monospace" font-size="3.6" fill="#ffe36a">LES 312 LOGIN</text><text x="7" y="26.5" font-family="Consolas,monospace" font-size="3.6" fill="#fff">SYNC OK</text><rect x="4" y="38" width="40" height="7" rx="1.5" fill="#d9d2bd" stroke="#7a735f" stroke-width=".6"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<rect x="${6 + i * 4.7}" y="39.5" width="3.6" height="3.8" fill="#f2ecdc" stroke="#9a937f" stroke-width=".3"/>`).join("")}</g>`,
+ mfhf:`<g filter="url(#sh)">${HS(2, 6, 44, 36, 4)}<rect x="5" y="9" width="22" height="13" fill="url(#gLcd)" stroke="#222"/><text x="16" y="15" font-family="Arial" font-weight="900" font-size="5" fill="#222" text-anchor="middle">CH 801</text><text x="16" y="20" font-family="Arial" font-size="3.6" fill="#222" text-anchor="middle">TX 8195 RX 8719</text><rect x="31" y="9" width="11" height="11" rx="1.5" fill="#f2c218" stroke="#7a5e00"/><text x="36.5" y="16" font-family="Arial" font-weight="900" font-size="3.2" fill="#a00" text-anchor="middle">DIST</text>${[0, 1, 2].map(r => [0, 1, 2, 3].map(c => `<rect x="${6 + c * 5}" y="${25 + r * 5}" width="4" height="3.6" rx=".6" fill="#dcdcdc"/>`).join("")).join("")}<circle cx="36" cy="32" r="5.5" fill="url(#gKnob)" stroke="#111"/></g>`,
+ vhf:`<g filter="url(#sh)">${HS(2, 8, 44, 32, 6)}<rect x="6" y="11" width="18" height="18" fill="url(#gLcd)" stroke="#222"/><text x="15" y="25" font-family="Arial" font-weight="900" font-size="11" fill="#222" text-anchor="middle">16</text><rect x="27" y="11" width="7" height="7" rx="1.5" fill="#d42020" stroke="#600"/>${[0, 1].map(r => [0, 1, 2].map(c => `<rect x="${27 + c * 5.5}" y="${21 + r * 5}" width="4.4" height="3.8" rx=".6" fill="#3a3e42" stroke="#888" stroke-width=".4"/>`).join("")).join("")}<circle cx="11" cy="35" r="2.6" fill="url(#gKnob)"/><circle cx="20" cy="35" r="2.6" fill="url(#gKnob)"/><circle cx="37" cy="35" r="3.2" fill="url(#gKnob)"/></g>`,
+ bnwas:`<g filter="url(#sh)">${HS(11, 2, 26, 44, 4)}<rect x="15" y="6" width="18" height="8" rx="1" fill="#2a1012" stroke="#444" stroke-width=".6"/><text x="24" y="12.5" font-family="Arial" font-weight="900" font-size="6.5" fill="#ff3040" text-anchor="middle">Aut</text>${[[15, 18], [25, 18], [15, 28], [25, 28]].map(([x, y]) => `<rect x="${x}" y="${y}" width="8" height="8" rx="1.5" fill="#f0a838" stroke="#c9c2b4" stroke-width=".8"/>`).join("")}<circle cx="24" cy="40" r="3.5" fill="url(#gKnob)"/></g>`,
+ vdr:`<g filter="url(#sh)">${HS(5, 4, 38, 40, 6)}<rect x="15" y="9" width="22" height="10" rx="1" fill="#5a4448"/><text x="26" y="17" font-family="Arial" font-weight="900" font-size="8" fill="#ff2a2a" text-anchor="middle">042</text><circle cx="11" cy="14" r="2" fill="#000"/><rect x="18" y="26" width="12" height="12" rx="1.5" fill="#e8e4d8" stroke="#111"/>${[["#555", 10], ["#3cff6a", 24], ["#ff2a2a", 38]].map(([c, x]) => `<rect x="${x - 2.5}" y="21" width="5" height="2.5" fill="${c}"/>`).join("")}<rect x="8" y="30" width="7" height="5" rx="1" fill="#1a1c1e" stroke="#888" stroke-width=".4"/><rect x="33" y="30" width="7" height="5" rx="1" fill="#1a1c1e" stroke="#888" stroke-width=".4"/></g>`};
+const svgIcon = id => `<svg viewBox="0 0 48 48" width="46" height="46">${DEFS}${ICON[id]}</svg>`;
+const frames = {}; let active = null;
+function srcFor(id) { for (const w of [window, window.parent, window.opener]) { try { if (!w || (w !== window && w === window.parent && window.parent === window)) continue; const el = w.document.getElementById("app-" + id); if (el) { const bin = atob(el.textContent.replace(/\s+/g, "")), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder("utf-8").decode(u); } } catch (e) {} } return null; }
+function open(id) { const e = EQ.find(x => x.id === id); if (!e) return; $("empty").style.display = "none";
+  if (!frames[id]) { const f = document.createElement("iframe"); f.title = e.lb; f.allow = "fullscreen"; $("load").style.display = "grid"; f.onload = () => { $("load").style.display = "none"; };
+    const put = html => { const i = html.lastIndexOf("</body>"); const X = (e.pure ? PURE : "") + (e.js ? "<script>" + e.js + "<\/script>" : ""); f.srcdoc = X ? (i > 0 ? html.slice(0, i) + X + html.slice(i) : html + X) : html; }; const html = srcFor(id); if (html) { put(html); } else if (!window.__noFetch) { fetch("./" + id + ".html").then(r => r.ok ? r.text() : null).then(h => { if (h) put(h); else f.srcdoc = `<body style="margin:0;background:#0d1417;color:#dfe8ea;font:16px Arial;display:grid;place-items:center;height:100vh;text-align:center"><div><h2 style="color:#ffd06a">${e.lb} not available</h2>apps/${id}.html was not found on the server.</div></body>`; }).catch(() => { f.srcdoc = `<body style="margin:0;background:#0d1417;color:#dfe8ea;font:16px Arial;display:grid;place-items:center;height:100vh;text-align:center"><div><h2 style="color:#ffd06a">${e.lb} not available</h2>could not load apps/${id}.html</div></body>`; }); } else { f.srcdoc = `<body style="margin:0;background:#0d1417;color:#dfe8ea;font:16px Arial;display:grid;place-items:center;height:100vh;text-align:center"><div><h2 style="color:#ffd06a">${e.lb} not available</h2>Open the Full Bridge from the ECADEMY hub (Master ▸ Full Bridge Simulation),<br>or use the self-contained ECADEMY_FULL_BRIDGE.html file.</div></body>`; if (false) { f.src = e.file; if (e.pure) f.addEventListener("load", () => { try { const d = f.contentDocument, st = d.createElement("style"); st.textContent = PCSS; d.head.appendChild(st); const sc = d.createElement("script"); sc.textContent = PJS; d.body.appendChild(sc); } catch (er) {} }); } }
+    $("stage").appendChild(f); frames[id] = f; }
+  for (const k in frames) frames[k].classList.toggle("on", k === id); active = id; $("cur").textContent = "▶ " + e.lb;
+  document.querySelectorAll(".pin").forEach(p => { p.classList.toggle("on", p.dataset.id === id); p.classList.toggle("live", !!frames[p.dataset.id]); });
+  setTimeout(() => { try { frames[id].contentWindow.focus(); frames[id].contentWindow.dispatchEvent(new Event("resize")); } catch (er) {} }, 60); }
+const $ = id => document.getElementById(id);
+$("dock").innerHTML = EQ.map((e, i) => `<button class="pin" data-id="${e.id}" title="${e.lb}">${i < 12 ? `<kbd>F${i + 1}</kbd>` : ""}<span class="dot"></span><span class="ic">${svgIcon(e.id)}</span><span class="lb">${e.lb}</span></button>`).join("");
+document.querySelectorAll(".pin").forEach(p => p.onclick = () => open(p.dataset.id));
+addEventListener("keydown", ev => { const m = ev.key.match(/^F(\d+)$/); if (m && +m[1] >= 1 && +m[1] <= Math.min(12, EQ.length)) { ev.preventDefault(); open(EQ[+m[1] - 1].id); } });
+setInterval(() => { $("clk").textContent = new Date().toISOString().slice(11, 19) + " UTC"; }, 500);
+
+// ---------- equipment ↔ VDR sync ----------
+function win(id) { try { return frames[id] && frames[id].contentWindow; } catch (e) { return null; } }
+function status() { const st = {};
+  const g = win("gps"); if (g && g.GPS) { const S = g.GPS.S(); st.gps = S.on && (S.g.fix === "2D" || S.g.fix === "3D" || S.t - S.tOn < 60); }
+  const a = win("ais"); if (a && a.AIS) st.ais = a.AIS.S().on && !a.AIS.S().silent;
+  const e = win("echo"); if (e && e.ES) st.echo = e.ES.S().on;
+  const l = win("log"); if (l && l.LOG) { const S = l.LOG.S(); st.log = S.on && S.valid; }
+  const p = win("pilot"); if (p && p.AP) st.gyro = !p.AP.S().f.gyro;
+  const r = win("radar"); if (r) { try { const b = r.document.getElementById("run"); if (b) st.rx = b.textContent.trim() === "STANDBY"; } catch (er) {} }
+  return st; }
+const MAP = {gps:"gps", ais:"ais", echo:"echo", log:"log", gyro:"pilot", rx:"radar"};
+function sync() { const st = status(), v = win("vdr"); let errs = [];
+  if (v && v.VDR) { const V = v.VDR.S();
+    for (const k in MAP) { if (!(k in st)) continue; const want = !st[k]; if (!!V.fail[k] !== want) v.VDR.setFail(k, want); }
+    errs = Object.keys(V.fail).filter(k => V.fail[k]); const unack = errs.length && Object.keys(V.fail).some(k => { const code = {gps:"050", ais:"054", echo:"053", log:"052", gyro:"051", rx:"041"}[k]; return V.fail[k] && code && !V.ack[code]; });
+    const pv = document.querySelector('.pin[data-id="vdr"]'); pv.classList.toggle("alarm", !!unack); pv.classList.toggle("fault", errs.length > 0);
+    const C = {gps:"050 GPS", ais:"054 AIS", echo:"053 ECHO", log:"052 LOG", gyro:"051 GYRO", rx:"041 RADAR"};
+    $("vst").textContent = errs.length ? "VDR ERROR: " + errs.map(k => C[k] || k).join(" · ") : "VDR: NORMAL"; $("vst").classList.toggle("bad", errs.length > 0); }
+  for (const k in MAP) { const pin = document.querySelector(`.pin[data-id="${MAP[k]}"]`); if (pin && k in st) pin.classList.toggle("fault", !st[k]); } }
+
+// ---------- SHIP BUS: one ship, all equipment (Manila → Cebu) ----------
+const BUS = {init:false, t0:0};
+function ecd() { const w = win("ecdis"); return w && w.ECDIS && w.ECDIS.OWN ? w.ECDIS : null; }
+function ll(E, x, y) { const o = E.LL(0, 0), k = E.LL(1, 0)[0] - o[0]; return {lat:-o[1] / 60 + y / 60, lon:-o[0] / k + x / k}; }
+const TCODE = t => /tank/i.test(t) ? 80 : /pass|ferry|ro-ro|fast/i.test(t) ? 60 : /fish/i.test(t) ? 30 : /tug/i.test(t) ? 52 : 70;
+function busInit(E) { const O = E.OWN;
+  const p = win("pilot"); if (p && p.AP) { const P = p.AP.S(); P.hdg = P.ghdg = O.hdg; P.spd = O.stw; P.sel = "AUTO"; P.ap.mode = "HDG"; P.ap.set = Math.round(O.hdg * 10) / 10; P.ap.I = 0; P.wind = 0.8; }
+  const g = win("gps"); if (g && g.GPS) { const S = g.GPS.S(); S.cfg.datum = "WGS84"; S.cfg.tdisp = "LOCAL"; S.cfg.off = 8; S.cur = false; S.sc = 0; }
+  const a = win("ais"); if (a && a.AIS) { const S = a.AIS.S(); S.voy.ns = 0; S.voy.dest = "PH CEB"; S.voy.type = 70; S.voy.draught = O.draft; S.voy.pob = 22; S.voy.eta = {d:2, m:10, h:18, mi:0}; S.cpa.on = true; S.cpa.v = 1; S.cpa.t = 12; S.tgts = S.tgts.filter(t => t.kind === "base" || t.kind === "aton"); }
+  const e = win("echo"); if (e && e.ES) { const S = e.ES.S(); S.draft = 8.0; S.keel = 0.6; S.shOn = true; S.sh = 1.5; S.auto = true; S.gain = 4; S.mode = 2; S.sea = "moderate"; e.trueDBS = () => { const B = ecd(); if (!B) return 50; const z = B.depthAt(B.OWN.x, B.OWN.y); return z > 0 ? z : 0.5; }; }
+  const l = win("log"); if (l && l.LOG) { const S = l.LOG.S(); S.trk = "AUTO"; }
+  const b = win("bnwas"); if (b && b.BN) { const S = b.BN.S(); S.key = "AUTO"; S.dorm = 12; }
+  BUS.init = true; }
+let busLast = performance.now();
+function bus(now) { requestAnimationFrame(bus); const E = ecd(); if (!E) return; if (!BUS.init) { if (["pilot", "gps", "ais", "echo", "log", "bnwas"].every(k => win(k))) busInit(E); else return; }
+  const O = E.OWN, pos = ll(E, O.x, O.y), cur = E.current(O.x, O.y), z = E.depthAt(O.x, O.y);
+  // heading source = gyro / autopilot / helm
+  const p = win("pilot"); let P = null; if (p && p.AP) { P = p.AP.S(); P.spd = Math.max(0.5, O.stw);
+    if (O.mode === "TRACK" && E.ROUTE().active && P.sel === "AUTO" && P.ap.mode === "HDG") { try { const want = E.trackCmd(); P.ap.set = Math.round(((want % 360) + 360) % 360 * 10) / 10; } catch (er) {} }
+    if (BUS.lastSet != null && O.mode !== "TRACK" && Math.abs(O.setHdg - BUS.lastSet) > 0.05 && P.sel === "AUTO" && P.ap.mode === "HDG") { P.ap.set = Math.round((((O.setHdg % 360) + 360) % 360) * 10) / 10; P.ap.turning = true; }
+    if (!O.grounded) { O.hdg = P.hdg; O.setHdg = P.hdg; O.rot = P.r; } BUS.lastSet = O.setHdg; }
+  const mc = win("mag"); if (mc && mc.MC) mc.MC.setTrue(O.hdg);
+  const g = win("gps"); if (g && g.GPS) { const S = g.GPS.S(); S.lat = pos.lat; S.lon = pos.lon; S.hdg = O.cog; S.stw = O.sog; S.cur = false; }
+  const a = win("ais"); if (a && a.AIS) { const S = a.AIS.S(); S.own.lat = pos.lat; S.own.lon = pos.lon; S.own.hdg = O.hdg; S.own.stw = O.sog; S.f.hdg = P ? P.f.gyro : false;
+    const keep = S.tgts.filter(t => t.kind !== "ship" || !t.fromE); const map = BUS.amap || (BUS.amap = {});
+    E.AISL.forEach(t => { const q = ll(E, t.x, t.y); let o = map[t.mmsi]; if (!o) { o = map[t.mmsi] = {mmsi:t.mmsi, name:t.name, cls:/fish/i.test(t.type) ? "B" : "A", kind:"ship", fromE:true, lost:false, rot:0, dest:"", eta:"", draught:0, pob:0, call:"", imo:"", type:TCODE(t.type), L:t.len, Bm:Math.round(t.len / 6)}; }
+      o.lat = q.lat; o.lon = q.lon; o.cog = t.cog; o.sog = t.anch ? 0 : t.sog; o.hdg = Math.round(t.cog); o.ns = t.anch ? 1 : /fish/i.test(t.type) ? 7 : 0; });
+    S.tgts = keep.filter(t => !t.fromE).concat(Object.values(map)); }
+  const e = win("echo"); if (e && e.ES) { const S = e.ES.S(); S.sog = O.stw; }
+  const l = win("log"); if (l && l.LOG) { const S = l.LOG.S(); S.eng = O.stw; S.hdg = Math.round(O.hdg); S.cset = Math.round(cur.dir); S.cdr = cur.spd; S.depth = z > 0 ? z : 0; }
+  const b = win("bnwas"); if (b && b.BN && P) { const S = b.BN.S(); S.ap = P.sel === "AUTO" && P.ap.mode === "HDG"; }
+  const r = win("radar"); if (r && now - (BUS.rt || 0) > 500) { BUS.rt = now; try { const d = r.document, setv = (id, v) => { const el = d.getElementById(id); if (el && document.activeElement !== el && Math.abs(+el.value - v) > 0.05) { el.value = v; el.dispatchEvent(new r.Event("input", {bubbles:true})); el.dispatchEvent(new r.Event("change", {bubbles:true})); } };
+    setv("course", Math.round(O.hdg)); setv("speed", +O.stw.toFixed(1)); setv("set", Math.round(cur.dir)); setv("drift", +cur.spd.toFixed(1)); } catch (er) {} }
+  $("ship").textContent = `HDG ${O.hdg.toFixed(1)}° · STW ${O.stw.toFixed(1)} kn · COG ${O.cog.toFixed(0)}° SOG ${O.sog.toFixed(1)} · DEPTH ${z > 0 ? z.toFixed(0) + " m" : "—"}${O.grounded ? " · ⚠ GROUNDED" : ""}`; }
+requestAnimationFrame(bus);
+setInterval(sync, 1000);
+// preload the bridge (all units ON) except ECDIS
+function preload() { ["ecdis", "vdr", "pilot", "mag", "gps", "ais", "echo", "log", "navtex", "wefax", "bnwas", "radar"].forEach((id, i) => setTimeout(() => { if (!frames[id]) { const keep = active; open(id); if (keep) open(keep); else { frames[id].classList.remove("on"); $("empty").style.display = ""; $("cur").textContent = ""; document.querySelectorAll(".pin").forEach(p => p.classList.toggle("on", false)); active = null; } } }, 200 + i * 350)); }
+preload();
+window.BRIDGE = {open, frames, sync};
+</script></body></html>

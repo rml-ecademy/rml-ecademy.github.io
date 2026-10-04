@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY MF/HF DSC Radio</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(ellipse at 30% 20%,#16232a,#06090b);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}
+.wrap{display:flex;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:clip}.fitbox>*{transform-origin:0 0}
+.side{flex:1 1 360px;min-width:300px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.side{max-height:none!important}}
+/* ===== console — realistic ===== */
+:root{--noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.stage{width:1080px;padding:16px;border-radius:6px;background:var(--noise),linear-gradient(#80887c,#687064 55%,#5c6458);box-shadow:inset 0 2px 0 rgba(255,255,255,.25),inset 0 -3px 6px rgba(0,0,0,.35),0 30px 60px rgba(0,0,0,.65);position:relative}
+.screw{position:absolute;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2f2f2,#9da1a3 45%,#5e6264 80%);box-shadow:0 1px 2px rgba(0,0,0,.7),inset 0 -1px 1px rgba(0,0,0,.4);z-index:2}
+.screw::before,.screw::after{content:"";position:absolute;left:3px;right:3px;top:8px;height:2px;background:#3a3d3f;border-radius:1px;box-shadow:0 1px 0 rgba(255,255,255,.35)}.screw::after{transform:rotate(90deg)}
+.plate{display:grid;grid-template-columns:1fr 1.1fr 1.45fr;gap:4px;margin-bottom:14px;padding:4px;background:#2e302a;border-radius:3px;box-shadow:inset 0 2px 4px #000}
+.plate div{background:linear-gradient(180deg,#f0dc98 0%,#c7a858 38%,#a8873a 62%,#d9bf78 100%);border-radius:2px;font:800 21px "Arial Narrow","Helvetica Neue",Arial;color:#2f2306;padding:6px 14px;letter-spacing:.05em;text-shadow:0 1px 0 rgba(255,240,180,.7),0 -1px 0 rgba(0,0,0,.35);box-shadow:inset 0 1px 0 #fff3c4,inset 0 -2px 3px rgba(80,50,0,.45);position:relative;overflow:hidden;white-space:nowrap}
+.plate div::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,transparent 1px 3px)}
+.plate .nm b{background:linear-gradient(#ff5d6c,#e6283d);color:#fff;padding:0 8px;border-radius:2px;margin-left:6px;box-shadow:0 1px 2px rgba(0,0,0,.4);text-shadow:none;font-family:Arial;font-weight:700;letter-spacing:.06em}
+.row1{display:grid;grid-template-columns:150px 1fr;gap:12px}
+/* handset in cradle */
+.handset{position:relative;height:396px;border-radius:6px;background:var(--noise),linear-gradient(90deg,#3d423a,#545a50 50%,#3d423a);box-shadow:inset 0 2px 8px rgba(0,0,0,.6)}
+.cradle{position:absolute;left:22px;top:22px;width:106px;height:330px;border-radius:44px;background:linear-gradient(90deg,#141516,#2a2c2e 50%,#141516);box-shadow:inset 0 3px 8px #000,0 1px 0 rgba(255,255,255,.15)}
+.hs{position:absolute;left:22px;top:18px;width:106px;height:330px;cursor:pointer;transition:transform .35s;filter:drop-shadow(5px 8px 8px rgba(0,0,0,.65))}
+.hs.up{transform:translate(-6px,-18px) rotate(-7deg)}
+.hs svg{width:100%;height:100%;display:block}
+.ptt{position:absolute;left:-6px;top:150px;width:14px;height:44px;border-radius:4px;background:linear-gradient(90deg,#050505,#2b2b2b);border:1px solid #444;cursor:pointer;user-select:none;touch-action:none}
+.ptt.on{background:linear-gradient(90deg,#600,#e22);box-shadow:0 0 10px #f33}
+.ptt::after{content:"PTT";position:absolute;left:-30px;top:14px;font:800 9px Arial;color:#ddd}
+.cord{position:absolute;left:0;top:300px;width:150px;height:100px;pointer-events:none}
+.hlbl{position:absolute;left:0;right:0;bottom:6px;text-align:center;font:700 10px Arial;color:#dfe6da;text-shadow:0 1px 0 #000}
+.hsplate{position:absolute;left:6px;top:150px;width:14px;height:110px;background:linear-gradient(#bbb,#888);border-radius:2px;font:700 6px Arial;color:#222;writing-mode:vertical-rl;text-align:center;padding:2px 0;opacity:.85}
+/* control unit */
+.cu{position:relative;border-radius:14px;padding:16px 20px 18px;display:grid;grid-template-columns:352px 70px 236px 112px;gap:14px;align-items:start;
+ background:var(--noise),linear-gradient(160deg,#4b5052,#34383a 40%,#2b2e30);box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -2px 4px rgba(0,0,0,.6),0 0 0 6px #6a7266,0 0 0 7px #3f453b,0 8px 18px rgba(0,0,0,.55)}
+.cu .brand{position:absolute;left:34px;top:9px;font:900 15px "Arial Black",Arial;letter-spacing:.18em;color:transparent;background:linear-gradient(#f4f4f4,#a9a9a9);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #000)}
+.lcdw{margin-top:22px;padding:12px;border-radius:10px;background:linear-gradient(#1a1c1d,#0e0f10);box-shadow:inset 0 3px 8px #000,0 1px 0 rgba(255,255,255,.12)}
+#lcd{position:relative;width:328px;height:206px;color:#18210f;font:700 15px/18px "Courier New",monospace;overflow:hidden;border-radius:2px;letter-spacing:.02em;
+ background:radial-gradient(ellipse at 50% 40%,#cfe0ae,#b4c994 70%,#9fb67f);box-shadow:inset 0 0 18px rgba(30,45,10,.45),inset 0 2px 4px rgba(0,0,0,.5);text-shadow:0 0 1px rgba(24,33,15,.6)}
+#lcd::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 2px),repeating-linear-gradient(90deg,rgba(0,0,0,.04) 0 1px,transparent 1px 2px),linear-gradient(115deg,rgba(255,255,255,.16),transparent 35%)}
+#lcd .tb{background:#22300f;color:#c8dca8;padding:0 4px;font-weight:700;display:flex;justify-content:space-between;text-shadow:none}
+#lcd .ln{padding:0 4px;white-space:pre;overflow:hidden}#lcd .ln.sel{background:#22300f;color:#c8dca8;text-shadow:none}#lcd .sk{position:absolute;bottom:0;left:0;right:0;border-top:1px solid #22300f;padding:0 4px;text-align:right;font-size:13px}
+#lcd .pop{position:absolute;left:30px;top:52px;right:30px;border:2px solid #22300f;background:#bdd29e;padding:4px 6px;box-shadow:3px 3px 0 #22300f}
+#lcd .inv{background:#22300f;color:#c8dca8;padding:0 2px}
+#lcd .blink{animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.wheel{position:absolute;left:30px;bottom:8px;display:flex;align-items:center;gap:4px;background:#111;border:1px solid #555;border-radius:3px;padding:1px 5px;font:700 9px Arial;color:#ddd}.wheel b{font-size:13px}
+/* distress */
+.dcol{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px}
+.dwrap{position:relative;width:64px;height:82px;border-radius:8px;background:linear-gradient(#1b1d1e,#2b2e30);box-shadow:inset 0 3px 6px #000,0 1px 0 rgba(255,255,255,.15)}
+.dbtn{position:absolute;left:11px;top:22px;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#fff8b0,#f2d400 45%,#b39400 85%);box-shadow:0 3px 0 #5c4c00,0 5px 8px rgba(0,0,0,.6),inset 0 -3px 5px rgba(120,90,0,.5);cursor:pointer;color:#c41a1a;font:900 7.5px Arial;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none;letter-spacing:.02em}
+.dbtn.lit{background:radial-gradient(circle at 40% 32%,#fff,#ffe36a 35%,#ff4030 75%);box-shadow:0 3px 0 #5c1000,0 0 22px 8px rgba(255,70,40,.8);color:#7a0000}.dbtn.press{transform:translateY(2px);box-shadow:0 1px 0 #5c4c00}
+.cover{position:absolute;left:4px;top:4px;width:56px;height:74px;border-radius:6px 6px 8px 8px;background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(210,225,240,.15) 45%,rgba(255,255,255,.3));border:1px solid rgba(255,255,255,.7);transform-origin:50% 0;transition:transform .45s;cursor:pointer;box-shadow:inset 0 0 10px rgba(255,255,255,.4),0 2px 4px rgba(0,0,0,.4)}
+.cover::before{content:"";position:absolute;left:18px;right:18px;top:-3px;height:7px;border-radius:3px;background:linear-gradient(#ddd,#888)}
+.cover.open{transform:perspective(220px) rotateX(-125deg)}
+.alarm{display:flex;flex-direction:column;align-items:center;font:700 11px Arial;color:#e8e8e8}.alarm i{width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6b7a6b,#2c352c);margin-bottom:4px;box-shadow:inset 0 1px 2px #000}.alarm i.on{background:radial-gradient(circle at 40% 35%,#e8ffe8,#3f3 50%,#1a6);box-shadow:0 0 8px #3f3}.alarm i.red{background:radial-gradient(circle at 40% 35%,#fff,#f33 50%,#900);box-shadow:0 0 10px #f33}
+.dlab{position:absolute;left:446px;top:6px;width:150px;background:linear-gradient(#f7f7f2,#dcdcd4);color:#222;font:600 8px/1.2 Arial;padding:3px 6px 3px 12px;clip-path:polygon(9% 0,100% 0,100% 100%,9% 100%,0 50%);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+/* keys */
+.pad{display:grid;grid-template-columns:repeat(4,54px);gap:12px 6px;margin-top:44px}
+.k{width:52px;height:38px;border-radius:50%/55%;background:radial-gradient(ellipse at 50% 22%,#5a6066 0%,#25292c 45%,#0b0c0d 85%);box-shadow:0 3px 0 #000,0 5px 8px rgba(0,0,0,.7),inset 0 1px 1px rgba(255,255,255,.35);color:#fff;font:800 11.5px Arial;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;line-height:1;white-space:nowrap;text-shadow:0 1px 0 #000}
+.k small{font:700 7px Arial;color:#d0d0d0;margin-top:2px}.k:active{transform:translateY(2px);box-shadow:0 1px 0 #000,0 2px 4px rgba(0,0,0,.6)}.k.e{visibility:hidden}
+/* right column */
+.rcol{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px}
+.grill{width:104px;height:74px;border-radius:5px;background:repeating-linear-gradient(#0d0e0f 0 5px,#3a3e41 5px 6px,#24272a 6px 9px);box-shadow:inset 0 2px 4px #000}
+.knob{width:80px;height:80px;border-radius:50%;position:relative;cursor:pointer;touch-action:none;background:repeating-conic-gradient(#121314 0 4deg,#2e3134 4deg 8deg);box-shadow:0 6px 12px rgba(0,0,0,.75),0 0 0 3px #1a1c1e}
+.knob::before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#5a5f64,#1a1c1e 70%);box-shadow:inset 0 2px 3px rgba(255,255,255,.2),inset 0 -3px 6px #000}
+.knob::after{content:"";position:absolute;left:38px;top:12px;width:4px;height:14px;background:#cfcfcf;border-radius:2px;transform-origin:2px 28px;transform:rotate(var(--r,0deg))}
+.klbl{font:700 11px Arial;color:#ececec;text-align:center;letter-spacing:.03em}
+.vol{width:40px;height:40px;border-radius:50%;background:repeating-conic-gradient(#121314 0 6deg,#2e3134 6deg 12deg);box-shadow:0 3px 6px #000;position:relative}.vol::after{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#555,#151617 70%)}
+.vscale{position:relative;width:64px;height:12px}.vscale i{position:absolute;width:3px;height:3px;border-radius:50%;background:#ccc}
+.oven{font:700 11px Arial;color:#e8e8e8;display:flex;align-items:center;gap:6px}.oven i{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#eaffea,#3f3 50%,#1a6);box-shadow:0 0 8px #3f3}
+/* battery panel */
+.bp{position:relative;margin-top:16px;padding:20px 28px;border-radius:4px;display:grid;grid-template-columns:236px 236px 1fr;gap:24px;align-items:center;
+ background:var(--noise),linear-gradient(#78806f,#616957);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),inset 0 -2px 3px rgba(0,0,0,.4),0 0 0 1px #3c4237,0 6px 14px rgba(0,0,0,.45)}
+.meter{position:relative;background:linear-gradient(#26292b,#0e0f10);border-radius:6px;padding:8px;box-shadow:0 3px 6px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15)}
+.meter svg{display:block;width:100%;height:auto;border-radius:3px}
+.meter::after{content:"";position:absolute;left:8px;right:8px;top:8px;height:58%;border-radius:3px 3px 40% 40%;background:linear-gradient(170deg,rgba(255,255,255,.35),rgba(255,255,255,.05) 55%,transparent);pointer-events:none}
+.mlbl{position:absolute;left:0;right:0;bottom:-18px;text-align:center;font:700 10px Arial;color:#f0f0e8;letter-spacing:.06em;text-shadow:0 1px 0 #333}
+.bctl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;text-align:center;font:700 9.5px Arial;color:#f2f2ea;text-shadow:0 1px 0 #333;letter-spacing:.03em}
+.bstop{width:46px;height:40px;margin:6px auto 0;border-radius:4px;cursor:pointer;background:linear-gradient(#b8ffd2,#3fd17e 40%,#159850);border:4px solid #1a1c1d;box-shadow:0 0 0 2px #888,0 3px 6px rgba(0,0,0,.6),inset 0 2px 3px rgba(255,255,255,.6)}.bstop:active{transform:translateY(1px)}
+.lamp{width:24px;height:24px;border-radius:50%;margin:6px auto 0;background:radial-gradient(circle at 40% 35%,#8a4a30,#4a1e10 70%);border:3px solid #c8c8c8;box-shadow:0 0 0 2px #444,inset 0 2px 4px rgba(0,0,0,.6)}
+.lamp.on1{background:radial-gradient(circle at 40% 35%,#fff2c0,#ff9a3a 45%,#c55500);box-shadow:0 0 0 2px #444,0 0 14px #f90}.lamp.on2{background:radial-gradient(circle at 40% 35%,#ffd0d0,#ff3030 45%,#a00);box-shadow:0 0 0 2px #444,0 0 14px #f00}
+.tog{width:28px;height:46px;margin:6px auto 0;position:relative;cursor:pointer;border-radius:4px;background:radial-gradient(circle at 50% 50%,#d8d8d8 0 9px,#7a7a7a 10px,#2a2a2a 13px)}
+.tog i{position:absolute;left:10px;width:8px;height:22px;border-radius:4px;background:linear-gradient(90deg,#8d8d8d,#f6f6f6 50%,#8d8d8d);transition:all .2s;top:20px;transform-origin:50% 0;box-shadow:0 2px 3px rgba(0,0,0,.6)}.tog.off i{top:2px}
+.dim{width:34px;height:34px;margin:6px auto 0;border-radius:50%;background:repeating-conic-gradient(#121314 0 8deg,#2e3134 8deg 16deg);box-shadow:0 3px 6px #000;position:relative}.dim::after{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#555,#151617 70%)}
+.vent{position:absolute;right:26px;top:16px;width:60px;height:110px;background:repeating-linear-gradient(#24271f 0 5px,transparent 5px 11px);border-radius:3px;opacity:.75}
+/* side */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}
+.small{color:var(--mut);font-size:12px}.ref{font-size:12.5px;line-height:1.5}.ref b{color:#ffd84a}
+.kv{width:100%;border-collapse:collapse}.kv td,.kv th{padding:2px 5px;border-bottom:1px solid #22323a;font-size:12px;text-align:left}.kv th{color:var(--mut)}
+.inj{display:flex;flex-wrap:wrap;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.chip{background:#1b2a31;border:1px solid #3f5a66;border-radius:12px;padding:3px 9px;cursor:pointer;font-size:12px}.chip:hover{border-color:var(--acc)}
+.said{min-height:44px;background:#0b1215;border:1px dashed #3f5a66;border-radius:6px;padding:6px;font:12.5px Consolas,monospace;color:#ffd84a}
+.ok{color:#7cf0a0}.bad{color:#ff8080}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style></head><body>
+<header><b>ECADEMY</b><span>MF/HF DSC RADIO</span><span class="sub">· GMDSS · DSC watch · test call · received distress (MF / HF) · own distress · cancel false alert · reserve battery (training)</span><span class="sp"></span><button class="btn" id="resetb">↺ RESET</button></header>
+<div class="wrap">
+ <div class="stage" id="dev"><i class="screw" style="left:6px;top:6px"></i><i class="screw" style="right:6px;top:6px"></i><i class="screw" style="left:6px;bottom:6px"></i><i class="screw" style="right:6px;bottom:6px"></i>
+  <div class="plate"><div>IMO NO. : 9999991</div><div>MMSI NO. : 548000123</div><div class="nm">SHIP'S NAME:<b>ECADEMY TRAINER</b></div></div>
+  <div class="row1">
+   <div class="handset"><div class="cradle"></div>
+    <div class="hs" id="hs" title="Lift the handset"><svg viewBox="0 0 106 330"><defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#0b0b0c"/><stop offset=".35" stop-color="#3b3e41"/><stop offset=".55" stop-color="#26282a"/><stop offset="1" stop-color="#060607"/></linearGradient><radialGradient id="ep" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#2c2f31"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient></defs>
+     <path d="M20 40 Q20 6 53 6 Q86 6 86 40 L86 92 Q86 108 74 116 L70 214 Q86 222 86 240 L86 292 Q86 324 53 324 Q20 324 20 292 L20 240 Q20 222 36 214 L32 116 Q20 108 20 92 Z" fill="url(#hg)" stroke="#000"/>
+     <ellipse cx="53" cy="52" rx="26" ry="34" fill="url(#ep)"/>
+     <ellipse cx="53" cy="278" rx="26" ry="34" fill="url(#ep)"/><path d="M38 128 Q53 122 68 128 L66 206 Q53 212 40 206 Z" fill="#1a1c1d" opacity=".7"/><path d="M28 30 Q34 14 50 12" stroke="rgba(255,255,255,.35)" stroke-width="3" fill="none"/><path d="M78 300 L78 250" stroke="rgba(255,255,255,.12)" stroke-width="4"/></svg><div class="ptt" id="ptt" title="Press-to-talk (hold)"></div></div>
+    <svg class="cord" viewBox="0 0 150 100"><path id="cordp" d="M75 30 C 60 45, 90 50, 75 62 C 60 74, 90 78, 75 90 L 75 100" stroke="#0d0d0d" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="4 2"/></svg>
+    <div class="hlbl" id="hlbl">HANDSET (on hook)</div></div>
+   <div class="cu"><span class="brand">ECADEMY</span><div class="dlab">Keep pressed for 4 s in case of DISTRESS. The alert is transmitted with steady lighting.</div>
+    <div class="lcdw"><div id="lcd"></div></div>
+    <div class="dcol"><div class="dwrap"><div class="dbtn" id="dbtn">DISTRESS</div><div class="cover" id="cover" title="Lift the cover"></div></div><div class="alarm"><i id="alm"></i>ALARM</div></div>
+    <div class="pad" id="pad"></div>
+    <div class="rcol"><div class="grill"></div><div class="klbl">PUSH TO ENTER</div><div class="knob" id="knob" title="Turn: mouse wheel / click left-right · Push: click the centre"></div><div class="vscale"><i style="left:6px;top:8px"></i><i style="left:18px;top:2px"></i><i style="left:30px;top:0"></i><i style="left:42px;top:2px"></i><i style="left:54px;top:8px"></i></div><div class="vol"></div><div class="klbl">PWR/VOL<br><span style="font-size:9px">OFF</span></div><div class="oven"><i></i>OVEN</div></div>
+    <div class="wheel"><b>☸</b>0560<br>10</div>
+   </div>
+  </div>
+  <div class="bp"><i class="screw" style="left:6px;top:6px"></i><i class="screw" style="right:6px;top:6px"></i><i class="screw" style="left:6px;bottom:6px"></i><i class="screw" style="right:6px;bottom:6px"></i>
+   <div class="meter"><svg id="mv" viewBox="0 0 220 130"></svg><div class="mlbl">RADIO 24V BATT</div></div>
+   <div class="meter"><svg id="ma" viewBox="0 0 220 130"></svg><div class="mlbl">RADIO 24V BATT</div></div>
+   <div class="bctl"><div>BUZZER<br>STOP<div class="bstop" id="bstop"></div></div><div>EMG<br>LIGHT<br>DIM<div class="dim"></div></div><div>BATTERY MONITOR<br>IN USE &nbsp; LOW VOLT<div style="display:flex;gap:12px;justify-content:center"><div class="lamp" id="lin"></div><div class="lamp" id="llow"></div></div></div><div>BATTERY<br>CHARGER<br>OFF<div class="tog" id="chg"><i></i></div>AUTO</div></div>
+  </div>
+ </div>
+ <div class="side">
+  <div class="card" style="border-color:#5ee6a8"><h3>📻 HOW TO CHANGE THE RT CHANNEL</h3><div class="ref"><b>1.</b> Press <b>1 RT/CH</b> on the radio.<br><b>2.</b> Turn the <b>PUSH TO ENTER</b> knob (mouse wheel, or click its left / right side) to scroll — <i>or</i> key in the channel / frequency with the number keys (e.g. <b>8 0 1</b> or <b>8 2 9 4</b>).<br><b>3.</b> <b>Push the knob</b> (click its centre) to set.<br><b>4.</b> Press <b>0 TUNE</b> to tune the antenna, then lift the handset and talk.<br><span class="small">* = delete digit · # = J3E/H3E · CANCEL = back</span><div style="margin-top:6px"><button class="btn" id="rtquick">▶ Open RT/CH on the radio</button></div></div></div>
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>HANDSET — RADIOTELEPHONY</h3><div class="small" id="rtst"></div><div class="small" style="margin-top:4px">Lift the handset, check the RT frequency, build the message in the right order, then hold <b>PTT</b> to transmit.</div>
+   <div class="chips" id="chips"></div><div class="said" id="said"></div><div style="margin-top:6px;display:flex;gap:6px"><button class="btn" id="undo">⟲ UNDO</button><button class="btn" id="clr">CLEAR</button></div><div id="rtres" class="small" style="margin-top:4px"></div><div class="small" style="margin-top:6px">🔊 RECEIVED BY RT:</div><div class="said" id="rxv" style="color:#7cf0a0;min-height:30px"></div></div>
+  <div class="card"><h3>INSTRUCTOR — INJECT</h3><div class="inj">
+   <button class="btn" data-inj="ind">Individual call + working freq</button><button class="btn" data-inj="mfd">MF distress (2187.5)</button><button class="btn" data-inj="hfd">HF distress (8414.5)</button><button class="btn" data-inj="csack">Coast station ACK of that distress</button><button class="btn" data-inj="rtcall">Ship calls you on 2182 (change channel)</button><button class="btn" data-inj="pwr">Main power failure</button><button class="btn" data-inj="fix">Restore power</button></div></div>
+  <div class="card"><h3>GMDSS MF/HF FREQUENCIES (kHz)</h3><table class="kv"><thead><tr><th>Band</th><th>DSC distress</th><th>RT</th><th>NBDP</th></tr></thead><tbody>
+   <tr><td>MF</td><td>2187.5</td><td>2182.0</td><td>2174.5</td></tr><tr><td>4 MHz</td><td>4207.5</td><td>4125.0</td><td>4177.5</td></tr><tr><td>6 MHz</td><td>6312.0</td><td>6215.0</td><td>6268.0</td></tr><tr><td>8 MHz</td><td>8414.5</td><td>8291.0</td><td>8376.5</td></tr><tr><td>12 MHz</td><td>12577.0</td><td>12290.0</td><td>12520.0</td></tr><tr><td>16 MHz</td><td>16804.5</td><td>16420.0</td><td>16695.0</td></tr></tbody></table></div>
+  <div class="card"><h3>CALLING ANOTHER SHIP / A COAST STATION (MF/HF)</h3><div class="ref"><b>Ship → ship:</b> DSC individual call (ROUTINE) on <b>2177.0 kHz</b>, propose an <b>intership simplex</b> working frequency (e.g. 4146, 6224, 8294 kHz). After the ACK (able to comply), set and TUNE that frequency and call by RT.<br><b>Ship → shore:</b> DSC on <b>2189.5 kHz</b> (MF) to the coast station, working on an <b>ITU duplex channel</b> (e.g. CH 801: ship TX 8195 / RX 8719 kHz).<br><b>RT call on 2182:</b> keep it short — call, agree a working frequency, <b>change</b>. Never use 2187.5 / 8414.5 for routine calls.<br><span class="small">Radio check reply: strength / readability 1–5 ("loud and clear" = 5/5).</span></div></div>
+  <div class="card"><h3>RECEIVED DSC DISTRESS — WHAT TO DO</h3><div class="ref"><b>MF (2187.5):</b> silence the alarm, do <b>not</b> acknowledge by DSC. Listen on <b>2182 kHz</b>. If no coast station acknowledges and the ship is near you, <b>acknowledge by RT on 2182</b> and inform the RCC.<br><b>HF:</b> do not acknowledge by DSC. Listen on the RT/NBDP frequency of that band. If no coast station acknowledges within <b>5 minutes</b>, send a <b>DSC distress relay to the coast station / RCC</b> — <b>never to all ships</b>.</div></div>
+  <div class="card"><h3>FALSE DISTRESS ALERT — CANCEL</h3><div class="ref">Do not switch off. Cancel by <b>DSC distress cancellation</b> (if fitted), then on the RT frequency of each band used (MF: 2182 kHz): <i>"ALL STATIONS ×3, THIS IS name, call sign, MMSI, POSITION…, CANCEL MY DISTRESS ALERT OF date/time UTC = MASTER name, call sign, MMSI, date/time UTC."</i> Log it in the GMDSS radio logbook.</div></div>
+  <div class="card"><h3>WHAT IS REAL / SIMPLIFIED</h3><div class="ref"><b>Real:</b> the frequencies, the hold-4-s distress button and steady light, the received-distress rules for MF and HF, the MAYDAY / acknowledgement / cancel formats, daily self test, DSC test call with a coast station, reserve battery checks.<br><b>Simplified (training):</b> the menu layout of this panel, MMSI / IMO / coast station numbers, messages, and time (the 5-minute wait is shortened to 30 s; repeat of the alert ≈ 3.5–4.5 min shortened). Follow the equipment manual and company SMS on board.</div></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · not a real radio · fictional IMO / MMSI / coast station · NOT FOR REAL DISTRESS COMMUNICATION</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const OWN = {name:"ECADEMY TRAINER", cs:"4DTR9", mmsi:"548000123"}, CS = {mmsi:"005480001", name:"COAST STATION 005480001 (training)"};
+const NAT = ["Undesignated", "Fire / explosion", "Flooding", "Collision", "Grounding", "Listing / capsizing", "Sinking", "Disabled and adrift", "Abandoning ship", "Piracy / armed attack", "Man overboard"];
+const SHIP = {mmsi:"548777222", name:"PACIFIC STAR", cs:"4DPS7"};
+const CHS = {"CH 401":{tx:"4065.0", rx:"4357.0"}, "CH 801":{tx:"8195.0", rx:"8719.0"}, "CH 1201":{tx:"12230.0", rx:"13077.0"}, "CH 1601":{tx:"16360.0", rx:"17242.0"}};
+const INTERSHIP = ["4146.0", "4149.0", "6224.0", "6227.0", "8294.0", "8297.0"];
+const RTF = ["2182.0", "4125.0", "6215.0", "8291.0", "12290.0", "16420.0", "4146.0", "4149.0", "6224.0", "6227.0", "8294.0", "8297.0", "CH 401", "CH 801", "CH 1201", "CH 1601", "8255.0"], DSCF = ["2187.5", "4207.5", "6312.0", "8414.5", "12577.0", "16804.5"];
+const UTC0 = Date.UTC(2026, 9, 2, 2, 0, 0);
+let S;
+function init() { S = {t:0, w:[], scan:false, rt:{f:"2182.0", mode:"J3E", pwr:"HI", tuned:true}, alarm:false, hook:true, ptt:false, chg:true, mainOk:true, bat:{v:27.2, a:0},
+  dist:{nature:"Undesignated", mode:"Multi-frequency"}, ds:null, rcv:[], log:[], tr:S ? S.tr : {}, seq:[], pend:[], said:[], bchk:{off:false, load:false}, cover:false, holdT:0, rxD:null}; render(); chips(); }
+const utc = () => new Date(UTC0 + S.t * 1000), hhmm = d => d.toISOString().slice(11, 16), pos = () => "14-30.2N 120-49.6E";
+// ---------- audio ----------
+let AC = null; function beep(f, d, v) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.value = v || .05; o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) {} }
+// ---------- window stack ----------
+function push(w) { S.w.push(w); render(); } function pop() { S.w.pop(); render(); } function home() { S.w = []; render(); }
+function list(title, items, extra) { push(Object.assign({type:"list", title, items, sel:0}, extra || {})); }
+function msg(title, lines, extra) { push(Object.assign({type:"msg", title, lines}, extra || {})); }
+function form(title, fields, okL, ok) { push({type:"form", title, fields, okL, ok, sel:0}); }
+function busy(label, sec, cb) { S.w = [{type:"busy", title:"PLEASE WAIT", label, t0:S.t, d:sec, cb}]; render(); }
+function later(sec, cb) { S.pend.push({at:S.t + sec, cb}); }
+// ---------- keys ----------
+const KEYS = [["1", "RT", "CH"], ["2", "DSC", "ABC"], ["3", "TEST", "DEF"], ["", "", ""], ["4", "IntCom", "GHI"], ["5", "ACK/SQ", "JKL"], ["6", "SCAN", "MNO"], ["", "", ""], ["CANCEL", "", ""], ["7", "🔈", "PQRS"], ["8", "PRINT", "TUV"], ["9", "☼", "WXYZ"], ["CALL", "", ""], ["*", "FILE", "CURSOR"], ["0", "LOG", "TUNE"], ["#", "SETUP", ""]];
+const ORDER = [12, 0, 1, 2, 8, 4, 5, 6, 3, 9, 10, 11, 7, 13, 14, 15]; // visual grid like the panel: col0 = CANCEL/CALL
+function padHTML() { const g = [[null, 0, 1, 2], [null, 4, 5, 6], [8, 9, 10, 11], [12, 13, 14, 15]]; return g.flat().map(i => i === null ? '<div class="k e"></div>' : `<div class="k" data-key="${i}">${KEYS[i][0] === "CANCEL" || KEYS[i][0] === "CALL" ? `<span style="font-size:10px">${KEYS[i][0]}</span>` : `${KEYS[i][0]} ${KEYS[i][1]}`}<small>${KEYS[i][2]}</small></div>`).join(""); }
+$("pad").innerHTML = padHTML();
+$("pad").querySelectorAll("[data-key]").forEach(b => b.onclick = () => key(+b.dataset.key));
+function key(i) { beep(1800, .03, .03); const k = KEYS[i][0] || KEYS[i][1]; const top = S.w[S.w.length - 1];
+  if (top && top.type === "rtsel") { if (/^\d$/.test(k)) { top.buf = (top.buf + k).slice(0, 5); return render(); } if (k === "*") { top.buf = top.buf.slice(0, -1); return render(); } if (k === "#") { S.rt.mode = S.rt.mode === "J3E" ? "H3E" : "J3E"; return render(); } if (k === "CANCEL") return pop(); }
+  if (k === "CANCEL") { if (S.alarm) { stopAlarm(); return; } return S.w.length ? pop() : null; }
+  if (S.ds && S.ds.st === "sending" && k !== "2") { /* alert running */ }
+  if (k === "1") return rtForm(); if (k === "2" || k === "CALL") return dscMenu(); if (k === "3") return selfTest();
+  if (k === "4") return msg("INTERCOM", ["Intercom not fitted", "(training)"]); if (k === "5") return ackKey(); if (k === "6") return scanKey();
+  if (k === "7") return msg("SPEAKER", ["Speaker ON / volume via", "PWR/VOL knob"]); if (k === "8") return msg("PRINT", ["Printed to DSC printer", "(training)"]); if (k === "9") return msg("DIMMER", ["LCD / key backlight", "adjusted"]);
+  if (k === "*") return fileList(); if (k === "0") return tune(); if (k === "#") return setup(); }
+// knob
+const knob = $("knob"); let kr = 0;
+function turn(d) { kr += d * 24; knob.style.setProperty("--r", kr + "deg"); const w = S.w[S.w.length - 1]; if (!w) return; if (w.type === "rtsel") { w.buf = ""; w.sel = (w.sel + d + RTF.length) % RTF.length; return render(); } if (w.type === "list") { w.sel = (w.sel + d + w.items.length) % w.items.length; render(); } if (w.type === "form") { w.sel = (w.sel + d + w.fields.length + 1) % (w.fields.length + 1); render(); } }
+function enter() { const w = S.w[S.w.length - 1]; if (!w) return; if (w.type === "rtsel") { if (w.buf) { const f = rtFind(w.buf); if (!f) { w.buf = ""; return msg("RT CH", ["Channel / freq not in", "the training list.", "Use the knob to scroll."]); } return rtSet(f); } return rtSet(RTF[w.sel]); } if (w.type === "list") return w.items[w.sel][1]();
+  if (w.type === "form") { if (w.sel === w.fields.length) return w.ok(w); const f = w.fields[w.sel]; f.v = f.opts[(f.opts.indexOf(f.v) + 1) % f.opts.length]; return render(); }
+  if (w.type === "msg") { if (w.onEnter) return w.onEnter(); return pop(); } if (w.type === "rcv") return w.onEnter ? w.onEnter() : pop(); }
+knob.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY > 0 ? 1 : -1); }, {passive:false});
+knob.addEventListener("click", e => { const r = knob.getBoundingClientRect(), x = (e.clientX - r.left) / r.width; if (x < .33) turn(-1); else if (x > .67) turn(1); else enter(); });
+addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; if (e.key === "ArrowDown" || e.key === "ArrowRight") { turn(1); e.preventDefault(); } if (e.key === "ArrowUp" || e.key === "ArrowLeft") { turn(-1); e.preventDefault(); } if (e.key === "Enter") { enter(); e.preventDefault(); } if (e.key === "Escape") key(8); });
+// ---------- functions ----------
+function stopAlarm() { S.alarm = false; done(S.rxD ? "stop" : "x"); render(); }
+const rtLbl = f => CHS[f] ? `${f} TX${CHS[f].tx}/RX${CHS[f].rx}` : INTERSHIP.includes(f) ? `${f} simplex (intership)` : `${f} simplex`;
+function rtForm() { push({type:"rtsel", sel:Math.max(0, RTF.indexOf(S.rt.f)), buf:""}); }
+function rtSet(f) { if (f !== S.rt.f) S.rt.tuned = false; S.rt = {f, mode:S.rt.mode, pwr:S.rt.pwr, tuned:S.rt.tuned}; home(); if (!S.rt.tuned) msg("RT CH SET", [CHS[f] ? f : `${f} kHz ${S.rt.mode}`, CHS[f] ? `TX ${CHS[f].tx} RX ${CHS[f].rx}` : (INTERSHIP.includes(f) ? "simplex · intership" : "simplex"), "Antenna not tuned —", "press 0 (TUNE)"]); chips(); }
+function rtFind(b) { if (!b) return null; const c = "CH " + b; if (CHS[c]) return c; const f = (+b).toFixed(1); return RTF.includes(f) ? f : null; }
+function tune() { busy(`TUNING ${S.rt.f} kHz`, 2, () => { S.rt.tuned = true; if (S.rt.f === "2182.0" && S.rxD && S.rxD.band === "MF") done("listen"); if (S.conv && S.conv.wf === S.rt.f && S.conv.st === "accepted") { S.conv.st = "talk"; } if (S.newWF && S.rt.f === S.newWF) done("wf"); msg("TUNE", [`${S.rt.f} kHz  TUNED`, "SWR OK"]); chips(); }); }
+function selfTest() { busy("SELF TEST: ROM RAM LCD KEY TX RX", 3, () => { done("self"); S.log.unshift({t:hhmm(utc()), k:"TEST", txt:"Self test OK"}); msg("SELF TEST", ["ROM  OK   RAM  OK", "LCD  OK   KEY  OK", "TX   OK   RX   OK", "DSC WATCH RX  OK"]); }); }
+function scanKey() { list("DSC SCAN", [[`SCAN : ${S.scan ? "ON" : "OFF"}  (push = toggle)`, () => { S.scan = !S.scan; if (S.scan) done("scan"); pop(); scanKey(); }], ["FREQ: 2187.5  8414.5  4207.5", () => {}], ["      6312.0 12577.0 16804.5", () => {}]]); }
+function setup() { list("SETUP", [["POSITION / TIME  (GPS)", () => msg("POSITION", [pos(), hhmm(utc()) + " UTC  GPS 3D"])], ["SHIP DATA", () => msg("SHIP", [OWN.name, "CS " + OWN.cs, "MMSI " + OWN.mmsi])], ["DISTRESS MSG EDIT", () => distForm()], ["DSC SCAN FREQS", () => scanKey()]]); }
+function fileList() { const a = S.rcv.concat(S.log.map(l => ({t:l.t, title:l.k, lines:[l.txt]}))); if (!a.length) return msg("FILE", ["No messages"]); list("FILE / LOG", a.slice(0, 8).map(m => [`${m.t} ${m.title}`.slice(0, 26), () => msg(m.title, m.lines)])); }
+function dscMenu() { list("DSC CALL", [["INDIVIDUAL CALL", () => callForm("ROUTINE")], ["TEST CALL", () => testCall()], ["ALL SHIPS CALL", () => allShips()], ["DISTRESS RELAY", () => relayForm()], ["DISTRESS MSG EDIT", () => distForm()], ["DISTRESS CANCEL", () => distCancel()]]); }
+function callForm(cat) { form("INDIVIDUAL CALL", [{l:"TO", opts:[CS.mmsi + " CST", SHIP.mmsi + " SHIP"], v:SHIP.mmsi + " SHIP"}, {l:"CATEGORY", opts:["ROUTINE", "SAFETY", "URGENCY"], v:cat}, {l:"DSC FREQ", opts:["2177.0", "2189.5", "2187.5", "8414.5"], v:"2177.0"}, {l:"WORK FREQ", opts:INTERSHIP.concat(["CH 401", "CH 801", "CH 1201", "CH 1601", "2182.0"]), v:"8294.0"}], "CALL", w => {
+  const toShip = /SHIP/.test(w.fields[0].v), df = w.fields[2].v, wf = w.fields[3].v, to = toShip ? SHIP : CS;
+  if (df === "2187.5" || df === "8414.5") return msg("⚠ DSC", ["2187.5 / 8414.5 are DISTRESS", "& SAFETY frequencies.", "Routine calls: 2177.0", "(ship-ship) / 2189.5 (to CST)"]);
+  if (toShip && df !== "2177.0") return msg("DSC", ["Ship-to-ship routine DSC", "call on MF: use 2177.0 kHz"]);
+  if (!toShip && df === "2177.0") return msg("DSC", ["Calls to a coast station", "use 2189.5 kHz (ship TX)"]);
+  if (wf === "2182.0") return msg("DSC", ["2182 is the distress and", "calling frequency — propose", "a WORKING frequency"]);
+  if (toShip && CHS[wf]) return msg("DSC", ["Duplex ITU channels are", "ship-shore. For another", "ship propose an intership", "simplex frequency."]);
+  if (!toShip && !CHS[wf]) return msg("DSC", ["To a coast station propose", "a ship-shore ITU duplex", "channel (e.g. CH 801)."]);
+  S.conv = {to:toShip ? "ship" : "cs", wf, st:"calling"}; done(toShip ? "shipcall" : "cscall");
+  sendDsc("INDIVIDUAL", to.mmsi, df, () => { msg("DSC", ["Call sent to " + to.mmsi, "WORK " + wf, "Waiting for ACK…"]); later(5, () => { S.newWF = wf; S.conv.st = "acked";
+    rcvd({title:"Received message", lines:[`${hhmm(utc())} INDIVIDUAL ACK`, "FROM " + to.mmsi, "ABLE TO COMPLY", "WORK " + (CHS[wf] ? wf + " TX" + CHS[wf].tx : wf + " kHz")]}, true, {pop:["Accept New", "Working Freq", "CANCEL:CLOSE WINDOW"], onEnter:() => { S.rt = {f:wf, mode:"J3E", pwr:"HI", tuned:false}; S.conv.st = "accepted"; S.alarm = false; home(); chips(); msg("RT", [rtLbl(wf).slice(0, 26), "Press 0 to TUNE,", "then call by RT"]); }}); }); }); }); }
+function testCall() { form("TEST CALL", [{l:"TO COAST STN", opts:[CS.mmsi], v:CS.mmsi}, {l:"DSC FREQ", opts:DSCF, v:"2187.5"}], "CALL", w => { sendDsc("TEST", w.fields[0].v, w.fields[1].v, () => { msg("DSC TEST", ["Test call sent", "Waiting for test ACK…"]); later(6, () => { rcvd({title:"TEST ACK", lines:["TEST ACK RCVD", "FROM " + CS.mmsi, "FREQ " + w.fields[1].v + " kHz", hhmm(utc()) + " UTC"]}, false); done("test"); }); }); }); }
+function allShips() { form("ALL SHIPS CALL", [{l:"CATEGORY", opts:["SAFETY", "URGENCY"], v:"SAFETY"}, {l:"DSC FREQ", opts:DSCF, v:"2187.5"}], "CALL", w => sendDsc("ALL SHIPS", "ALL", w.fields[1].v, () => msg("DSC", [w.fields[0].v + " call sent", "Follow by RT on 2182"]))); }
+function sendDsc(kind, to, f, cb) { busy(`DSC ${kind} ${f} kHz`, 2, () => { S.log.unshift({t:hhmm(utc()), k:"TX " + kind, txt:`to ${to} on ${f}`}); cb(); }); }
+function relayForm() { if (!S.rxD) return msg("DISTRESS RELAY", ["No distress received", "to relay"]); form("DISTRESS RELAY", [{l:"TO", opts:[CS.mmsi + " (CST)", "ALL SHIPS"], v:CS.mmsi + " (CST)"}, {l:"DSC FREQ", opts:DSCF, v:S.rxD.f}, {l:"OF MMSI", opts:[S.rxD.mmsi], v:S.rxD.mmsi}], "SEND", w => {
+  const to = w.fields[0].v; if (to === "ALL SHIPS") { msg("DISTRESS RELAY", ["⚠ Do NOT relay a", "distress alert to ALL", "SHIPS — send it to the", "coast station / RCC."]); return; }
+  if (S.rxD.acked) return msg("DISTRESS RELAY", ["Already acknowledged by", "coast station — no relay", "needed. Keep watch."]);
+  if (S.rxD.band === "HF" && S.t - S.rxD.t < 30) return msg("DISTRESS RELAY", ["Wait: give the coast", "station 5 min (30 s here)", "to acknowledge first.", `${Math.ceil(30 - (S.t - S.rxD.t))} s left`]);
+  sendDsc("DISTRESS RELAY", CS.mmsi, w.fields[1].v, () => { if (S.rxD.band === "HF") done("relay"); msg("DISTRESS RELAY", ["Relay sent to", CS.mmsi, "Waiting for ACK…"]); later(6, () => rcvd({title:"RELAY ACK", lines:["DISTRESS RELAY ACK", "FROM " + CS.mmsi]}, false)); }); }); }
+function distForm() { form("DISTRESS MSG EDIT", [{l:"NATURE", opts:NAT, v:S.dist.nature}, {l:"FREQ", opts:["Multi-frequency", "2187.5 single", "8414.5 single"], v:S.dist.mode}, {l:"POS", opts:[pos() + " GPS"], v:pos() + " GPS"}], "SAVE", w => { S.dist = {nature:w.fields[0].v, mode:w.fields[1].v}; home(); msg("DISTRESS", ["Saved:", S.dist.nature, S.dist.mode, "Lift cover, hold 4 s"]); }); }
+function distCancel() { if (!S.ds) return msg("DISTRESS CANCEL", ["No own distress alert", "active."]); busy("DSC DISTRESS CANCELLATION", 2, () => { S.ds = {st:"cancelled"}; done("dcan"); msg("DISTRESS CANCEL", ["DSC cancellation sent.", "Now CANCEL BY RT on", "2182.0 kHz (handset).", "Log it in the logbook."]); S.rt = {f:"2182.0", mode:"J3E", pwr:"HI", tuned:true}; chips(); }); }
+function ackKey() { const w = S.w[S.w.length - 1];
+  if (S.rxD && !S.rxD.acked && w && w.type === "rcv" && w.dist) { S.badAck = true; return msg("⚠ WARNING", ["Do NOT acknowledge a", "distress alert by DSC.", "MF: listen 2182 / ack RT", "HF: relay to coast stn"]); }
+  return msg("SQUELCH", ["RT squelch toggled"]); }
+function rcvd(m, alarm, extra) { m.t = hhmm(utc()); S.rcv.unshift(m); S.w = S.w.filter(w => w.type !== "busy"); push(Object.assign({type:"rcv"}, m, extra || {})); if (alarm) S.alarm = true; beep(2000, .15); }
+// ---------- injections ----------
+function inject(k) {
+  if (k === "ind") { S.newWF = "8255.0"; rcvd({title:"Received message", lines:[`${hhmm(utc())} INDIVIDUAL`, "FROM " + CS.mmsi, "CAT ROUTINE  TEL J3E", "WORK FREQ 8255.0 kHz"]}, true, {pop:["Accept New", "Working Freq", "CANCEL:CLOSE WINDOW"], onEnter:() => { S.rt = {f:"8255.0", mode:"J3E", pwr:"HI", tuned:false}; S.alarm = false; home(); chips(); msg("RT", ["8255.0 kHz set", "Press 0 to TUNE"]); }}); }
+  if (k === "mfd" || k === "hfd") { const hf = k === "hfd"; S.rxD = {band:hf ? "HF" : "MF", f:hf ? "8414.5" : "2187.5", mmsi:hf ? "548777001" : "548123456", name:hf ? "MV OCEAN DAWN" : "FV BANCA LUZ", t:S.t, acked:false};
+    rcvd({title:"DISTRESS RCVD", lines:[`FROM ${S.rxD.mmsi}`, hf ? "SINKING" : "FLOODING", hf ? "05-10N 126-40E" : "14-21.0N 120-38.5E", `${hhmm(utc())} UTC  ${S.rxD.f} kHz`]}, true, {dist:true});
+    if (!hf) S.rt = S.rt; chips(); }
+  if (k === "csack") { if (!S.rxD) return; S.rxD.acked = true; rcvd({title:"DISTRESS ACK", lines:["DISTRESS ACK by", CS.mmsi, `for ${S.rxD.mmsi}`, "Keep RT watch"]}, false); }
+  if (k === "rtcall") { S.inc = {ph:1}; S.rt = Object.assign(S.rt, {}); voice(`${OWN.name} ${OWN.name} ${OWN.name}, THIS IS ${SHIP.name} ${SHIP.name} ${SHIP.name}, CALL SIGN ${SHIP.cs}. CHANGE TO 8294 KHZ. OVER`); if (S.rt.f !== "2182.0") $("rtres").innerHTML = "Heard on the 2182 watch — set RT to 2182.0 to answer."; chips(); return; }
+  if (k === "pwr") { S.mainOk = false; S.alarm = true; render(); } if (k === "fix") { S.mainOk = true; S.alarm = false; render(); } }
+document.querySelectorAll("[data-inj]").forEach(b => b.onclick = () => inject(b.dataset.inj));
+// ---------- own distress ----------
+const cover = $("cover"), dbtn = $("dbtn"); let holding = false;
+cover.onclick = () => { S.cover = !S.cover; cover.classList.toggle("open", S.cover); };
+dbtn.addEventListener("pointerdown", e => { if (!S.cover) return; holding = true; S.holdT = 0; dbtn.classList.add("press"); dbtn.setPointerCapture(e.pointerId); });
+const rel = () => { if (!holding) return; holding = false; dbtn.classList.remove("press"); S.holdT = 0; };
+dbtn.addEventListener("pointerup", rel); dbtn.addEventListener("pointercancel", rel);
+function sendDistress() { S.ds = {st:"sending", t:S.t, nature:S.dist.nature, rep:0}; S.dsT = hhmm(utc()); beep(1600, .5, .08);
+  busy(`DISTRESS ALERT ${S.dist.mode === "Multi-frequency" ? "MULTI-FREQ" : S.dist.mode}`, 3, () => { S.log.unshift({t:hhmm(utc()), k:"TX DISTRESS", txt:S.dist.nature}); msg("DISTRESS SENT", [S.dist.nature, pos(), "Waiting for ACK…", "Auto-repeat ~4 min"]);
+   later(8, () => { if (!S.ds || S.ds.st !== "sending") return; S.ds.st = "acked"; S.rt = {f:"2182.0", mode:"J3E", pwr:"HI", tuned:true}; rcvd({title:"DISTRESS ACK", lines:["DISTRESS ACK RCVD", "FROM " + CS.mmsi, "RT 2182.0 kHz set", "Send MAYDAY by RT"]}, true); if (S.dist.nature.startsWith("Fire")) done("dist"); chips(); }); }); }
+// ---------- LCD ----------
+const lcd = $("lcd");
+function render() { const w = S.w[S.w.length - 1]; let h = "";
+  const tb = t => `<div class="tb"><span>${t}</span><span>${hhmm(utc())}</span></div>`;
+  if (!w) { const c = CHS[S.rt.f], tx = c ? c.tx : S.rt.f, rx = c ? c.rx : S.rt.f, txOn = S.ptt, rxOn = !txOn && S.rxT > S.t, sm = rxOn ? 3 + Math.round(Math.abs(Math.sin(S.t * 3)) * 5) : 0;
+    h = tb(txOn ? '<span class="blink">TRANSMITTING</span>' : rxOn ? "RECEIVING" : "RT") + [
+     `CH ${(c ? S.rt.f.slice(3) : INTERSHIP.includes(S.rt.f) ? "SIMPLX" : "FREQ").padEnd(6)} ${S.rt.mode} PWR ${S.rt.pwr}`,
+     `${txOn ? '<span class="inv">TX</span>' : "TX"} ${tx.padStart(8)} kHz ${txOn ? "▮".repeat(S.rt.pwr === "HI" ? 8 : 4) : ""}`,
+     `${rxOn ? '<span class="inv">RX</span>' : "RX"} ${rx.padStart(8)} kHz ${rxOn ? "S" + "▮".repeat(sm) : ""}`,
+     `   ${S.rt.tuned ? "ANT TUNED" : '<span class="blink">NOT TUNED - 0:TUNE</span>'}${c ? "  DUPLEX" : "  SIMPLEX"}`,
+     `DSC SCAN: ${S.scan ? "ON  2187.5 8414.5" : '<span class="blink">OFF</span> (watch stopped!)'}`,
+     `POS ${pos()}`,
+     `PWR ${S.mainOk ? "MAIN 24V" : '<span class="blink">BATTERY</span>'}`,
+     S.ds && S.ds.st === "sending" ? '<span class="blink">DISTRESS ALERT ACTIVE</span>' : S.rxD && !S.rxD.acked ? `DIST RCVD ${S.rxD.mmsi}` : ""].map(l => `<div class="ln">${l}</div>`).join("") + `<div class="sk">1:RT/CH  0:TUNE  2:DSC</div>`; }
+  else if (w.type === "list") h = tb(w.title) + w.items.map((it, j) => `<div class="ln ${j === w.sel ? "sel" : ""}">${it[0]}</div>`).join("") + `<div class="sk">ENT:SELECT  CANCEL:BACK</div>`;
+  else if (w.type === "form") h = tb(w.title) + w.fields.map((f, j) => `<div class="ln ${j === w.sel ? "sel" : ""}">${(f.l + ":").padEnd(10)}${String(f.v).slice(0, 18)}</div>`).join("") + `<div class="ln ${w.sel === w.fields.length ? "sel" : ""}">      [ ${w.okL} ]</div><div class="sk">KNOB:MOVE ENT:CHANGE</div>`;
+  else if (w.type === "rtsel") { const st = Math.max(0, Math.min(RTF.length - 6, w.sel - 2)); h = tb("RT  CH/FREQ  " + S.rt.mode) + RTF.slice(st, st + 6).map((f, j) => `<div class="ln ${st + j === w.sel && !w.buf ? "sel" : ""}">${st + j === w.sel ? "▶" : " "}${rtLbl(f).slice(0, 25)}</div>`).join("") + `<div class="ln">KEY IN: ${w.buf ? w.buf + '<span class="blink">_</span>' : "--- (e.g. 801 / 8294)"}</div><div class="sk">KNOB:SCROLL ENT:SET CANCEL</div>`; }
+  else if (w.type === "msg") h = tb(w.title) + w.lines.map(l => `<div class="ln">${l}</div>`).join("") + `<div class="sk">ENT/CANCEL</div>`;
+  else if (w.type === "busy") { const p = Math.min(1, (S.t - w.t0) / w.d); h = tb(w.title) + `<div class="ln">${w.label.slice(0, 26)}</div><div class="ln">${w.label.slice(26, 52)}</div><div class="ln">[${"#".repeat(Math.round(p * 20)).padEnd(20, ".")}]</div>`; }
+  else if (w.type === "rcv") { h = `<div class="tb"><span>${w.dist ? '<span class="blink">' + w.title + "</span>" : w.title}</span><span>${w.t}</span></div>` + w.lines.map(l => `<div class="ln">${l}</div>`).join("") + (w.pop ? `<div class="pop">${w.pop.map(l => `<div>${l}</div>`).join("")}</div>` : "") + `<div class="sk">${w.dist ? "CANCEL:STOP ALARM" : "GO TO VIEW"}</div>`; }
+  lcd.innerHTML = h; $("alm").className = S.alarm ? (Math.floor(S.t * 2) % 2 ? "red" : "") : S.ds && S.ds.st ? "red" : "on"; tasks(); rtStatus(); }
+// ---------- handset & RT composer ----------
+const P = {
+ mayday:["MAYDAY", "THIS IS", `${OWN.mmsi}, ${OWN.name}, CALL SIGN ${OWN.cs}`, "POSITION 14-30.2N 120-49.6E", "FIRE IN THE ENGINE ROOM", "REQUIRE IMMEDIATE ASSISTANCE", "25 PERSONS ON BOARD, PREPARING TO ABANDON", "OVER"],
+ ackrt:() => ["MAYDAY", `${S.rxD.mmsi}, ${S.rxD.name} (×3)`, "THIS IS", `${OWN.mmsi}, ${OWN.name}, ${OWN.cs} (×3)`, "RECEIVED MAYDAY", "MY POSITION 14-30.2N 120-49.6E, PROCEEDING, ETA 1 HOUR", "OVER"],
+ cancel:() => ["ALL STATIONS ALL STATIONS ALL STATIONS", "THIS IS", `${OWN.name}, CALL SIGN ${OWN.cs}, MMSI ${OWN.mmsi}`, "POSITION 14-30.2N 120-49.6E", `CANCEL MY DISTRESS ALERT OF 02 OCT 2026 ${S.dsT || hhmm(utc())} UTC`, `= MASTER ${OWN.name} ${OWN.cs} ${OWN.mmsi}`, "OUT"]};
+ P.chkship = () => [SHIP.name, "THIS IS", `${OWN.name}, CALL SIGN ${OWN.cs}`, `RADIO CHECK ON ${S.rt.f} KHZ, HOW DO YOU READ ME?`, "OVER"];
+ P.chkcs = () => [`COAST STATION ${CS.mmsi}`, "THIS IS", `${OWN.name}, CALL SIGN ${OWN.cs}, MMSI ${OWN.mmsi}`, `RADIO CHECK ON ${S.rt.f}, HOW DO YOU READ ME?`, "OVER"];
+ P.ans1 = () => [SHIP.name, "THIS IS", `${OWN.name}, CALL SIGN ${OWN.cs}`, "CHANGING TO 8294 KHZ", "OVER"];
+ P.ans2 = () => [SHIP.name, "THIS IS", `${OWN.name}, CALL SIGN ${OWN.cs}`, "ON 8294 KHZ, GO AHEAD", "OVER"];
+const NEEDF = {mayday:"2182.0", ackrt:"2182.0", cancel:"2182.0", ans1:"2182.0", ans2:"8294.0"};
+const EXTRA = ["PAN PAN", "SECURITE", "ALL SHIPS (DSC)", "RECEIVED", "SEELONCE MAYDAY"];
+function context() { if (S.ds && S.ds.st === "cancelled") return "cancel"; if (S.ds && S.ds.st === "acked") return "mayday"; if (S.rxD && S.rxD.band === "MF" && !S.rxD.acked) return "ackrt"; if (S.inc) return S.inc.ph === 1 ? "ans1" : "ans2"; if (S.conv && (S.conv.st === "talk" || S.conv.st === "accepted")) return S.conv.to === "ship" ? "chkship" : "chkcs"; return null; }
+function target() { const c = context(); if (!c) return null; return typeof P[c] === "function" ? P[c]() : P[c]; }
+function chips() { const t = target(); const pool = t ? t.concat(EXTRA).sort((a, b) => (a.length * 7 + a.charCodeAt(0)) % 11 - (b.length * 7 + b.charCodeAt(0)) % 11) : EXTRA.concat(["MAYDAY", "THIS IS", "OVER"]);
+  $("chips").innerHTML = pool.map(p => `<span class="chip">${p}</span>`).join(""); $("chips").querySelectorAll(".chip").forEach(c => c.onclick = () => { S.said.push(c.textContent); sayUI(); }); sayUI(); rtStatus(); }
+function voice(t) { S.rxT = S.t + 5; $("rxv").textContent = t; beep(700, .08, .03); }
+function sayUI() { $("said").textContent = S.said.join(" · ") || "(message is empty)"; }
+$("undo").onclick = () => { S.said.pop(); sayUI(); }; $("clr").onclick = () => { S.said = []; sayUI(); $("rtres").innerHTML = ""; };
+function rtStatus() { const c = context(); $("rtst").innerHTML = `RT <b>${CHS[S.rt.f] ? S.rt.f + " (TX " + CHS[S.rt.f].tx + " / RX " + CHS[S.rt.f].rx + ")" : S.rt.f + " kHz"} ${S.rt.mode}</b> ${S.rt.tuned ? "tuned" : '<span class="bad">NOT TUNED</span>'} · handset ${S.hook ? "on hook" : "<b>lifted</b>"}` + (c ? ` · <span class="ok">situation: ${{mayday:"send MAYDAY", ackrt:"acknowledge the MF distress by RT", cancel:"cancel false alert by RT", chkship:`radio check with ${SHIP.name} on ${S.conv && S.conv.wf}`, chkcs:`radio check with the coast station on ${S.conv && S.conv.wf}`, ans1:`answer ${SHIP.name} on 2182, agree to change`, ans2:"change to 8294 kHz, tune, and call again"}[c]}</span>` : ""); }
+$("hs").onclick = e => { if (e.target.id === "ptt") return; S.hook = !S.hook; $("hs").classList.toggle("up", !S.hook); $("hlbl").textContent = S.hook ? "HANDSET (on hook)" : "HANDSET (lifted)"; rtStatus(); };
+const ptt = $("ptt"); ptt.addEventListener("pointerdown", e => { e.stopPropagation(); if (S.hook) { $("rtres").innerHTML = '<span class="bad">Lift the handset first.</span>'; return; } S.ptt = true; ptt.classList.add("on"); beep(600, .1, .03); render(); });
+const pttUp = () => { if (!S.ptt) return; S.ptt = false; ptt.classList.remove("on"); transmit(); render(); }; ptt.addEventListener("pointerup", pttUp); ptt.addEventListener("pointerleave", pttUp);
+function transmit() { if (!S.bchk.off || !S.chg) {} if (!S.chg) S.bchk.load = true; checkBat();
+  const c = context(), t = target(), said = S.said; if (!said.length) return;
+  if (!S.rt.tuned) { $("rtres").innerHTML = '<span class="bad">Antenna not tuned — press 0 TUNE first.</span>'; return; }
+  if (!c) { $("rtres").innerHTML = "Transmitted (no exercise active)."; S.said = []; sayUI(); return; }
+  const need = NEEDF[c] || (S.conv && S.conv.wf); if (S.rt.f !== need) { $("rtres").innerHTML = `<span class="bad">Wrong frequency ${S.rt.f} — this message goes on ${need}${CHS[need] ? "" : " kHz"}.</span>`; return; }
+  if (c === "ackrt" && S.t - S.rxD.t < 30 && !S.rxD.acked) { $("rtres").innerHTML = `<span class="bad">Wait — give a coast station 5 min (30 s here) to acknowledge first (${Math.ceil(30 - (S.t - S.rxD.t))} s).</span>`; return; }
+  const ok = said.length === t.length && said.every((p, i) => p === t[i]);
+  if (ok) { $("rtres").innerHTML = '<span class="ok">✔ Correct message transmitted.</span>'; done({mayday:"rtmay", ackrt:"ackrt", cancel:"rtcan", chkship:"chkship", chkcs:"chkcs", ans1:"ans1", ans2:"ans2"}[c]);
+    if (c === "chkship") { voice(`${OWN.name}, THIS IS ${SHIP.name}. I READ YOU LOUD AND CLEAR, STRENGTH FIVE. HOW DO YOU READ ME? OVER`); S.conv = null; }
+    if (c === "chkcs") { voice(`${OWN.name}, THIS IS COAST STATION ${CS.mmsi}. READING YOU STRENGTH FOUR, READABILITY FIVE ON ${S.rt.f}. RADIO CHECK OK. OUT`); S.conv = null; }
+    if (c === "ans1") { S.inc.ph = 2; voice(`(${SHIP.name} changes to 8294 kHz and listens)`); }
+    if (c === "ans2") { S.inc = null; voice(`${OWN.name}, THIS IS ${SHIP.name}. WE ARE CROSSING AHEAD OF YOU FROM YOUR STARBOARD SIDE. PROPOSE PORT TO PORT PASSING. OVER`); } if (c === "cancel") S.ds = null; if (c === "ackrt") S.rxD.acked = true; S.said = []; sayUI(); chips(); }
+  else { const i = said.findIndex((p, j) => p !== t[j]); $("rtres").innerHTML = `<span class="bad">✘ Not correct — check part ${i < 0 ? said.length + 1 : i + 1}${i >= 0 ? ` (“${said[i]}”)` : " (message incomplete)"}.</span> Format: ${/chk|ans/.test(c) ? "STATION CALLED · THIS IS · own name / call sign · message · OVER" : c === "cancel" ? "ALL STATIONS ×3 · THIS IS · name/call sign/MMSI · position · CANCEL MY DISTRESS ALERT OF… · = MASTER…" : c === "ackrt" ? "MAYDAY · MMSI/name of ship in distress ×3 · THIS IS · own MMSI/name ×3 · RECEIVED MAYDAY · (your position/ETA)" : "MAYDAY · THIS IS · MMSI, name, call sign · position · nature · assistance · other info · OVER"}`; } }
+// ---------- battery ----------
+function needle(svg, val, min, max, lbls) { const isV = svg.id === "mv", cx = 110, cy = 118, R = 92, ang = v => (-48 + (v - min) / (max - min) * 96) * Math.PI / 180, P = (v, r) => [cx + Math.sin(ang(v)) * r, cy - Math.cos(ang(v)) * r];
+  if (!svg.dataset.f) { let t = `<defs><linearGradient id="face${svg.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf8ee"/><stop offset="1" stop-color="#e6dfcb"/></linearGradient></defs><rect width="220" height="130" fill="url(#face${svg.id})"/>`;
+    const arc = (a, b, r, col, w) => { const [x0, y0] = P(a, r), [x1, y1] = P(b, r); return `<path d="M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}" fill="none" stroke="${col}" stroke-width="${w}"/>`; };
+    t += arc(min, max, R, "#222", 1.2) + (isV ? arc(24, 30, R - 5, "#2e9a4a", 5) + arc(0, 21, R - 5, "#c83a2a", 3) : arc(-50, 0, R - 5, "#c83a2a", 3) + arc(0, 50, R - 5, "#2e9a4a", 3));
+    const step = isV ? 1 : 2.5; for (let v = min; v <= max + 1e-6; v += step) { const big = lbls.includes(Math.round(v * 10) / 10), mid = !big && Math.abs((v / (step * 5)) % 1) < 1e-6; const [x0, y0] = P(v, R), [x1, y1] = P(v, R + (big ? 10 : mid ? 7 : 4)); t += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#1a1a1a" stroke-width="${big ? 1.6 : .8}"/>`; }
+    lbls.forEach(v => { const [x, y] = P(v, R - 16); t += `<text x="${x}" y="${y + 4}" font-size="11" text-anchor="middle" font-family="Arial" fill="#111">${Math.abs(v)}</text>`; });
+    t += `<text x="${cx}" y="${cy - 34}" font-size="22" font-weight="700" text-anchor="middle" font-family="Times New Roman,serif" fill="#111">${isV ? "V" : "A"}</text><text x="${cx}" y="${cy - 20}" font-size="6.5" text-anchor="middle" font-family="Arial" fill="#555">ECA-85C  DC</text><g id="nd${svg.id}"></g><rect x="70" y="${cy - 6}" width="80" height="18" fill="#2a2a2a"/><circle cx="${cx}" cy="${cy}" r="7" fill="#111"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="#888"/>`;
+    svg.innerHTML = t; svg.dataset.f = 1; }
+  const v = Math.max(min, Math.min(max, val)), [x, y] = P(v, R + 4); $("nd" + svg.id).innerHTML = `<line x1="${cx + 2}" y1="${cy + 3}" x2="${x + 2}" y2="${y + 3}" stroke="rgba(0,0,0,.25)" stroke-width="2"/><line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#c4121a" stroke-width="1.8"/>`; }
+$("chg").onclick = () => { S.chg = !S.chg; $("chg").classList.toggle("off", !S.chg); if (!S.chg) S.bchk.off = true; checkBat(); };
+$("bstop").onclick = () => { beep(400, .05); if (!S.mainOk) S.alarm = false; render(); };
+function checkBat() { if (S.bchk.off && S.bchk.load && S.chg) done("bat"); }
+function batTick(dt) { const tx = S.ptt || (S.w.length && S.w[S.w.length - 1].type === "busy" && /DSC|DISTRESS|TUN/.test(S.w[S.w.length - 1].label)); const load = tx ? 22 : 1.5;
+  let charge = S.chg && S.mainOk ? 8 : 0; S.bat.a += ((charge - load) - S.bat.a) * Math.min(1, dt * 3);
+  const target = S.chg && S.mainOk ? 27.2 : (tx ? 24.1 : 25.4) - (S.mainOk ? 0 : Math.min(3, S.t / 400)); S.bat.v += (target - S.bat.v) * Math.min(1, dt * 2);
+  needle($("mv"), S.bat.v, 0, 50, [0, 10, 20, 30, 40, 50]); needle($("ma"), S.bat.a, -50, 50, [-50, -25, 0, 25, 50]);
+  $("lin").className = "lamp" + (!S.mainOk || !S.chg ? " on1" : ""); $("llow").className = "lamp" + (S.bat.v < 23 ? " on2" : ""); }
+// ---------- tasks ----------
+const TASKS = [["self", "Daily: run the SELF TEST (3 TEST)."], ["scan", "Start the DSC watch: 6 SCAN → ON (2187.5 / 8414.5 / HF)."], ["bat", "Reserve battery check: charger OFF, read volts, PTT for on-load volts, charger back to AUTO."], ["test", "Weekly: DSC TEST CALL to the coast station and receive the test ACK."],
+ ["wf", "Received individual call: ACCEPT the new working frequency and TUNE (0)."], ["stop", "Received MF distress: stop the alarm (CANCEL) — do NOT press ACK."], ["listen", "Listen on 2182.0 kHz (1 RT/CH, then 0 TUNE)."], ["ackrt", "No coast station ACK after 5 min: acknowledge by RT on 2182 (handset, correct format)."],
+ ["relay", "Received HF distress, no coast station ACK in 5 min: DSC DISTRESS RELAY to the coast station (not all ships)."], ["dist", "FIRE: set nature (2 DSC → DISTRESS MSG EDIT), hold DISTRESS 4 s, receive the ACK."], ["rtmay", "Send the MAYDAY message by RT on 2182 (correct format)."],
+ ["shipcall", "Ship-to-ship: DSC INDIVIDUAL call to PACIFIC STAR on 2177.0 proposing an intership working frequency (e.g. 8294)."], ["chkship", "Accept, TUNE, and do an RT radio check with the ship on the working frequency."], ["cscall", "Ship-to-shore: DSC individual call to the coast station on 2189.5 proposing ITU CH 801."], ["chkcs", "Accept, TUNE the duplex channel and do an RT radio check with the coast station."], ["ans1", "A ship calls you on 2182: answer on 2182 and agree to change to 8294 kHz."], ["ans2", "Change RT to 8294, TUNE, and call the ship again on the working frequency."], ["dcan", "False alert drill: DSC DISTRESS CANCEL."], ["rtcan", "…then cancel by RT on 2182 (ALL STATIONS ×3 … CANCEL MY DISTRESS ALERT)."]];
+function done(k) { if (k && !S.tr[k] && TASKS.find(t => t[0] === k)) { S.tr[k] = true; } }
+let lastT = ""; function tasks() { const n = TASKS.filter(t => S.tr[t[0]]).length, h = TASKS.map((t, i) => `<div class="task ${S.tr[t[0]] ? "done" : ""}"><span>${S.tr[t[0]] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t[1]}</span></div>`).join(""); if (h !== lastT) { $("tasks").innerHTML = h; lastT = h; } $("tdone").textContent = n + " / " + TASKS.length + (S.badAck ? " · ⚠ DSC-ACK of distress pressed" : ""); }
+$("rtquick").onclick = () => rtForm();
+$("resetb").onclick = () => { S.tr = {}; init(); };
+// ---------- loop ----------
+let last = performance.now(), acc = 0;
+function loop(now) { const dt = Math.min(.2, (now - last) / 1000); last = now; S.t += dt; acc += dt;
+  if (holding) { S.holdT += dt; dbtn.classList.toggle("lit", Math.floor(S.t * 4) % 2 === 0); if (Math.floor(S.holdT * 4) !== Math.floor((S.holdT - dt) * 4)) beep(1500, .05); if (S.holdT >= 4) { holding = false; dbtn.classList.remove("press"); sendDistress(); } }
+  else dbtn.classList.toggle("lit", !!(S.ds && (S.ds.st === "sending" || S.ds.st === "acked")));
+  const w = S.w[S.w.length - 1]; if (w && w.type === "busy" && S.t - w.t0 >= w.d) { S.w = []; w.cb(); }
+  for (let i = S.pend.length - 1; i >= 0; i--) if (S.t >= S.pend[i].at) S.pend.splice(i, 1)[0].cb();
+  if (S.alarm && Math.floor(S.t * 2.5) !== Math.floor((S.t - dt) * 2.5)) beep(S.rxD && !S.rxD.acked ? 2100 : 1300, .15, .04);
+  batTick(dt); if (acc > .25) { acc = 0; render(); }
+  requestAnimationFrame(loop); }
+(function () { const wrap = document.querySelector(".wrap"), dev = $("dev"), box = document.createElement("div"); box.className = "fitbox"; wrap.insertBefore(box, dev); box.appendChild(dev);
+  const side = wrap.querySelector(".side"), hd = document.querySelector("header"), ft = document.querySelector(".foot");
+  function fit() { dev.style.transform = "none"; const w = dev.offsetWidth, h = dev.offsetHeight, narrow = innerWidth <= 900, avH = innerHeight - hd.offsetHeight - ft.offsetHeight - 28, avW = narrow ? innerWidth - 24 : innerWidth - 36 - Math.min(440, Math.max(320, innerWidth * 0.3));
+    const s = Math.max(0.3, Math.min(1.2, avW / w, narrow ? 9 : avH / h)); dev.style.transform = `scale(${s})`; box.style.width = w * s + "px"; box.style.height = h * s + "px"; side.style.maxHeight = narrow ? "none" : avH + "px"; }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300); })();
+init();
+window.MF = {S:() => S, key, turn, enter, inject, target, context};
+requestAnimationFrame(loop);
+</script></body></html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY Magnetic Compass</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(ellipse at 30% 20%,#16232a,#06090b);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}
+input,select{background:#0b1215;color:#fff;border:1px solid #445a63;border-radius:4px;padding:4px 6px;font:inherit}
+.wrap{display:flex;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:clip}.fitbox>*{transform-origin:0 0}
+.side{flex:1 1 360px;min-width:300px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.side{max-height:none!important}}
+.dev{width:1050px;display:grid;grid-template-columns:700px 280px;gap:20px;padding:18px;border-radius:14px;background:linear-gradient(#5d6a70,#3c464b);box-shadow:inset 0 2px 0 rgba(255,255,255,.2),0 30px 60px rgba(0,0,0,.6)}
+.scene{position:relative;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 30px #000,0 6px 14px #0007}
+canvas#cv{display:block;width:700px;height:700px;cursor:grab;touch-action:none}
+.lbl{position:absolute;left:12px;top:10px;background:#0009;color:#fff;font:700 13px Arial;letter-spacing:.1em;padding:4px 10px;border-radius:4px}
+.hint{position:absolute;left:12px;bottom:10px;background:#0009;color:#cfe;font:12px Arial;padding:4px 8px;border-radius:4px}
+.cor{background:linear-gradient(#e8e4da,#c8c2b4);border-radius:10px;padding:12px;color:#1a1a1a;box-shadow:inset 0 2px 0 #fff,0 8px 14px #0006;display:flex;flex-direction:column;gap:10px}
+.cor h4{margin:0;font:800 13px Arial;letter-spacing:.08em;text-align:center}
+.cr{display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center;background:#f6f3ec;border-radius:6px;padding:6px 8px;box-shadow:inset 0 1px 3px #0003}
+.cr b{font:800 12px Arial}.cr small{grid-column:1/-1;color:#555;font-size:11px}
+.cr .ctl{display:flex;gap:4px;align-items:center}.cr .ctl button{width:28px;height:26px;border-radius:5px;border:1px solid #777;background:linear-gradient(#fff,#ccc);font:800 14px Arial;cursor:pointer}.cr .ctl span{min-width:44px;text-align:center;font:700 13px Consolas,monospace}
+canvas#dc{display:block;width:256px;height:150px;background:#fff;border-radius:6px;box-shadow:inset 0 1px 3px #0004}
+.read{background:#101416;color:#ffd84a;border-radius:6px;padding:8px;font:700 15px Consolas,monospace;text-align:center;box-shadow:inset 0 2px 6px #000}
+.read small{display:block;color:#9ab;font:600 11px Arial}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}
+.small{color:var(--mut);font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0}
+.kv{width:100%;border-collapse:collapse}.kv td,.kv th{padding:2px 6px;border-bottom:1px solid #22323a;font-family:Consolas,monospace;text-align:right}.kv th{color:var(--mut);font-weight:600}.kv td:first-child,.kv th:first-child{text-align:left}
+.ok{color:#7cf0a0}.bad{color:#ff8080}.clock{font:700 16px Consolas,monospace;color:var(--acc)}
+.q{margin:6px 0;padding:6px;border:1px solid #22323a;border-radius:6px}.q label{display:block;cursor:pointer}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style></head><body>
+<header><b>ECADEMY</b><span>MAGNETIC COMPASS &amp; DEVIATION TRAINER</span><span class="sub">· standard compass on the monkey island · azimuth circle · compass error · deviation card · correctors (training)</span><span class="sp"></span>
+<span class="small">LT</span><span class="clock" id="clk">--</span><span class="small">SIM</span>
+<button class="btn" data-acc="0">❚❚</button><button class="btn on" data-acc="1">×1</button><button class="btn" data-acc="10">×10</button><button class="btn" data-acc="60">×60</button><button class="btn" id="restart">↺ RESTART</button></header>
+<div class="wrap">
+ <div class="dev" id="dev">
+  <div class="scene"><canvas id="cv" width="700" height="700"></canvas><div class="lbl">MONKEY ISLAND · STANDARD MAGNETIC COMPASS</div><div class="hint">Drag the azimuth circle to sight the sun / lights · wheel = fine</div></div>
+  <div class="cor">
+   <h4>COMPASS READINGS</h4>
+   <div class="read"><small>COMPASS HEADING (lubber line)</small><span id="r_hc">---.-°</span></div>
+   <div class="read"><small>AZIMUTH CIRCLE · COMPASS BEARING</small><span id="r_cb">---.-°</span></div>
+   <h4>BINNACLE CORRECTORS</h4>
+   <div class="cr"><b>Fore &amp; aft magnets (B)</b><div class="ctl"><button data-c="fa" data-d="-1">−</button><span id="c_fa">0</span><button data-c="fa" data-d="1">+</button></div><small>red end fwd (+) / aft (−) · corrects coefficient B</small></div>
+   <div class="cr"><b>Athwartship magnets (C)</b><div class="ctl"><button data-c="at" data-d="-1">−</button><span id="c_at">0</span><button data-c="at" data-d="1">+</button></div><small>red end stbd (+) / port (−) · corrects coefficient C</small></div>
+   <div class="cr"><b>Quadrantal spheres (D)</b><div class="ctl"><button data-c="sp" data-d="-1">◀</button><span id="c_sp">out</span><button data-c="sp" data-d="1">▶</button></div><small>slide in towards the bowl · corrects D</small></div>
+   <div class="cr"><b>Flinders bar</b><div class="ctl"><button data-c="fb" data-d="-1">−</button><span id="c_fb">9"</span><button data-c="fb" data-d="1">+</button></div><small>induced vertical soft iron · changes with latitude</small></div>
+   <h4>DEVIATION CURVE (live)</h4><canvas id="dc" width="256" height="150"></canvas>
+   <div style="display:flex;gap:6px;justify-content:center"><button class="btn" id="lamp">💡 Binnacle light</button></div>
+  </div>
+ </div>
+ <div class="side">
+  <div class="card"><h3>SHIP · HELM · GYRO</h3>
+   <div class="row">True heading (gyro) <b class="clock" id="gy">---</b> <button class="btn" data-h="-10">−10</button><button class="btn" data-h="-1">−1</button><button class="btn" data-h="1">+1</button><button class="btn" data-h="10">+10</button></div>
+   <div class="row small">Position 14°20'N 120°40'E (Manila Bay approach) · <b>Variation from chart: 0°30'W (2026)</b> · Roll <select id="roll"><option value="0">calm</option><option value="3" selected>slight</option><option value="8">moderate</option></select></div>
+   <div class="row"><button class="btn" id="swing">⟳ SWING SHIP (auto-steer 8 headings)</button><span class="small" id="swst"></span></div></div>
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>COMPASS ERROR — BY GYRO / SUN / TRANSIT</h3>
+   <div class="small" id="obsinfo"></div>
+   <div class="row">Method <select id="m"><option value="gyro">Gyro comparison (heading)</option><option value="sun">Sun azimuth (azimuth circle)</option><option value="tr">Transit — leading lights</option></select></div>
+   <div class="row">Compass reading <input id="e_c" size="6"> True <input id="e_t" size="6"> Comp. error <input id="e_ce" size="6" placeholder="1.5W"> Deviation <input id="e_d" size="6" placeholder="1.0E"> <button class="btn" id="e_go">CHECK</button></div>
+   <div id="e_r" class="small"></div></div>
+  <div class="card"><h3>DEVIATION LOG (swing) <span class="small">record on 8 headings</span></h3><div class="row"><button class="btn" id="rec">● RECORD this heading</button><span class="small">needs steady ship (card settled)</span></div>
+   <table class="kv"><thead><tr><th>Ship's head (C)</th><th>Gyro (T)</th><th>Var</th><th>Mag</th><th>Deviation</th></tr></thead><tbody id="dlog"></tbody></table></div>
+  <div class="card"><h3>DEVIATION CARD (posted on the bridge — last adjusted 14 MAR 2026)</h3><table class="kv"><thead><tr><th>Compass hdg</th><th>Dev</th><th>Compass hdg</th><th>Dev</th></tr></thead><tbody id="dcard"></tbody></table><div class="small">Rule: C → D → M → V → T: add Easterly, subtract Westerly (True Virgins Make Dull Companions — add Whisky).</div></div>
+  <div class="card"><h3>QUICK QUIZ</h3><div id="quiz"></div><button class="btn" id="quiz_go">SUBMIT</button> <span id="quiz_r" class="small"></span></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · deviation coefficients, variation and correctors are training values · compass adjusting must be done by a qualified compass adjuster · NOT FOR NAVIGATION</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id), D2R = Math.PI / 180, n360 = a => ((a % 360) + 360) % 360, adiff = (a, b) => ((a - b + 540) % 360) - 180;
+const VAR = -0.5, LAT = 14 + 20 / 60, LON = 120 + 40 / 60, TRANSIT = 158.0;
+const BASE = {A:0.5, B:4.6, C:-3.3, D:2.2, E:0.4};
+const TASKS = [
+ ["read", "Read the compass heading at the lubber line and compare with the gyro: work out compass error and deviation (method: gyro)."],
+ ["sun", "Sun azimuth: drag the azimuth circle onto the sun, read the compass bearing, then find compass error and deviation."],
+ ["tr", "Transit: put the azimuth circle on the leading lights in line (158.0°T from chart) and find the compass error."],
+ ["swing", "Swing the ship and RECORD the deviation on 8 headings (000, 045 … 315 by compass, ±3°)."],
+ ["adj", "Adjust the correctors so the maximum deviation on all headings is 2° or less."],
+ ["quiz", "Answer the quick quiz."]];
+const QUIZ = [
+ ["Compass reads 090°C, deviation 3°W, variation 1°E. True course is:", ["094°T", "088°T", "092°T", "086°T"], 1],
+ ["Compass error 2°W, variation 0.5°W. The deviation is:", ["2.5°W", "1.5°W", "1.5°E", "2.5°E"], 1],
+ ["Which corrector is used for quadrantal deviation (coefficient D)?", ["Flinders bar", "Soft-iron quadrantal spheres", "Heeling magnet", "Fore-and-aft magnets"], 1],
+ ["Deviation changes with:", ["the ship's heading", "the tide", "the time of day only", "nothing — it is fixed"], 0],
+ ["SOLAS requires the compass error to be determined:", ["once a year", "after each major alteration of course and at least once a watch where possible", "only in port", "never if a gyro is fitted"], 1]];
+let S, acc = 1, last = performance.now();
+function reset() { const tr = S ? S.tr : {};
+  S = {t:0, hdg:85, card:0, cardV:0, ring:30, fa:0, at:0, sp:0, fb:9, roll:3, lamp:false, swing:null, log:[], tr};
+  S.card = compassHdg(); dcard(); tasks(); }
+// ---------- deviation model ----------
+function coef() { return {A:BASE.A, B:BASE.B - 1.15 * S.fa + (S.fb - 9) * 0.05, C:BASE.C - 1.1 * S.at, D:BASE.D - [0, 0.6, 1.2, 1.7, 2.1, 2.5][S.sp], E:BASE.E}; }
+function devAt(hc, k = coef()) { const t = hc * D2R; return k.A + k.B * Math.sin(t) + k.C * Math.cos(t) + k.D * Math.sin(2 * t) + k.E * Math.cos(2 * t); }
+function compassHdg() { const hm = n360(S.hdg - VAR); let hc = hm; for (let i = 0; i < 8; i++) hc = n360(hm - devAt(hc)); return hc; }
+const fEW = v => Math.abs(v).toFixed(1) + "°" + (v >= 0 ? "E" : "W");
+function parseEW(s) { const m = String(s).trim().toUpperCase().match(/^([0-9.]+)\s*°?\s*([EW])$/); return m ? +m[1] * (m[2] === "E" ? 1 : -1) : NaN; }
+function dcard() { const k = BASE, rows = []; for (let i = 0; i < 12; i++) { const a = i * 15, b = a + 180, d = h => devAt(h, {A:k.A, B:k.B, C:k.C, D:k.D, E:k.E}); rows.push(`<tr><td>${String(a).padStart(3, "0")}°</td><td>${fEW(d(a))}</td><td>${String(b).padStart(3, "0")}°</td><td>${fEW(d(b))}</td></tr>`); } $("dcard").innerHTML = rows.join(""); }
+// ---------- sun ----------
+function sun(tLocalH) { const n = 274, decl = 23.44 * Math.sin((360 / 365) * (284 + n) * D2R), B = (360 / 365) * (n - 81) * D2R, eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  const utc = tLocalH - 8, lmt = utc + LON / 15 + eot / 60, H = (lmt - 12) * 15 * D2R, d = decl * D2R, la = LAT * D2R;
+  const alt = Math.asin(Math.sin(la) * Math.sin(d) + Math.cos(la) * Math.cos(d) * Math.cos(H)); const az = Math.atan2(-Math.sin(H), Math.tan(d) * Math.cos(la) - Math.sin(la) * Math.cos(H)); return {az:n360(az / D2R), alt:alt / D2R}; }
+const lt = () => 7.5 + S.t / 3600;
+// ---------- drawing ----------
+const cv = $("cv"), g = cv.getContext("2d"), C = 350;
+function drawScene() { const hc = S.card, rollA = Math.sin(S.t * 0.9) * S.roll * 0.15;
+  g.clearRect(0, 0, 700, 700);
+  // horizon ring (relative to ship's head)
+  const sky = g.createRadialGradient(C, C, 300, C, C, 360); sky.addColorStop(0, "#2a6a9a"); sky.addColorStop(0.5, "#4f94c4"); sky.addColorStop(1, "#bcd8ec"); g.fillStyle = sky; g.fillRect(0, 0, 700, 700);
+  g.beginPath(); g.arc(C, C, 318, 0, 7); g.lineWidth = 3; g.strokeStyle = "#e8f2f8aa"; g.stroke();
+  const rel = brg => (brg - S.hdg) * D2R, place = (brg, r) => [C + Math.sin(rel(brg)) * r, C - Math.cos(rel(brg)) * r];
+  const s = sun(lt()); if (s.alt > -1) { const [x, y] = place(s.az, 330); const gl = g.createRadialGradient(x, y, 2, x, y, 30); gl.addColorStop(0, "#fff8c0"); gl.addColorStop(0.35, "#ffd84a"); gl.addColorStop(1, "rgba(255,200,60,0)"); g.fillStyle = gl; g.beginPath(); g.arc(x, y, 30, 0, 7); g.fill(); g.fillStyle = "#fff"; g.font = "bold 11px Arial"; g.textAlign = "center"; g.fillText("SUN", x, y + 40 > 690 ? y - 34 : y + 42); }
+  [[TRANSIT, 326, "#d02020"], [TRANSIT, 338, "#f2f2f2"]].forEach(([b, r, col], i) => { const [x, y] = place(b, r); g.fillStyle = "#333"; g.fillRect(x - 3, y - 8, 6, 14); g.fillStyle = col; g.beginPath(); g.arc(x, y - 9, 4.5, 0, 7); g.fill(); if (i) { g.fillStyle = "#fff"; g.font = "bold 10px Arial"; g.fillText("LDG LTS", x, y + 18); } });
+  [[205, "#3a5a3a"], [300, "#4a6a40"]].forEach(([b, col]) => { const a0 = rel(b - 10) - Math.PI / 2, a1 = rel(b + 10) - Math.PI / 2; g.beginPath(); g.arc(C, C, 340, a0, a1); g.arc(C, C, 322, a1, a0, true); g.fillStyle = col; g.fill(); });
+  // monkey island deck
+  g.beginPath(); g.arc(C, C, 300, 0, 7); const dk = g.createRadialGradient(C, C - 60, 60, C, C, 300); dk.addColorStop(0, "#7a8a8e"); dk.addColorStop(1, "#4a585c"); g.fillStyle = dk; g.fill();
+  g.save(); g.clip(); g.globalAlpha = 0.08; for (let i = 0; i < 900; i++) { g.fillStyle = i % 2 ? "#000" : "#fff"; g.fillRect((i * 97) % 700, (i * 53) % 700, 2, 2); } g.globalAlpha = 1; g.restore();
+  g.beginPath(); g.arc(C, C, 296, 0, 7); g.lineWidth = 6; g.strokeStyle = "#c8ccd0"; g.stroke(); g.lineWidth = 2; g.strokeStyle = "#555"; g.stroke();
+  g.fillStyle = "#cfd8dc"; g.font = "bold 13px Arial"; g.textAlign = "center"; g.fillText("▲ FWD (ship's head)", C, 72);
+  // binnacle shadow + body
+  g.beginPath(); g.arc(C + 10, C + 14, 214, 0, 7); g.fillStyle = "rgba(0,0,0,.45)"; g.fill();
+  const bn = g.createRadialGradient(C - 60, C - 70, 40, C, C, 214); bn.addColorStop(0, "#fbfaf6"); bn.addColorStop(0.7, "#e4e0d6"); bn.addColorStop(1, "#b8b2a4"); g.beginPath(); g.arc(C, C, 212, 0, 7); g.fillStyle = bn; g.fill();
+  // spheres + flinders bar position markers on binnacle top view
+  const spR = 268 - S.sp * 9; [-1, 1].forEach(sd => { const x = C + sd * spR * 0.78; const sg = g.createRadialGradient(x - 10, C - 10, 4, x, C, 34); sg.addColorStop(0, "#f4f4f4"); sg.addColorStop(0.5, "#8a9094"); sg.addColorStop(1, "#2a2e30"); g.beginPath(); g.arc(x, C, 30, 0, 7); g.fillStyle = sg; g.fill(); });
+  g.fillStyle = "#30353a"; g.fillRect(C - 14, C + 212, 28, 34); g.fillStyle = "#ddd"; g.font = "bold 9px Arial"; g.fillText("FLINDERS", C, C + 258);
+  // brass bezel
+  const br = g.createLinearGradient(C - 190, C - 190, C + 190, C + 190); br.addColorStop(0, "#f6e29a"); br.addColorStop(0.5, "#b8862a"); br.addColorStop(1, "#7a5418"); g.beginPath(); g.arc(C, C, 192, 0, 7); g.fillStyle = br; g.fill();
+  // azimuth circle (rotatable)
+  g.save(); g.translate(C, C); g.rotate(S.ring * D2R);
+  g.beginPath(); g.arc(0, 0, 186, 0, 7); g.arc(0, 0, 166, 0, 7, true); g.fillStyle = "#222628"; g.fill();
+  for (let d = 0; d < 360; d += 5) { const a = d * D2R, L = d % 10 ? 4 : 8; g.strokeStyle = "#ddd"; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.sin(a) * 186, -Math.cos(a) * 186); g.lineTo(Math.sin(a) * (186 - L), -Math.cos(a) * (186 - L)); g.stroke(); }
+  g.strokeStyle = "rgba(255,230,120,.85)"; g.lineWidth = 2; g.setLineDash([6, 6]); g.beginPath(); g.moveTo(0, 190); g.lineTo(0, -320); g.stroke(); g.setLineDash([]);
+  g.fillStyle = "#1a1a1a"; g.fillRect(-9, -206, 18, 30); g.strokeStyle = "#ffd84a"; g.lineWidth = 2; g.beginPath(); g.moveTo(0, -206); g.lineTo(0, -176); g.stroke();
+  g.fillStyle = "#1a1a1a"; g.fillRect(-12, 174, 24, 28); g.fillStyle = "#ffd84a"; g.fillRect(-1.5, 178, 3, 20);
+  g.fillStyle = "#4a5a66"; g.beginPath(); g.moveTo(-10, -168); g.lineTo(10, -168); g.lineTo(6, -150); g.lineTo(-6, -150); g.fill();
+  g.fillStyle = "#ffd84a"; g.font = "bold 10px Arial"; g.textAlign = "center"; g.fillText("SIGHT", 0, -210); g.restore();
+  // bowl + card
+  g.beginPath(); g.arc(C, C, 164, 0, 7); g.fillStyle = "#0e1214"; g.fill();
+  g.save(); g.translate(C, C); g.scale(1, Math.cos(rollA * 0.5)); g.rotate((-hc) * D2R);
+  g.beginPath(); g.arc(0, 0, 156, 0, 7); g.fillStyle = S.lamp ? "#ffe8c8" : "#f6f4ee"; g.fill();
+  for (let d = 0; d < 360; d++) { const a = d * D2R, L = d % 10 === 0 ? 16 : d % 5 === 0 ? 10 : 6; g.strokeStyle = "#111"; g.lineWidth = d % 10 === 0 ? 1.8 : 0.8; g.beginPath(); g.moveTo(Math.sin(a) * 156, -Math.cos(a) * 156); g.lineTo(Math.sin(a) * (156 - L), -Math.cos(a) * (156 - L)); g.stroke(); }
+  for (let d = 0; d < 360; d += 10) { g.save(); g.rotate(d * D2R); g.fillStyle = "#111"; g.font = (d % 90 ? "bold 10px" : "bold 12px") + " Arial"; g.textAlign = "center"; g.fillText(String(d).padStart(3, "0"), 0, -127); g.restore(); }
+  [["N", 0], ["E", 90], ["S", 180], ["W", 270]].forEach(([l, d]) => { g.save(); g.rotate(d * D2R); g.fillStyle = l === "N" ? "#c01818" : "#111"; g.font = "900 26px Georgia"; g.textAlign = "center"; g.fillText(l, 0, -86); g.restore(); });
+  for (const [l, d] of [["NE", 45], ["SE", 135], ["SW", 225], ["NW", 315]]) { g.save(); g.rotate(d * D2R); g.fillStyle = "#333"; g.font = "bold 13px Georgia"; g.textAlign = "center"; g.fillText(l, 0, -92); g.restore(); }
+  for (let i = 0; i < 8; i++) { g.save(); g.rotate(i * 45 * D2R); g.beginPath(); g.moveTo(0, -70); g.lineTo(i % 2 ? 7 : 10, 0); g.lineTo(0, 0); g.closePath(); g.fillStyle = i === 0 ? "#c01818" : i % 2 ? "#777" : "#222"; g.fill(); g.beginPath(); g.moveTo(0, -70); g.lineTo(-(i % 2 ? 7 : 10), 0); g.lineTo(0, 0); g.closePath(); g.fillStyle = i === 0 ? "#ff6060" : i % 2 ? "#bbb" : "#666"; g.fill(); g.restore(); }
+  g.beginPath(); g.arc(0, 0, 9, 0, 7); g.fillStyle = "#b8862a"; g.fill(); g.restore();
+  // lubber line + glass
+  g.fillStyle = "#e01818"; g.fillRect(C - 2, C - 164, 4, 34); g.beginPath(); g.moveTo(C - 8, C - 166); g.lineTo(C + 8, C - 166); g.lineTo(C, C - 154); g.fill();
+  const gl = g.createLinearGradient(C - 150, C - 160, C + 80, C + 100); gl.addColorStop(0, "rgba(255,255,255,.32)"); gl.addColorStop(0.35, "rgba(255,255,255,.06)"); gl.addColorStop(0.6, "rgba(255,255,255,0)"); g.beginPath(); g.arc(C, C, 164, 0, 7); g.fillStyle = gl; g.fill();
+  g.beginPath(); g.ellipse(C - 60, C - 80, 70, 26, -0.6, 0, 7); g.fillStyle = "rgba(255,255,255,.12)"; g.fill();
+  if (!S.lamp && lt() > 18.2) { g.fillStyle = "rgba(0,0,20,.55)"; g.fillRect(0, 0, 700, 700); }
+  // prism reading of azimuth circle
+  const cb = n360(hc + S.ring); $("r_cb").textContent = cb.toFixed(1) + "°"; $("r_hc").textContent = hc.toFixed(1) + "°"; }
+function drawCurve() { const c = $("dc"), q = c.getContext("2d"), W = 256, H = 150, k = coef(); q.clearRect(0, 0, W, H);
+  const y = v => H / 2 - v * 9; q.fillStyle = "#e6f6ea"; q.fillRect(0, y(2), W, y(-2) - y(2)); q.strokeStyle = "#999"; q.lineWidth = 1; q.beginPath(); q.moveTo(0, H / 2); q.lineTo(W, H / 2); q.stroke();
+  for (let h = 0; h <= 360; h += 45) { const x = h / 360 * (W - 20) + 10; q.fillStyle = "#666"; q.font = "9px Arial"; q.textAlign = "center"; q.fillText(String(h).padStart(3, "0"), x, H - 3); q.fillRect(x, H / 2 - 2, 1, 4); }
+  q.strokeStyle = "#c02020"; q.lineWidth = 2; q.beginPath(); let mx = 0; for (let h = 0; h <= 360; h += 3) { const v = devAt(h, k); mx = Math.max(mx, Math.abs(v)); const x = h / 360 * (W - 20) + 10; h ? q.lineTo(x, y(v)) : q.moveTo(x, y(v)); } q.stroke();
+  const xh = S.card / 360 * (W - 20) + 10; q.strokeStyle = "#1e5ad8"; q.setLineDash([3, 3]); q.beginPath(); q.moveTo(xh, 0); q.lineTo(xh, H); q.stroke(); q.setLineDash([]);
+  q.fillStyle = mx <= 2 ? "#108040" : "#c02020"; q.font = "bold 11px Arial"; q.textAlign = "left"; q.fillText("max dev " + mx.toFixed(1) + "°", 6, 12); q.fillStyle = "#555"; q.textAlign = "right"; q.fillText("E +  /  W −", W - 4, 12);
+  if (mx <= 2 && S.tr.read) done("adj"); return mx; }
+// ---------- interaction ----------
+let drag = null;
+cv.addEventListener("pointerdown", e => { const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 700 - C, y = (e.clientY - r.top) / r.height * 700 - C; drag = {a:Math.atan2(x, -y) / D2R, ring:S.ring}; cv.setPointerCapture(e.pointerId); cv.style.cursor = "grabbing"; });
+cv.addEventListener("pointermove", e => { if (!drag) return; const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 700 - C, y = (e.clientY - r.top) / r.height * 700 - C, a = Math.atan2(x, -y) / D2R; S.ring = n360(drag.ring + adiff(a, drag.a)); });
+cv.addEventListener("pointerup", () => { drag = null; cv.style.cursor = "grab"; });
+cv.addEventListener("wheel", e => { e.preventDefault(); S.ring = n360(S.ring + (e.deltaY < 0 ? 0.2 : -0.2) * (e.shiftKey ? 10 : 1)); }, {passive:false});
+document.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { const k = b.dataset.c, d = +b.dataset.d; if (k === "fa") S.fa = Math.max(-6, Math.min(6, S.fa + d)); if (k === "at") S.at = Math.max(-6, Math.min(6, S.at + d)); if (k === "sp") S.sp = Math.max(0, Math.min(5, S.sp + d)); if (k === "fb") S.fb = Math.max(0, Math.min(24, S.fb + d * 3)); ui(); });
+document.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { S.swing = null; S.target = n360((S.target ?? S.hdg) + +b.dataset.h); });
+$("lamp").onclick = () => { S.lamp = !S.lamp; $("lamp").classList.toggle("on", S.lamp); };
+$("roll").onchange = () => S.roll = +$("roll").value;
+$("swing").onclick = () => { S.swing = {i:0, hold:0}; S.target = swingTarget(0); };
+function swingTarget(i) { const want = i * 45; return n360(want + devAt(want) + VAR); }
+function ui() { $("c_fa").textContent = (S.fa > 0 ? "+" : "") + S.fa; $("c_at").textContent = (S.at > 0 ? "+" : "") + S.at; $("c_sp").textContent = ["out", "1", "2", "3", "4", "in"][S.sp]; $("c_fb").textContent = S.fb + '"'; }
+// ---------- exercises ----------
+function done(k) { if (!S.tr[k]) { S.tr[k] = true; tasks(); } }
+function tasks() { const n = TASKS.filter(t => S.tr[t[0]]).length; $("tdone").textContent = n + " / " + TASKS.length; $("tasks").innerHTML = TASKS.map((t, i) => `<div class="task ${S.tr[t[0]] ? "done" : ""}"><span>${S.tr[t[0]] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t[1]}</span></div>`).join(""); }
+function obsInfo() { const m = $("m").value, s = sun(lt());
+  $("obsinfo").innerHTML = m === "gyro" ? `Gyro (true) heading now <b>${S.hdg.toFixed(1)}°T</b> (gyro error 0). Read the compass heading at the lubber line.` : m === "sun" ? (s.alt > 2 ? `Sun's <b>true azimuth ${s.az.toFixed(1)}°T</b> (from azimuth tables at ${String(Math.floor(lt())).padStart(2, "0")}:${String(Math.floor((lt() % 1) * 60)).padStart(2, "0")} LT, alt ${s.alt.toFixed(0)}°). Sight the sun with the azimuth circle.` : "Sun below / too low — use the gyro or transit.") : `Leading lights in line — <b>true bearing ${TRANSIT.toFixed(1)}°T</b> from the chart. Sight them with the azimuth circle when in transit.`; }
+$("m").onchange = obsInfo;
+$("e_go").onclick = () => { const m = $("m").value, c = parseFloat($("e_c").value), t = parseFloat($("e_t").value), ce = parseEW($("e_ce").value), dv = parseEW($("e_d").value), s = sun(lt());
+  const actualC = m === "gyro" ? S.card : n360(S.card + S.ring), trueV = m === "gyro" ? S.hdg : m === "sun" ? s.az : TRANSIT, ceT = adiff(trueV, actualC), dvT = ceT - VAR; let msg = [];
+  const okC = Math.abs(adiff(c, actualC)) <= 1.0, okT = Math.abs(adiff(t, trueV)) <= 0.3, okCE = Math.abs(ce - ceT) <= 1.0, okD = Math.abs(dv - dvT) <= 1.0;
+  if (m !== "gyro" && Math.abs(adiff(n360(S.hdg + S.ring), trueV)) > 3) msg.push('<span class="bad">The azimuth circle is not on the object — sight it first.</span>');
+  msg.push(`Compass ${okC ? '<span class="ok">✔</span>' : `<span class="bad">✘ (${actualC.toFixed(1)}°)</span>`} · True ${okT ? '<span class="ok">✔</span>' : `<span class="bad">✘ (${trueV.toFixed(1)}°)</span>`} · Error ${okCE ? '<span class="ok">✔</span>' : `<span class="bad">✘ (${fEW(ceT)})</span>`} · Deviation ${okD ? '<span class="ok">✔</span>' : `<span class="bad">✘ (${fEW(dvT)})</span>`}`);
+  msg.push(`<span class="small">Error = True − Compass = ${trueV.toFixed(1)} − ${actualC.toFixed(1)} = ${fEW(ceT)} · Deviation = Error − Variation = ${fEW(ceT)} − ${fEW(VAR)} = ${fEW(dvT)} (on compass heading ${S.card.toFixed(0)}°).</span>`);
+  $("e_r").innerHTML = msg.join("<br>"); if (okC && okT && okCE && okD) done(m === "gyro" ? "read" : m === "sun" ? "sun" : "tr"); };
+$("rec").onclick = () => { if (Math.abs(S.cardV) > 0.15 || Math.abs(adiff(S.hdg, S.target ?? S.hdg)) > 0.3) { $("rec").textContent = "● wait — card swinging"; setTimeout(() => $("rec").textContent = "● RECORD this heading", 1500); return; }
+  const hc = S.card, mag = n360(S.hdg - VAR), dv = adiff(mag, hc); S.log = S.log.filter(r => Math.abs(adiff(r.hc, hc)) > 10); S.log.push({hc, t:S.hdg, mag, dv}); S.log.sort((a, b) => a.hc - b.hc);
+  $("dlog").innerHTML = S.log.map(r => `<tr><td>${r.hc.toFixed(1)}°</td><td>${r.t.toFixed(1)}°</td><td>${fEW(VAR)}</td><td>${r.mag.toFixed(1)}°</td><td>${fEW(r.dv)}</td></tr>`).join("");
+  const got = [0, 45, 90, 135, 180, 225, 270, 315].filter(h => S.log.some(r => Math.abs(adiff(r.hc, h)) <= 3)); if (got.length === 8) done("swing"); };
+$("quiz").innerHTML = QUIZ.map((q, i) => `<div class="q"><b>${i + 1}. ${q[0]}</b>${q[1].map((o, j) => `<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join("")}</div>`).join("");
+$("quiz_go").onclick = () => { let n = 0; QUIZ.forEach((q, i) => { const v = document.querySelector(`input[name=q${i}]:checked`); if (v && +v.value === q[2]) n++; }); $("quiz_r").innerHTML = `<span class="${n === QUIZ.length ? "ok" : "bad"}">${n} / ${QUIZ.length} correct</span>`; if (n === QUIZ.length) done("quiz"); };
+document.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => { acc = +b.dataset.acc; document.querySelectorAll("[data-acc]").forEach(q => q.classList.toggle("on", q === b)); });
+$("restart").onclick = () => { S = null; reset(); ui(); };
+// ---------- loop ----------
+let infoT = 0;
+function loop(now) { const rdt = Math.min(0.1, (now - last) / 1000); last = now; const dt = rdt * acc; S.t += dt;
+  if (!S.external) { if (S.target != null) { const d = adiff(S.target, S.hdg); S.hdg = n360(S.hdg + Math.max(-0.6 * rdt * Math.max(1, acc / 4), Math.min(0.6 * rdt * Math.max(1, acc / 4), d))); }
+    if (S.swing) { if (Math.abs(adiff(S.target, S.hdg)) < 0.05) { S.swing.hold += rdt; if (S.swing.hold > 4) { S.swing.i++; S.swing.hold = 0; if (S.swing.i >= 8) { S.swing = null; $("swst").textContent = "Swing complete."; } else S.target = swingTarget(S.swing.i); } } if (S.swing) $("swst").textContent = `Steadying on ${String(S.swing.i * 45).padStart(3, "0")}°C — RECORD when steady`; } }
+  const want = compassHdg(); S.cardV += (adiff(want, S.card) * 1.6 - S.cardV * 1.1) * rdt + Math.sin(S.t * 0.9) * S.roll * 0.004; S.card = n360(S.card + S.cardV * rdt * 6);
+  drawScene(); drawCurve(); $("gy").textContent = S.hdg.toFixed(1) + "°T"; const m = 7.5 * 60 + S.t / 60; $("clk").textContent = String(Math.floor(m / 60) % 24).padStart(2, "0") + ":" + String(Math.floor(m % 60)).padStart(2, "0");
+  if ((infoT += rdt) > 1) { infoT = 0; obsInfo(); } requestAnimationFrame(loop); }
+(function () { const wrap = document.querySelector(".wrap"), dev = $("dev"), box = document.createElement("div"); box.className = "fitbox"; wrap.insertBefore(box, dev); box.appendChild(dev);
+  const side = wrap.querySelector(".side"), hd = document.querySelector("header"), ft = document.querySelector(".foot");
+  function fit() { dev.style.transform = "none"; const w = dev.offsetWidth, h = dev.offsetHeight, narrow = innerWidth <= 900, avH = innerHeight - hd.offsetHeight - ft.offsetHeight - 28, avW = narrow ? innerWidth - 24 : innerWidth - 36 - Math.min(460, Math.max(320, innerWidth * 0.32));
+    const s = Math.max(0.3, Math.min(1.2, avW / w, narrow ? 9 : avH / h)); dev.style.transform = `scale(${s})`; box.style.width = w * s + "px"; box.style.height = h * s + "px"; side.style.maxHeight = narrow ? "none" : avH + "px"; }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300); })();
+reset(); ui(); obsInfo();
+window.MC = {S:() => S, setTrue:h => { S.external = true; S.hdg = n360(h); }, compassHdg, devAt};
+requestAnimationFrame(loop);
+</script></body></html>

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY SAT-C Terminal</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(ellipse at 30% 20%,#16232a,#06090b);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}
+.wrap{display:flex;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:clip}.fitbox>*{transform-origin:0 0}
+.side{flex:1 1 360px;min-width:300px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.side{max-height:none!important}}
+.stage{width:1120px;display:grid;gap:16px;padding:16px;border-radius:14px;background:linear-gradient(#3a4247,#22292d);box-shadow:inset 0 2px 0 rgba(255,255,255,.12),0 30px 60px rgba(0,0,0,.6)}
+/* terminal unit (panel-mount, dark grey) */
+.stage{grid-template-columns:690px 1fr}
+.tu{background:linear-gradient(#6d7277,#4c5156);border-radius:10px;padding:16px 18px 10px;box-shadow:inset 0 2px 0 rgba(255,255,255,.25),inset 0 -3px 8px rgba(0,0,0,.4),0 14px 26px rgba(0,0,0,.6);position:relative}
+.tu .scrw{background:#26292c;border-radius:14px 14px 30px 30px;padding:14px 16px 26px;box-shadow:inset 0 4px 12px #000}
+.tu .logo{position:absolute;left:30px;top:2px;font:800 12px Arial;letter-spacing:.2em;color:#c9b77a;text-shadow:0 1px 0 #000}
+.screw{position:absolute;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ccc,#666);box-shadow:inset 0 0 0 1px #333}.screw::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:2px;background:#333}
+#scr{position:relative;width:624px;height:468px;margin:0 auto;background:#1636e8;color:#fff;font:15px/19px "Lucida Console","Courier New",monospace;overflow:hidden;border-radius:2px;box-shadow:0 0 22px rgba(60,100,255,.45)}
+#scr::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(rgba(0,0,0,.06) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.07),transparent 70%)}
+.mb{display:flex;gap:0;padding:8px 8px 3px;white-space:nowrap;font-size:14px}.mb span{padding:0 3px;cursor:pointer}.mb span:hover,.mb span.on{background:#fff;color:#1636e8}.mb .gap{flex:1;min-width:6px;padding:0!important;cursor:default}.mb .gap:hover{background:none}
+.hr{height:2px;background:#cfd6ff;margin:0 10px}
+.main{position:absolute;left:0;right:0;top:36px;bottom:58px;padding:10px 16px;white-space:pre;overflow:hidden}
+.main .c2{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.main .kl{display:inline-block;width:150px}.main .v{color:#fff}
+.bot{position:absolute;left:0;right:0;bottom:0;height:56px;padding:6px 16px 0;border-top:2px solid #cfd6ff;margin:0 10px;font-size:14px;line-height:18px;white-space:pre;display:grid;grid-template-columns:1.1fr 1fr 1.1fr}
+.w{color:#ffff55;font-weight:700}
+.win{position:absolute;background:#1636e8;color:#fff;border:2px solid #fff;box-shadow:6px 6px 0 rgba(0,0,0,.45);padding:12px 12px 8px;min-width:240px}
+.win .tt{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#1636e8;padding:0 8px;white-space:nowrap}
+.win .it{padding:0 6px;cursor:pointer;white-space:pre}.win .it.sel{background:#fff;color:#1636e8}
+.win label{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:3px 0}.win input,.win select{font:14px "Lucida Console","Courier New",monospace;background:#fff;color:#000;border:1px solid #000;padding:0 4px}
+.win .bt{display:flex;gap:14px;justify-content:center;margin-top:8px}.win .bt span{border:1px solid #fff;padding:0 10px;cursor:pointer}.win .bt span:hover{background:#fff;color:#1636e8}
+.win.red{background:#e8102a;border-color:#ffb0b8}.win.red .tt{background:#e8102a}.win.red .bt span{border-color:#fff}
+.win .pg{height:14px;background:#000;margin:6px 0;border:1px solid #fff}.win .pg i{display:block;height:100%;background:#fff}
+.win.list .row{white-space:pre;cursor:pointer;padding:0 4px}.win.list .row.sel{background:#fff;color:#1636e8}.win.list .row.new{color:#ffff55}
+.win.view pre{margin:0;white-space:pre-wrap;font:14px/18px "Lucida Console","Courier New",monospace;max-height:310px;overflow:auto}
+.win .esc{text-align:center;margin-top:10px}
+#ed{position:absolute;left:12px;right:12px;top:62px;bottom:62px;background:#1636e8;color:#fff;border:1px solid #cfd6ff;font:15px/19px "Lucida Console","Courier New",monospace;resize:none;outline:none;padding:4px}
+.blink{animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+/* bottom strip of terminal: keyboard port, SD card, distress, power */
+.strip{display:flex;align-items:center;gap:16px;margin-top:10px;color:#ddd;font:700 10px Arial;letter-spacing:.05em}
+.port{width:70px;text-align:center}.port i{display:block;height:14px;margin-top:3px;background:#1a1c1e;border-radius:3px;box-shadow:inset 0 2px 3px #000}
+.sd{flex:0 0 150px}.sd i{display:block;height:8px;margin-top:4px;background:#111;border-radius:2px}
+.dlab{flex:0 0 150px;background:#e6e6e0;color:#222;font:600 8.5px/1.25 Arial;padding:4px 6px;clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%);letter-spacing:0}
+.dwrap{position:relative;width:62px;height:66px;background:#3a3d40;border-radius:6px;box-shadow:inset 0 2px 5px #000}
+.dbtn{position:absolute;left:11px;top:15px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff6a6a,#c00 60%,#600);box-shadow:0 3px 0 #400;cursor:pointer;color:#fff;font:800 7.5px Arial;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none}
+.dbtn.lit{box-shadow:0 3px 0 #400,0 0 18px 6px rgba(255,40,40,.85);background:radial-gradient(circle at 40% 35%,#fff,#ff3030 50%,#a00)}
+.dbtn.press{transform:translateY(2px);box-shadow:0 1px 0 #400}
+.cover{position:absolute;left:5px;top:6px;width:52px;height:56px;border-radius:5px;background:linear-gradient(135deg,rgba(255,255,255,.45),rgba(200,220,255,.12));border:1px solid rgba(255,255,255,.6);transform-origin:50% 0;transition:transform .4s;cursor:pointer;box-shadow:inset 0 0 8px rgba(255,255,255,.35)}
+.cover.open{transform:perspective(200px) rotateX(-120deg)}
+.pwr{margin-left:auto;width:74px;height:40px;border-radius:20px;background:#1d1f21;display:flex;align-items:center;justify-content:space-around;box-shadow:inset 0 2px 4px #000}.pwr i{width:8px;height:8px;border-radius:50%;background:#3f3;box-shadow:0 0 6px #3f3}.pwr span{border:1px solid #6c6;border-radius:12px;padding:2px 6px;color:#9e9;font:700 10px Arial}
+.hold{height:4px;background:#222;border-radius:2px;margin-top:3px;overflow:hidden}.hold i{display:block;height:100%;width:0;background:#f33}
+/* PC keyboard (beige) */
+.kb{margin:12px auto 0;width:640px;background:linear-gradient(#e8e2d0,#cfc8b3);border-radius:10px;padding:8px 10px 10px;box-shadow:0 10px 18px rgba(0,0,0,.55),inset 0 1px 0 #fff}
+.kb .strip2{display:grid;grid-template-columns:40px repeat(10,1fr) 80px;gap:3px;font:700 8px Arial;color:#ddd;margin-bottom:2px}.kb .strip2 span{background:#2a2c30;text-align:center;border-radius:2px;padding:1px 0}.kb .strip2 .x{background:none}
+.kr{display:flex;gap:3px;margin-top:3px;justify-content:center}
+.k{flex:0 0 auto;min-width:36px;height:30px;background:linear-gradient(#fbf8ef,#ddd6c3);border:1px solid #9d9686;border-bottom-width:3px;border-radius:4px;font:700 11px Arial;color:#333;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}.k:active{transform:translateY(2px);border-bottom-width:1px}.k.f{min-width:44px;height:24px;font-size:10px}.k.w2{min-width:60px}.k.sp{min-width:250px}
+.kleds{display:flex;gap:10px;justify-content:flex-end;font:700 7.5px Arial;color:#555}.kleds i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3c3;margin-right:3px;box-shadow:0 0 4px #3f3}
+/* dot-matrix printer */
+.col{display:flex;flex-direction:column;gap:12px}
+.prn{position:relative;padding-top:210px}
+.sheet{position:absolute;left:58px;right:58px;top:0;height:250px;background:repeating-linear-gradient(#fff 0 26px,#f6f6f6 26px 27px);border-radius:3px 3px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,.4);overflow:hidden}
+.sheet .tx{position:absolute;left:10px;right:10px;bottom:0;font:9.5px/11px "Courier New",monospace;color:#2c3a6a;white-space:pre-wrap;letter-spacing:.02em;text-shadow:0 0 .4px #2c3a6a}
+.sheet.nlq .tx{font-weight:700}
+.tractor{position:absolute;left:44px;right:44px;top:190px;height:24px;display:flex;justify-content:space-between}.tractor i{width:22px;height:24px;background:#d9d4c2;border:1px solid #8f8a78;border-radius:3px}
+.pbody{position:relative;background:linear-gradient(#ebe6d6,#cdc6b0);border-radius:10px 10px 6px 6px;padding:0 0 10px;box-shadow:0 12px 22px rgba(0,0,0,.6)}
+.pcover{height:110px;background:linear-gradient(#2c2e31,#141516);border-radius:10px 10px 4px 4px;position:relative;box-shadow:inset 0 2px 0 rgba(255,255,255,.12)}
+.pcover .warn{position:absolute;left:14px;top:12px;width:70px;height:34px;background:#f2f2ee;border-radius:2px;font:700 6.5px Arial;color:#222;padding:2px;line-height:1.2}.pcover .warn b{color:#c90;display:block}
+.vent{height:16px;margin:8px 8px 0;background:repeating-linear-gradient(90deg,#d8d2bf 0 5px,#b1aa95 5px 7px);border-radius:3px}
+.ppanel{margin:10px 14px 0;background:#1e2022;border-radius:4px;padding:8px 10px;display:flex;align-items:center;gap:6px;color:#bbb;font:700 10px Arial}
+.ppanel .nm{color:#ddd;font:800 12px Arial;letter-spacing:.14em;margin-right:auto}.ppanel .pb{background:#333638;border:1px solid #111;border-radius:3px;color:#ddd;font:700 9px Arial;padding:6px 6px;cursor:pointer}.ppanel .pb:active{transform:translateY(1px)}
+.pleds{display:flex;flex-direction:column;gap:4px;margin-left:4px}.pleds span{display:flex;align-items:center;gap:4px;font:700 8px Arial}.pleds i{width:7px;height:7px;border-radius:50%;background:#333}.pleds i.g{background:#7f7;box-shadow:0 0 6px #7f7}.pleds i.r{background:#f55;box-shadow:0 0 6px #f55}
+.plbl{margin:8px auto 0;width:200px;background:#eee;color:#333;text-align:center;font:800 11px Arial;letter-spacing:.18em;padding:3px;border-radius:2px}
+/* side */
+.led{display:inline-flex;align-items:center;gap:4px}.led i{width:9px;height:9px;border-radius:50%;background:#444;display:inline-block}.led i.g{background:#3f3;box-shadow:0 0 6px #3f3}.led i.r{background:#f33;box-shadow:0 0 8px #f33}.led i.y{background:#fc3;box-shadow:0 0 6px #fc3}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}
+.small{color:var(--mut);font-size:12px}.kv{width:100%;border-collapse:collapse}.kv td{padding:2px 5px;border-bottom:1px solid #22323a;font-size:12px}.kv td:first-child{font-family:Consolas,monospace;color:#ffd84a;width:44px}
+.ref{font-size:12.5px;line-height:1.5}.ref b{color:#ffd84a}.ref ol{margin:4px 0 0 18px;padding:0}
+.inj{display:flex;flex-wrap:wrap;gap:6px}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style></head><body>
+<header><b>ECADEMY</b><span>SAT-C TERMINAL (Inmarsat-C type)</span><span class="sub">· GMDSS · login · position · EGC SafetyNET · messages · special access codes · distress alert · tests (training)</span><span class="sp"></span><button class="btn" id="resetb">↺ RESET TERMINAL</button></header>
+<div class="wrap">
+ <div class="stage" id="dev">
+  <div>
+   <div class="tu"><span class="logo">ECADEMY</span><i class="screw" style="left:6px;top:6px"></i><i class="screw" style="right:6px;top:6px"></i><i class="screw" style="left:6px;bottom:6px"></i><i class="screw" style="right:6px;bottom:6px"></i>
+    <div class="scrw"><div id="scr"></div></div>
+    <div class="strip"><div class="port">KEYBOARD<i></i></div><div class="sd">SD CARD ▯<i></i></div>
+     <div class="dlab">Keep pressed for 4 sec in case of DISTRESS. The alert is transmitted with steady lighting.<div class="hold"><i id="holdbar"></i></div></div>
+     <div class="dwrap"><div class="dbtn" id="dbtn">DISTRESS</div><div class="cover" id="cover" title="Lift the cover"></div></div>
+     <div class="pwr"><i></i><span>POWER</span></div></div></div>
+   <div class="kb" id="kbd"></div>
+  </div>
+  <div class="col">
+   <div class="prn"><div class="sheet" id="sheet"><div class="tx" id="paper"></div></div><div class="tractor"><i></i><i></i></div>
+    <div class="pbody"><div class="pcover"><div class="warn"><b>⚠ WARNING</b>Do not touch the print head — hot</div></div><div class="vent"></div>
+     <div class="ppanel"><span class="nm">ECADEMY &nbsp;PP-E1</span><span class="pb" data-p="park">P.PARK</span><span class="pb" data-p="ff">FF</span><span class="pb" data-p="lf">LF</span><span class="pb" data-p="nlq">NLQ</span><span class="pb" data-p="on">ON LINE</span><div class="pleds"><span><i id="pl_pwr" class="g"></i>POWER</span><span><i id="pl_on" class="g"></i>ON LINE</span><span><i id="pl_out"></i>P.OUT</span></div></div></div>
+    <div class="plbl">SAT-C PRINTER</div></div>
+   <div class="card"><h3>TERMINAL LEDs</h3><div class="small"><span class="led"><i id="l_sync"></i> SYNC</span> &nbsp; <span class="led"><i id="l_log"></i> LOGIN</span> &nbsp; <span class="led"><i id="l_tx"></i> TX</span> &nbsp; <span class="led"><i id="l_dist"></i> DISTRESS</span></div><div class="small" id="pstat" style="margin-top:4px"></div></div>
+  </div>
+ </div>
+ <div class="side">
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>INSTRUCTOR — INJECT</h3><div class="inj">
+   <button class="btn" data-inj="nav">EGC: NAVAREA XI warning</button><button class="btn" data-inj="met">EGC: MET forecast</button><button class="btn" data-inj="sar">EGC: SAR distress relay</button><button class="btn" data-inj="pir">EGC: piracy (urgent)</button><button class="btn" data-inj="blk">Antenna blocked (lose sync)</button><button class="btn" data-inj="gps">GPS failure</button><button class="btn" data-inj="pout">Printer paper out</button><button class="btn" data-inj="fix">Restore all</button></div>
+   <div class="small" style="margin-top:6px">Ship: MV ECADEMY TRAINER · IMN 4548 00123 (training) · Manila Bay · NAVAREA XI</div></div>
+  <div class="card"><h3>SPECIAL ACCESS CODES (two-digit)</h3><table class="kv"><tbody>
+   <tr><td>32</td><td>Medical advice (radio medical / TMAS)</td></tr><tr><td>38</td><td>Medical assistance (evacuation)</td></tr><tr><td>39</td><td>Maritime assistance (SAR / RCC)</td></tr><tr><td>41</td><td>Meteorological reports</td></tr><tr><td>42</td><td>Navigational hazards &amp; warnings</td></tr><tr><td>43</td><td>Ship position reports</td></tr></tbody></table></div>
+  <div class="card"><h3>DISTRESS ALERT — SAT-C</h3><div class="ref"><ol>
+   <li>Update the <b>distress alert setup</b> (F9 Distress): nature of distress, position, course, speed.</li>
+   <li>Lift the cover, press and <b>hold the DISTRESS button 4 s</b> (it lights steady when sent).</li>
+   <li>Wait for the <b>distress alert acknowledgement</b> from the LES / RCC.</li>
+   <li>Follow with a <b>distress priority message</b> (F9) giving full details.</li>
+   <li>Keep listening on VHF 16 / DSC and other GMDSS means.</li></ol></div></div>
+  <div class="card"><h3>FALSE DISTRESS ALERT — CANCEL</h3><div class="ref">Do <b>not</b> switch off. Send a <b>distress priority message</b> to the RCC via the same LES: <i>"CANCEL MY INMARSAT-C DISTRESS ALERT OF (date/time UTC) — ship name, call sign, IMN, position."</i> Inform the Master and record it in the GMDSS radio logbook.</div></div>
+  <div class="card"><h3>ROUTINE CHECKS (training)</h3><div class="ref"><b>Daily:</b> terminal logged in, position updated (≤ 4 h), printer paper. <b>Periodic:</b> link test / PV test as required by the company and the equipment manual. Record all in the GMDSS radio logbook. Never test the distress button except in an approved test mode.</div></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · not a real GMDSS terminal · fictional LES codes, IMN and messages · NOT FOR REAL DISTRESS COMMUNICATION</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const OCEANS = ["AOR-E", "AOR-W", "IOR", "POR"], VIS = {IOR:true, POR:true};
+const LES = {IOR:[["351", "LES 351 (IOR, training)"], ["352", "LES 352 (IOR, training)"]], POR:[["251", "LES 251 (POR, training)"], ["252", "LES 252 (POR, training)"]]};
+const NATURES = ["Undesignated", "Fire / Explosion", "Flooding", "Collision", "Grounding", "Listing / Capsizing", "Sinking", "Disabled and adrift", "Abandoning ship", "Piracy / Armed robbery attack", "Man overboard"];
+const SPC = [["32", "Medical advice"], ["38", "Medical assistance"], ["39", "Maritime assistance"], ["41", "Meteorological report"], ["42", "Navigational hazard"], ["43", "Ship position report"]];
+const NAVAREAS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI"];
+const UTC0 = Date.UTC(2026, 9, 2, 1, 0, 0);
+let S;
+function init() { S = {t:0, ocean:"", login:false, sync:false, blocked:false, gpsFail:false, busy:null, pos:{lat:14 + 30.2 / 60, lon:120 + 49.6 / 60, t:-6.2 * 3600}, posMode:"GPS",
+  egcArea:"X", egcAuto:true, ed:"", edOpen:false, txlog:[], rxlog:[], egclog:[], dist:{les:"", nature:"Undesignated", course:45, speed:12}, distState:null, holdT:0, coverOpen:false,
+  alarm:null, prOff:false, prOut:false, pq:[], tr:S ? S.tr : {}, win:[], msgN:1200, egcN:4300, sched:[[25, "nav"], [70, "met"]], ackT:0, pending:[]}; $("paper").textContent = ""; render(); }
+const utcD = () => new Date(UTC0 + S.t * 1000), hm = d => d.toISOString().slice(11, 16).replace(":", ""), stamp = () => { const d = utcD(); return d.toISOString().slice(0, 10) + " " + d.toISOString().slice(11, 19) + " UTC"; };
+const dm = (v, n) => { const a = Math.abs(v), d = Math.floor(a); return `${String(d).padStart(n === "EW" ? 3 : 2, "0")}-${((a - d) * 60).toFixed(2).padStart(5, "0")}${n === "EW" ? (v >= 0 ? "E" : "W") : (v >= 0 ? "N" : "S")}`; };
+const posAge = () => (S.t - S.pos.t) / 3600;
+// ---------- audio ----------
+let AC = null; function beep(f, d, v) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.value = v || .06; o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) {} }
+// ---------- printer ----------
+function print(txt) { if (S.prOff || S.prOut) { S.pq.push(txt); leds(); return; } const p = $("paper"); let t = p.textContent + txt + "\n\n"; const L = t.split("\n"); if (L.length > 160) t = L.slice(-160).join("\n"); p.textContent = t; beep(220, .25, .02); }
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { const k = b.dataset.p, p = $("paper");
+  if (k === "on") { if (S.prOut) { S.prOut = false; } S.prOff = !S.prOff; if (!S.prOff && S.pq.length) { const q = S.pq.splice(0); q.forEach(print); } }
+  if (k === "ff") p.textContent += "\n".repeat(12); if (k === "lf") p.textContent += "\n"; if (k === "nlq") $("sheet").classList.toggle("nlq"); if (k === "park") p.textContent += "[paper parked]\n"; leds(); });
+// ---------- windows ----------
+function push(w) { S.win.push(w); render(); } function pop() { S.win.pop(); render(); } function closeAll() { S.win = []; render(); }
+function menu(title, items, x) { push({type:"menu", title, items, sel:0, x:x || 10, y:44}); }
+function msgbox(title, lines, red, after) { push({type:"msg", title, lines, red, after}); }
+function view(title, text) { push({type:"view", title, text}); }
+const MENUS = {
+ F1:["File", [["New", () => { S.ed = ""; S.edOpen = true; closeAll(); }], ["Open (saved / drafts)", () => openList("Saved messages", S.txlog.filter(m => m.draft !== false).map(m => m), m => { S.ed = m.text; S.edOpen = true; closeAll(); })], ["Save", () => { S.txlog.unshift({draft:true, ref:"DRAFT", t:stamp(), to:"-", text:S.ed, st:"saved"}); msgbox("File", ["Draft saved."]); }], ["Print", () => { print(S.ed || "(empty)"); msgbox("File", ["Sent to printer."]); }]]],
+ F2:["Edit", [["Edit message", () => { S.edOpen = true; closeAll(); }], ["Clear text", () => { S.ed = ""; closeAll(); }], ["Position report template", () => { S.ed = posTemplate(); S.edOpen = true; closeAll(); }]]],
+ F3:["Transmit", [["Send message…", () => txForm()], ["Send distress priority message…", () => txForm(true)]]],
+ F4:["EGC", [["EGC message log", () => egcList()], ["EGC setup (area)", () => egcSetup()], ["Print last EGC", () => { if (S.egclog[0]) print(S.egclog[0].text); closeAll(); }]]],
+ F5:["Reports", [["Position report (code 43)…", () => { S.ed = posTemplate(); txForm(false, {dt:"Special access code", ad:"43"}); }], ["Data report program", () => view("Data report program", `Running Report Program (POLL) : ${S.login ? "ACTIVE" : "STOPPED (not logged in)"}\nInterval: 6 h  ·  Destination: company DNID (training)\nLast report: ${S.lastRep || "none"}`)]]],
+ F6:["Logs", [["Transmit log", () => openList("Transmit log", S.txlog, m => view("Message " + m.ref, `TO: ${m.to}\nLES: ${m.les || "-"}  ${m.t}\nSTATUS: ${m.st}\n\n${m.text}`))], ["Receive log", () => openList("Receive log", S.rxlog, m => { m.isnew = false; view(m.title, m.text); if (m.k === "med") done("med2"); })], ["Distress log", () => view("Distress log", S.distLog || "No distress alerts sent.")]]],
+ F7:["Options", [["Login…", () => loginForm()], ["Logout", () => logout()], ["Link test", () => test("link")], ["PV test (perf. verification)", () => test("pv")], ["Self test", () => test("self")]]],
+ F8:["Setup", [["Position (GPS / manual)…", () => posForm()], ["EGC setup (area)…", () => egcSetup()], ["Station information", () => view("Station information", `Ship: MV ECADEMY TRAINER\nCall sign: 4DTR9 (training)\nMMSI: 548000123 (training)\nIMN: 454800123 (training)\nTerminal: ECADEMY SAT-C (class 2)\nNavigation input: GPS (NMEA)\nPrinter: ECADEMY PP-E1`)]]],
+ F9:["Distress", [["Distress alert setup…", () => distForm()], ["Distress priority message…", () => txForm(true)], ["Cancel a false alert (procedure)", () => view("False distress alert", "1. Do NOT switch the terminal off.\n2. F9 Distress → Distress priority message to the RCC via the same LES.\n3. Text: CANCEL MY INMARSAT-C DISTRESS ALERT OF <date/time UTC>\n   ship name, call sign, IMN, position.\n4. Inform the Master, log it in the GMDSS radio logbook.")]]],
+ F10:["StopAlarm", null]};
+function posTemplate() { return `POSITION REPORT\nMV ECADEMY TRAINER / IMN 454800123\nDATE/TIME: ${stamp()}\nPOSITION: ${dm(S.pos.lat)} ${dm(S.pos.lon, "EW")}\nCOURSE 045 SPEED 12.0 KN\nNEXT PORT: CEBU  ETA 03 OCT 0600LT\nALL WELL\nMASTER`; }
+function openList(title, arr, open) { push({type:"list", title, arr, sel:0, open}); }
+function keyF(k) { if (k === "F10") { stopAlarm(); return; } const m = MENUS[k]; S.win = []; render(); const el = scr.querySelector(`[data-f="${k}"]`); let x = el ? el.offsetLeft : 10; x = Math.min(x, 290); menu(m[0], m[1], x); const e2 = scr.querySelector(`[data-f="${k}"]`); if (e2) e2.classList.add("on"); }
+function stopAlarm() { if (S.alarm) { S.alarm = null; done("alarm"); } render(); }
+// ---------- forms ----------
+function form(title, fields, okLabel, ok, red) { push({type:"form", title, fields, okLabel, ok, red}); }
+function val(w, k) { return w.fields.find(f => f.k === k).v; }
+function loginForm() { form("Login — ocean region", [{k:"oc", l:"Ocean region", sel:OCEANS, v:S.ocean || "IOR"}], "LOGIN", w => doLogin(val(w, "oc"))); }
+function doLogin(oc) { closeAll(); busy(`Scanning NCS common channel — ${oc}`, 3, () => {
+  if (!VIS[oc] || S.blocked) { S.sync = false; S.ocean = oc; return msgbox("Login failed", [S.blocked ? "No NCS signal — antenna blocked / no line of sight." : `No NCS signal from ${oc}.`, oc.startsWith("AOR") ? "The AOR satellites are below your horizon." : "Check antenna.", "Select an ocean region visible from your position (IOR or POR)."], true); }
+  S.sync = true; S.ocean = oc; busy(`NCS ${oc} synchronised — logging in`, 3, () => { S.login = true; S.dist.les = LES[oc][0][0]; done("login"); msgbox("Login", [`Login acknowledged by NCS ${oc}.`, `Default LES set to ${LES[oc][0][1]}.`, posAge() > 4 ? "WARNING: position older than 4 h — update it (F8 Setup)." : "Position OK."], posAge() > 4); }); }); }
+function logout() { closeAll(); if (!S.login) return msgbox("Logout", ["Terminal is not logged in."]); busy("Logging out", 2, () => { S.login = false; msgbox("Logout", ["Logout acknowledged. (Log out before switching off or changing ocean region.)"]); }); }
+function posForm() { form("Position setup", [{k:"m", l:"Source", sel:["GPS", "Manual"], v:S.posMode}, {k:"lat", l:"Manual Lat (dd mm.mm N/S)", v:"14 30.20 N"}, {k:"lon", l:"Manual Lon (ddd mm.mm E/W)", v:"120 49.60 E"}], "UPDATE", w => {
+  S.posMode = val(w, "m"); if (S.posMode === "GPS") { if (S.gpsFail) return msgbox("Position", ["NO GPS DATA — navigation input failed.", "Enter the position MANUALLY (Source: Manual)."], true); S.pos = {lat:14 + 30.2 / 60 + S.t / 3600 * 0.14, lon:120 + 49.6 / 60 + S.t / 3600 * 0.14, t:S.t}; }
+  else { const p = s => { const m = String(s).trim().toUpperCase().match(/^(\d+)\s+(\d+(?:\.\d+)?)\s*([NSEW])$/); return m ? (+m[1] + m[2] / 60) * (/[SW]/.test(m[3]) ? -1 : 1) : NaN; }; const la = p(val(w, "lat")), lo = p(val(w, "lon")); if (isNaN(la) || isNaN(lo)) return msgbox("Position", ["Format: 14 30.20 N / 120 49.60 E"], true); S.pos = {lat:la, lon:lo, t:S.t}; }
+  done("pos"); closeAll(); msgbox("Position", [`Position updated ${hm(utcD())} UTC:`, `${dm(S.pos.lat)} ${dm(S.pos.lon, "EW")}  (${S.posMode})`]); }); }
+function egcSetup() { form("EGC SafetyNET setup", [{k:"a", l:"NAVAREA / METAREA", sel:NAVAREAS, v:S.egcArea}, {k:"p", l:"Auto print", sel:["ON", "OFF"], v:S.egcAuto ? "ON" : "OFF"}], "SAVE", w => { S.egcArea = val(w, "a"); S.egcAuto = val(w, "p") === "ON"; if (S.egcArea === "XI") done("egcset"); closeAll(); msgbox("EGC", [`EGC area: NAVAREA/METAREA ${S.egcArea}.`, "Distress & SAR broadcasts for your position are always received."]); }); }
+function distForm() { const oc = S.ocean && LES[S.ocean] ? S.ocean : "IOR"; form("Distress alert setup", [{k:"les", l:"LES", sel:LES[oc].map(l => l[0]), v:S.dist.les || LES[oc][0][0]}, {k:"n", l:"Nature of distress", sel:NATURES, v:S.dist.nature}, {k:"c", l:"Course (°)", v:String(S.dist.course)}, {k:"s", l:"Speed (kn)", v:String(S.dist.speed)}], "SAVE", w => {
+  S.dist = {les:val(w, "les"), nature:val(w, "n"), course:+val(w, "c") || 0, speed:+val(w, "s") || 0}; closeAll(); msgbox("Distress alert setup", [`Saved: ${S.dist.nature}`, `LES ${S.dist.les} · position ${dm(S.pos.lat)} ${dm(S.pos.lon, "EW")} (${posAge().toFixed(1)} h old)`, "Lift the cover and HOLD the DISTRESS button 4 s to send."], S.dist.nature === "Undesignated"); }); }
+function txForm(distress, pre) { if (!S.ed.trim()) return msgbox("Transmit", ["No message text. Write the message first (F1 File New / F2 Edit)."], true);
+  const oc = S.ocean && LES[S.ocean] ? S.ocean : "IOR";
+  form(distress ? "DISTRESS PRIORITY MESSAGE" : "Transmit message", [{k:"les", l:"LES", sel:LES[oc].map(l => l[0]), v:S.dist.les || LES[oc][0][0]}, {k:"dt", l:"Destination", sel:distress ? ["RCC (via LES)"] : ["E-mail", "Telex", "Special access code"], v:distress ? "RCC (via LES)" : (pre && pre.dt) || "E-mail"}, {k:"ad", l:"Address / number / code", v:distress ? "RCC" : (pre && pre.ad) || "ops@ecademy-shipping.test"}, {k:"pr", l:"Priority", sel:distress ? ["DISTRESS"] : ["Routine"], v:distress ? "DISTRESS" : "Routine"}, {k:"cf", l:"Delivery confirmation", sel:["Yes", "No"], v:"Yes"}], "SEND", w => send(w, distress), distress); }
+function send(w, distress) { if (!S.login) return msgbox("Transmit", ["NOT LOGGED IN — log in first (F7 Options → Login)."], true); if (!S.sync) return msgbox("Transmit", ["NO NCS SYNC."], true);
+  const les = val(w, "les"), dt = val(w, "dt"), ad = String(val(w, "ad")).trim(), cf = val(w, "cf") === "Yes"; let code = null;
+  if (dt === "Special access code") { code = ad.replace(/\D/g, ""); if (!SPC.find(c => c[0] === code)) return msgbox("Transmit", ["Unknown special access code. Use 32, 38, 39, 41, 42 or 43."], true); }
+  if (dt === "E-mail" && !/@/.test(ad)) return msgbox("Transmit", ["Enter a valid e-mail address."], true);
+  const ref = String(++S.msgN), m = {ref, les, to:dt === "Special access code" ? `CODE ${code} (${SPC.find(c => c[0] === code)[1]})` : `${dt}: ${ad}`, t:stamp(), text:S.ed, st:"sending", distress, draft:false};
+  closeAll(); S.tx = true; busy(`Calling LES ${les} — ${distress ? "DISTRESS PRIORITY" : "routine"}`, 2, () => busy(`Sending message ${ref}`, 3, () => { S.tx = false; m.st = "accepted by LES"; S.txlog.unshift(m);
+    msgbox("Transmit", [`Message ${ref} accepted by LES ${les}.`, cf ? "Delivery confirmation will follow." : ""]);
+    const txt = S.ed.toUpperCase(); S.ed = ""; S.edOpen = false;
+    if (distress) { done("dmsg"); if (/CANCEL/.test(txt)) done("cancel"); later(8, () => rx("RCC", `RCC VIA LES ${les}`, `FROM: RCC (training)\nRE YOUR DISTRESS PRIORITY MESSAGE ${ref}\n${/CANCEL/.test(txt) ? "YOUR CANCELLATION OF THE DISTRESS ALERT IS RECEIVED. SAR ACTION STOOD DOWN.\nCONFIRM ALL PERSONS SAFE. LOG THE EVENT." : "RECEIVED. SAR UNITS ALERTED. KEEP WATCH ON VHF 16 / DSC 70 AND\nREPORT CHANGES OF SITUATION EVERY 30 MIN."}`, true)); }
+    if (code === "32") { done("med"); later(12, () => rx("med", "MEDICAL ADVICE — CODE 32", `FROM: RADIO MEDICAL ADVICE SERVICE (training)\nRE MSG ${ref}\nPLEASE SEND: PATIENT AGE / SEX, MAIN SYMPTOMS, SINCE WHEN,\nTEMPERATURE, PULSE, BREATHING RATE, BLOOD PRESSURE,\nMEDICINES GIVEN (SHIP MEDICINE CHEST), ALLERGIES.\nUSE THE RADIO MEDICAL REPORT FORM. ETA NEAREST PORT?`)); }
+    if (code === "43" || (/POSITION/.test(txt) && dt === "E-mail")) { done("posrep"); S.lastRep = stamp(); }
+    if (cf) later(6, () => { m.st = "DELIVERED"; rx("dc", "Delivery confirmation " + ref, `MESSAGE ${ref} DELIVERED ${stamp()}\nTO ${m.to}`); if (!distress && dt === "E-mail") done("mail"); }); })); }
+function test(k) { closeAll(); if (k === "self") return busy("Self test: memory · printer · GPS · antenna", 3, () => { print(`SELF TEST ${stamp()}\nROM OK  RAM OK  PRINTER OK\nGPS ${S.gpsFail ? "NO DATA" : "OK"}  ANTENNA ${S.blocked ? "NO SIGNAL" : "OK"}`); msgbox("Self test", ["Self test complete — see printout."]); });
+  if (!S.login) return msgbox("Test", ["Log in first (F7 Options → Login)."], true);
+  if (k === "link") return busy(`Link test with LES ${S.dist.les}`, 4, () => { done("test"); print(`LINK TEST ${stamp()}\nLES ${S.dist.les}: PASS`); msgbox("Link test", [`Link test with LES ${S.dist.les}: PASS`]); });
+  busy("PV test: receiving test message from LES", 4, () => busy("PV test: sending test message", 3, () => busy("PV test: distress alert test (TEST MODE — not a real alert)", 3, () => { done("test"); const r = `PERFORMANCE VERIFICATION TEST ${stamp()}\nRECEIVE TEST: PASS\nTRANSMIT TEST: PASS\nDISTRESS ALERT TEST: PASS\nBER 0 %   SIGNAL 6/6`; print(r); rx("pv", "PV test result", r); msgbox("PV test", ["PV test PASSED — result printed and logged."]); }))); }
+function busy(label, sec, cb) { S.win = [{type:"busy", title:"Please wait", label, t0:S.t, d:sec, cb}]; render(); }
+function later(sec, cb) { S.pending.push({at:S.t + sec, cb}); }
+function alertWin(title, lines) { S.win = S.win.filter(w => w.type !== "alert" && w.type !== "menu"); S.win.push({type:"alert", title, lines}); }
+function rx(k, title, text, alarm) { S.rxlog.unshift({k, title, text, t:stamp(), isnew:true}); beep(1200, .15); if (alarm) { S.alarm = {lv:"DISTRESS", txt:title}; alertWin("Alert", ["Distress RX", `Incoming ${title}. Check the SAT-C display (F6 Logs).`]); } render(); }
+function egcList() { openList("EGC message log (SafetyNET)", S.egclog, m => { m.isnew = false; view(m.title, m.text); if (m.k === "nav") done("readnav"); if (m.k === "sar") done("readsar"); }); }
+// ---------- EGC messages ----------
+function egc(k) { if (!S.sync) return; const n = ++S.egcN, d = utcD(), dd = `${String(d.getUTCDate()).padStart(2, "0")}${hm(d)} UTC OCT 26`;
+  const area = (k === "nav" || k === "met" || k === "pir") ? "XI" : null; if (area && S.egcArea !== area) return; // not selected → not received
+  const T = {nav:["NAVAREA XI WARNING", 0, `LES ${S.ocean === "POR" ? "251" : "351"} - MSG ${n} - NAVAREA XI - ROUTINE\n${dd}\nNAVAREA XI 0${n % 900}/26\nPHILIPPINES. SOUTH CHINA SEA.\nVERDE ISLAND PASSAGE.\n1. UNLIT DERELICT VESSEL ADRIFT IN POSITION 13-36.0N 121-05.5E\n   AT 020045 UTC OCT 26.\n2. VESSELS ARE ADVISED TO KEEP CLEAR AND REPORT SIGHTINGS.\n3. CANCEL THIS MSG 040100 UTC OCT 26.`],
+   met:["METAREA XI FORECAST", 0, `LES ${S.ocean === "POR" ? "251" : "351"} - MSG ${n} - METAREA XI - SAFETY\n${dd}\nHIGH SEAS FORECAST (training)\nWARNING: TROPICAL DEPRESSION 'ECA' 1002 HPA NEAR 16N 128E\nMOVING WNW 12 KT. MAX WINDS 30 KT NEAR CENTRE.\nFORECAST AREA 10N-20N 115E-125E: WIND NE 15-20 KT, SEA 2.0 M,\nSWELL E 2.5 M, ISOLATED THUNDERSTORMS, VIS GOOD BECOMING MODERATE.`],
+   pir:["PIRACY WARNING — URGENT", 1, `LES ${S.ocean === "POR" ? "251" : "351"} - MSG ${n} - NAVAREA XI - URGENT\n${dd}\nPIRACY / ARMED ROBBERY ALERT (training)\nSULU SEA. SUSPICIOUS SMALL CRAFT APPROACHED A BULK CARRIER\nIN 06-10N 119-50E AT 012030 UTC.\nMAINTAIN ANTI-PIRACY WATCH, REPORT TO RCC / REPORTING CENTRE.`],
+   sar:["SAR — DISTRESS RELAY", 2, `LES ${S.ocean === "POR" ? "251" : "351"} - MSG ${n} - SAR - DISTRESS\n${dd}\nDISTRESS RELAY — RCC (training)\nFISHING VESSEL 'BANCA LUZ' WITH 12 POB REPORTED SINKING\nIN POSITION 13-58.0N 120-31.0E AT ${hm(d)} UTC.\nVESSELS IN THE VICINITY ARE REQUESTED TO KEEP A SHARP LOOKOUT,\nASSIST IF POSSIBLE AND REPORT TO RCC VIA INMARSAT-C CODE 39.`]}[k];
+  const m = {k, title:T[0], text:T[2], t:stamp(), isnew:true}; S.egclog.unshift(m); if (S.egcAuto) print(T[2]);
+  if (T[1] > 0) { S.alarm = {lv:T[1] === 2 ? "DISTRESS" : "URGENT", txt:T[0]}; const busyW = S.win.find(w => w.type === "busy"); if (!busyW) alertWin("Alert", [T[1] === 2 ? "Distress RX" : "Urgent RX", `Incoming ${T[1] === 2 ? "distress" : "urgency"} EGC. Check the SAT-C display (F4 EGC).`, "F10 StopAlarm to silence."]); } else beep(900, .2); render(); }
+// ---------- distress button ----------
+const cover = $("cover"), dbtn = $("dbtn");
+cover.onclick = () => { S.coverOpen = !S.coverOpen; cover.classList.toggle("open", S.coverOpen); };
+let holding = false;
+dbtn.addEventListener("pointerdown", e => { if (!S.coverOpen) return; holding = true; S.holdT = 0; dbtn.classList.add("press"); dbtn.setPointerCapture(e.pointerId); });
+const rel = () => { if (!holding) return; holding = false; dbtn.classList.remove("press"); if (S.holdT < 4 && S.distState !== "sending") { $("holdbar").style.width = "0"; S.holdT = 0; } };
+dbtn.addEventListener("pointerup", rel); dbtn.addEventListener("pointercancel", rel);
+function sendDistress() { const d = S.dist, les = d.les || (S.ocean && LES[S.ocean] ? LES[S.ocean][0][0] : "351"); S.distState = "sending"; S.win = []; beep(1800, .4, .1);
+  if (!S.sync) { S.distState = "failed"; return msgbox("DISTRESS ALERT", ["NO NCS SYNC — distress alert could NOT be sent!", "Check ocean region / antenna. Use other GMDSS means (DSC, EPIRB)."], true); }
+  S.distSent = {t:stamp(), nature:d.nature, les, pos:`${dm(S.pos.lat)} ${dm(S.pos.lon, "EW")}`, age:posAge()};
+  S.distLog = `DISTRESS ALERT SENT ${S.distSent.t}\nLES ${les}  NATURE: ${d.nature}\nPOSITION ${S.distSent.pos} (age ${S.distSent.age.toFixed(1)} h)\nCOURSE ${String(d.course).padStart(3, "0")}  SPEED ${d.speed} KN`;
+  print(S.distLog); S.alarm = {lv:"DISTRESS", txt:"DISTRESS ALERT TRANSMITTED — awaiting acknowledgement"}; alertWin("Alert", ["DISTRESS ALERT TRANSMITTED", `LES ${les} · ${d.nature}`, "Waiting for the distress alert acknowledgement…"]);
+  later(10, () => { S.distState = "acked"; S.distLog += `\nACKNOWLEDGED ${stamp()} BY LES ${les} / RCC`; rx("dack", "DISTRESS ALERT ACKNOWLEDGEMENT", `DISTRESS ALERT ACKNOWLEDGEMENT\nYOUR DISTRESS ALERT HAS BEEN RECEIVED BY LES ${les}\nAND ROUTED TO THE RCC ${stamp()}.\nNATURE: ${d.nature.toUpperCase()}\nSEND A DISTRESS PRIORITY MESSAGE WITH FULL DETAILS.`, true);
+    print(`DISTRESS ALERT ACKNOWLEDGED ${stamp()}`); S.win = []; msgbox("DISTRESS ALERT ACKNOWLEDGED", [`Acknowledged by LES ${les} / RCC — ${stamp()}`, "Now send a DISTRESS PRIORITY MESSAGE with full details (F9 Distress)."], true); if (d.nature === "Fire / Explosion") done("dist"); }); render(); }
+// ---------- rendering ----------
+const scr = $("scr");
+const ll = (v, ew) => { const a = Math.abs(v), d = Math.floor(a); return `${String(d).padStart(ew ? 3 : 2, "0")}:${((a - d) * 60).toFixed(2).padStart(5, "0")}${ew ? (v >= 0 ? "E" : "W") : (v >= 0 ? "N" : "S")}`; };
+const ymd = d => d.toISOString().slice(2, 10), hmc = d => d.toISOString().slice(11, 16);
+function mesState() { const w = S.win[S.win.length - 1]; if (S.distState === "sending") return "DISTRESS"; if (w && w.type === "busy") return /Login|NCS/.test(w.label) ? "LOGIN" : /test/i.test(w.label) ? "TEST" : "SENDING"; return "IDLE"; }
+function mbHTML() { const ks = Object.keys(MENUS); return `<div class="mb">${ks.slice(0, 4).map(k => `<span data-f="${k}">${MENUS[k][0]}</span>`).join("")}<span class="gap"></span>${ks.slice(4, 8).map(k => `<span data-f="${k}">${MENUS[k][0]}</span>`).join("")}<span class="gap"></span>${ks.slice(8).map(k => `<span data-f="${k}">${MENUS[k][0]}</span>`).join("")}</div><div class="hr"></div>`; }
+function botHTML() { const d = utcD(), w = S.win[S.win.length - 1], age = posAge();
+  return `<div class="bot"><div>Current State : ${mesState()}\n${w && w.type === "busy" ? w.label.slice(0, 26) : S.prOff ? '<span class="w">PRINTER OFF LINE</span>' : age > 4 ? '<span class="w blink">POSITION NOT UPDATED</span>' : "DCE ECA Ver. 02"}</div><div>${S.sync ? "SYNC( NCS )" : '<span class="w">NO SYNC</span>'}\nNCS:${S.ocean || "----"}  ${S.login ? "LOGIN" : '<span class="w">LOGOUT</span>'}</div><div style="text-align:right">${ymd(d)}  ${hmc(d)}(UTC)\nLAT:${ll(S.pos.lat)}  LON:${ll(S.pos.lon, 1)}</div></div>`; }
+function mainHTML() { if (S.edOpen) return `<div class="main" style="color:#ffff55">EDIT — type the message (F3 Transmit when ready · Esc close)</div><textarea id="ed" spellcheck="false">${S.ed.replace(/</g, "&lt;")}</textarea>`;
+  const d = utcD(), nr = S.rxlog.filter(m => m.isnew).length, ne = S.egclog.filter(m => m.isnew).length, R = (k, v) => `<span class="kl">${k}</span>${v}\n`, ok = S.sync && !S.blocked;
+  return `<div class="main"><div style="text-align:right;margin:-4px 0 4px">IMN : 454800123</div><div class="c2"><div>${R("Date", ymd(d))}${R("Time", hmc(d) + "(UTC)")}\n${R("Position", "LAT  " + ll(S.pos.lat))}${R("", "LON " + ll(S.pos.lon, 1))}${R("Pos. age", posAge().toFixed(1) + " h " + (posAge() > 4 ? '<span class="w">OLD!</span>' : ""))}\n${R("Current TDM", ok ? `NCS CC (${S.ocean === "POR" ? 244 : 344})` : "--------")}${R("MES Status", mesState() === "IDLE" ? "Idle" : mesState())}${R("GPS Status", S.gpsFail ? '<span class="w">NO FIX</span>' : "3D")}${R("DCE Memory", "32818 Bytes free")}</div><div>${R("BBER", ok ? "000" : "---")}${R("C/N", ok ? "OK ( 45dB)" : '<span class="w">NG (  0dB)</span>')}${R("Send Level", "OK (  0)")}${R("Rx AGC Level", ok ? "OK (171)" : '<span class="w">NG ( 12)</span>')}${R("REF Offset Freq", "OK (   0Hz)")}\n${R("EGC area", "NAVAREA " + S.egcArea)}${R("Distress", S.dist.nature.slice(0, 18))}${R("New RX msgs", nr ? `<span class="w">${nr}</span> (F6 Logs)` : "0")}${R("New EGC msgs", ne ? `<span class="w">${ne}</span> (F4 EGC)` : "0")}</div></div></div>`; }
+function winHTML(w, i) { const off = i * 16, pos = `left:${(w.x || 150) + off}px;top:${(w.y || 70) + off}px`;
+  if (w.type === "menu") return `<div class="win" style="${pos}"><div class="tt">${w.title}</div>${w.items.map((it, j) => `<div class="it ${j === w.sel ? "sel" : ""}" data-mi="${j}">${it[0]}</div>`).join("")}</div>`;
+  if (w.type === "alert") return `<div class="win red" style="left:44px;top:150px;width:536px"><div class="tt">${w.title}</div>${w.lines.map(l => `<div>${l}</div>`).join("")}<div class="esc" data-ok="1">&lt;Press ESC key to continue&gt;</div></div>`;
+  if (w.type === "msg") return `<div class="win ${w.red ? "red" : ""}" style="left:80px;top:140px;width:464px"><div class="tt">${w.red ? "CAUTION" : w.title}</div>${w.red ? `<div>${w.title}</div>` : ""}${w.lines.filter(Boolean).map(l => `<div>${l}</div>`).join("")}<div class="esc" data-ok="1">&lt;Press ESC key to continue&gt;</div></div>`;
+  if (w.type === "busy") { const p = Math.min(100, (S.t - w.t0) / w.d * 100); return `<div class="win" style="left:92px;top:170px;width:440px"><div class="tt">${w.title}</div><div>${w.label}<span class="blink">…</span></div><div class="pg"><i style="width:${p}%"></i></div></div>`; }
+  if (w.type === "form") return `<div class="win ${w.red ? "red" : ""}" style="left:40px;top:80px;width:544px"><div class="tt">${w.title}</div>${w.fields.map((f, j) => `<label>${f.l}${f.sel ? `<select data-fi="${j}">${f.sel.map(o => `<option ${o === f.v ? "selected" : ""}>${o}</option>`).join("")}</select>` : `<input data-fi="${j}" value="${String(f.v).replace(/"/g, "&quot;")}" size="24">`}</label>`).join("")}<div class="bt"><span data-ok="1">${w.okLabel}</span><span data-cancel="1">CANCEL</span></div></div>`;
+  if (w.type === "list") return `<div class="win list" style="left:20px;top:56px;width:584px"><div class="tt">${w.title}</div>${w.arr.length ? w.arr.slice(0, 14).map((m, j) => `<div class="row ${j === w.sel ? "sel" : ""} ${m.isnew ? "new" : ""}" data-ri="${j}">${(m.t || "").slice(5, 16)} ${(m.title || (m.ref + " " + m.to)).slice(0, 34).padEnd(34)} ${m.st || (m.isnew ? "NEW" : "")}</div>`).join("") : "<div>(empty)</div>"}</div>`;
+  if (w.type === "view") return `<div class="win view" style="left:16px;top:50px;width:592px"><div class="tt">${w.title}</div><pre>${w.text.replace(/</g, "&lt;")}</pre><div class="bt"><span data-ok="1">CLOSE (Esc)</span><span data-prn="1">PRINT</span></div></div>`;
+  return ""; }
+function render() { if (S.edOpen && $("ed")) S.ed = $("ed").value;
+  scr.innerHTML = mbHTML() + mainHTML() + S.win.map(winHTML).join("") + botHTML();
+  bind(); tasks(); leds(); }
+function bind() { scr.querySelectorAll("[data-f]").forEach(e => e.onclick = () => keyF(e.dataset.f));
+  scr.querySelectorAll("[data-mi]").forEach(e => e.onclick = () => { const w = S.win[S.win.length - 1]; const it = w.items[+e.dataset.mi]; it[1](); });
+  scr.querySelectorAll("[data-ri]").forEach(e => e.onclick = () => { const w = S.win[S.win.length - 1]; w.sel = +e.dataset.ri; w.open(w.arr[w.sel]); });
+  scr.querySelectorAll("[data-fi]").forEach(e => e.oninput = e.onchange = () => { const w = S.win[S.win.length - 1]; w.fields[+e.dataset.fi].v = e.value; });
+  scr.querySelectorAll("[data-ok]").forEach(e => e.onclick = () => enter());
+  scr.querySelectorAll("[data-cancel]").forEach(e => e.onclick = () => pop());
+  scr.querySelectorAll("[data-prn]").forEach(e => e.onclick = () => { const w = S.win[S.win.length - 1]; print(w.text); });
+  const ed = $("ed"); if (ed) { ed.oninput = () => S.ed = ed.value; } }
+function enter() { const w = S.win[S.win.length - 1]; if (!w) return;
+  if (w.type === "menu") return w.items[w.sel][1](); if (w.type === "msg") { S.win.pop(); render(); if (w.after) w.after(); return; } if (w.type === "form") return w.ok(w);
+  if (w.type === "list" && w.arr.length) return w.open(w.arr[w.sel]); if (w.type === "view" || w.type === "alert") return pop(); }
+function key(k) { if (/^F\d+$/.test(k)) { if (S.edOpen && $("ed")) S.ed = $("ed").value; if (k === "F3" && S.edOpen) { S.edOpen = false; return keyF("F3"); } return keyF(k); }
+  const w = S.win[S.win.length - 1];
+  if (k === "Escape") { if (w && w.type === "msg") return enter(); if (w && w.type !== "busy") return pop(); if (S.edOpen) { S.ed = $("ed").value; S.edOpen = false; return render(); } return; }
+  if (!w) return; if (k === "Enter") return enter();
+  if ((k === "ArrowDown" || k === "ArrowUp") && (w.type === "menu" || w.type === "list")) { const n = w.type === "menu" ? w.items.length : Math.min(14, w.arr.length); if (!n) return; w.sel = (w.sel + (k === "ArrowDown" ? 1 : n - 1)) % n; render(); } }
+addEventListener("keydown", e => { const inField = e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA";
+  if (/^F([1-9]|10)$/.test(e.key) || e.key === "Escape" || (!inField && ["Enter", "ArrowUp", "ArrowDown"].includes(e.key)) || (inField && e.key === "Enter" && e.target.tagName === "INPUT")) { e.preventDefault(); key(e.key); } });
+(function () { const F = ["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10"], rows = ["1234567890-", "QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM,./"];
+  $("kbd").innerHTML = `<div class="kleds"><span><i></i>Num</span><span><i></i>Caps</span><span><i></i>Scroll</span></div><div class="strip2"><span class="x"></span>${F.map(k => `<span>${MENUS[k][0]}</span>`).join("")}<span class="x"></span></div>
+   <div class="kr"><div class="k f" data-k="Escape">Esc</div>${F.map(k => `<div class="k f" data-k="${k}">${k}</div>`).join("")}<div class="k f">F11</div><div class="k f">F12</div></div>
+   ${rows.map((r, i) => `<div class="kr">${i === 3 ? '<div class="k w2">Shift</div>' : i === 2 ? '<div class="k w2">Caps</div>' : i === 1 ? '<div class="k w2">Tab</div>' : ""}${[...r].map(c => `<div class="k" data-c="${c}">${c}</div>`).join("")}${i === 2 ? '<div class="k w2" data-k="Enter">Enter</div>' : i === 0 ? '<div class="k w2" data-c="BS">Bksp</div>' : i === 3 ? '<div class="k" data-k="ArrowUp">↑</div>' : ""}</div>`).join("")}
+   <div class="kr"><div class="k w2">Ctrl</div><div class="k">Alt</div><div class="k sp" data-c=" ">&nbsp;</div><div class="k" data-k="Enter">⏎</div><div class="k" data-k="ArrowDown">↓</div></div>`;
+  $("kbd").querySelectorAll("[data-k]").forEach(b => b.onclick = () => key(b.dataset.k));
+  $("kbd").querySelectorAll("[data-c]").forEach(b => b.onclick = () => { const ed = $("ed"); if (!ed) return; const c = b.dataset.c; ed.value = c === "BS" ? ed.value.slice(0, -1) : ed.value + c; S.ed = ed.value; }); })();
+function leds() { const set = (id, c) => { const e = $(id); if (e) e.className = c; }; set("l_sync", S.sync ? "g" : ""); set("l_log", S.login ? "g" : ""); set("l_tx", S.tx || S.distState === "sending" ? "y" : "");
+  const lit = holding ? Math.floor(S.t * 4) % 2 === 0 : (S.distState === "sending" || S.distState === "acked"); dbtn.classList.toggle("lit", !!lit); set("l_dist", lit ? "r" : "");
+  set("pl_on", S.prOff ? "" : "g"); set("pl_out", S.prOut ? "r" : ""); const ps = $("pstat"); if (ps) ps.textContent = S.prOut ? "Printer: PAPER OUT — press ON LINE after loading paper" : S.prOff ? `Printer OFF LINE — ${S.pq.length} job(s) waiting` : "Printer ON LINE"; }
+// ---------- tasks ----------
+const TASKS = [["login", "Log in to an ocean region that covers the Philippines (IOR or POR) — F7 Options → Login."], ["pos", "Update the ship's position (older than 4 h!) — F8 Setup."], ["egcset", "Set the EGC area to NAVAREA/METAREA XI — F4 EGC / F8 Setup."], ["readnav", "Receive and read a NAVAREA XI warning in the EGC log."],
+ ["posrep", "Send a position report — F5 Reports (code 43) or F2 template to the company e-mail."], ["mail", "Get the delivery confirmation of your e-mail."], ["med", "Request MEDICAL ADVICE using special access code 32."], ["med2", "Read the medical service reply in the receive log."],
+ ["alarm", "Stop an EGC alarm (F10 StopAlarm) — instructor injects SAR / piracy."], ["readsar", "Read the SAR distress relay in the EGC log."], ["test", "Carry out a link test or PV test — F7 Options."],
+ ["dist", "FIRE in the engine room: set nature FIRE (F9 Distress), send the DISTRESS ALERT (hold 4 s) and receive the acknowledgement."], ["dmsg", "Follow with a DISTRESS PRIORITY MESSAGE giving details (F9)."], ["cancel", "False alert drill: send a distress priority message to CANCEL the alert."]];
+function done(k) { if (!S.tr[k]) { S.tr[k] = true; } }
+let lastTasks = ""; function tasks() { const n = TASKS.filter(t => S.tr[t[0]]).length, h = TASKS.map((t, i) => `<div class="task ${S.tr[t[0]] ? "done" : ""}"><span>${S.tr[t[0]] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t[1]}</span></div>`).join(""); if (h !== lastTasks) { $("tasks").innerHTML = h; lastTasks = h; } $("tdone").textContent = n + " / " + TASKS.length; }
+// ---------- instructor ----------
+document.querySelectorAll("[data-inj]").forEach(b => b.onclick = () => { const k = b.dataset.inj;
+  if (k === "blk") { S.blocked = true; S.sync = false; S.login = false; render(); return; } if (k === "gps") { S.gpsFail = true; render(); return; } if (k === "pout") { S.prOut = true; S.prOff = true; leds(); return; } if (k === "fix") { S.blocked = false; S.gpsFail = false; if (S.ocean && VIS[S.ocean]) S.sync = true; render(); return; }
+  if (!S.sync) { alert("Terminal has no NCS sync — EGC cannot be received. Log in first."); return; } egc(k); });
+$("resetb").onclick = () => { S.tr = {}; init(); };
+// ---------- loop ----------
+let last = performance.now(), sec = 0;
+function loop(now) { const dt = Math.min(.2, (now - last) / 1000); last = now; S.t += dt; sec += dt;
+  if (holding) { S.holdT += dt; $("holdbar").style.width = Math.min(100, S.holdT / 4 * 100) + "%"; if (Math.floor(S.holdT * 4) !== Math.floor((S.holdT - dt) * 4)) beep(1500, .06); if (S.holdT >= 4 && S.distState !== "sending") { holding = false; dbtn.classList.remove("press"); sendDistress(); setTimeout(() => $("holdbar").style.width = "0", 800); } }
+  const w = S.win[S.win.length - 1]; if (w && w.type === "busy") { if (S.t - w.t0 >= w.d) { S.win = []; w.cb(); } else if (sec > .1) render(); }
+  for (let i = S.pending.length - 1; i >= 0; i--) if (S.t >= S.pending[i].at) { const p = S.pending.splice(i, 1)[0]; p.cb(); }
+  for (let i = S.sched.length - 1; i >= 0; i--) if (S.t >= S.sched[i][0] && S.sync) { const k = S.sched.splice(i, 1)[0][1]; egc(k); }
+  if (S.alarm && Math.floor(S.t * 2) !== Math.floor((S.t - dt) * 2)) beep(S.alarm.lv === "DISTRESS" ? 1400 : 1000, .18, .05);
+  if (sec >= 1) { sec = 0; if (!S.win.length && !S.edOpen) render(); else { const st = scr.querySelector(".bot"); if (st) st.outerHTML = botHTML(); leds(); } }
+  requestAnimationFrame(loop); }
+(function () { const wrap = document.querySelector(".wrap"), dev = $("dev"), box = document.createElement("div"); box.className = "fitbox"; wrap.insertBefore(box, dev); box.appendChild(dev);
+  const side = wrap.querySelector(".side"), hd = document.querySelector("header"), ft = document.querySelector(".foot");
+  function fit() { dev.style.transform = "none"; const w = dev.offsetWidth, h = dev.offsetHeight, narrow = innerWidth <= 900, avH = innerHeight - hd.offsetHeight - ft.offsetHeight - 28, avW = narrow ? innerWidth - 24 : innerWidth - 36 - Math.min(440, Math.max(320, innerWidth * 0.3));
+    const s = Math.max(0.3, Math.min(1.2, avW / w, narrow ? 9 : avH / h)); dev.style.transform = `scale(${s})`; box.style.width = w * s + "px"; box.style.height = h * s + "px"; side.style.maxHeight = narrow ? "none" : avH + "px"; }
+  addEventListener("resize", fit); fit(); setTimeout(fit, 300); })();
+init();
+window.SATC = {S:() => S, key, egc, done};
+requestAnimationFrame(loop);
+</script></body></html>

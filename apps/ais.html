@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en"><head><script>window.ECADEMY_START = window.ECADEMY_START || (location.hash.slice(1) || undefined);</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY AIS Transponder</title>
+<style>
+:root{--bg:#0d1417;--panel:#141e22;--line:#2c3c43;--tx:#dfe8ea;--mut:#8ea2a9;--acc:#5ee6a8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.45 "Segoe UI",Arial,sans-serif}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#0a1013;border-bottom:1px solid var(--line);flex-wrap:wrap}header b{letter-spacing:.12em;color:#ff5a6a}header .sub{color:var(--mut)}header .sp{flex:1}
+.btn{background:#1e2a2f;color:#fff;border:1px solid #445a63;border-radius:4px;padding:5px 10px;cursor:pointer;font-weight:600}.btn:hover{border-color:var(--acc)}.btn.on{background:#13472f;border-color:var(--acc)}.btn.red.on{background:#5a1a1a;border-color:#ff7070}
+select,input{background:#0b1215;color:#fff;border:1px solid #445a63;border-radius:4px;padding:4px 6px;font:inherit}
+.wrap{display:grid;grid-template-columns:minmax(760px,800px) 1fr;gap:12px;padding:12px}
+@media(max-width:1250px){.wrap{grid-template-columns:1fr}}
+.mount{background:#a9c7b8;border-radius:10px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.plate{background:linear-gradient(#3a3d40,#1f2224);color:#e6e6e6;font:700 18px Arial;letter-spacing:.2em;padding:8px 46px;border-radius:3px;border:2px solid #777;box-shadow:0 2px 4px #0006}
+.pad0{background:#1c1d1f;border-radius:22px;padding:26px 34px}
+.dev{background:linear-gradient(#2f3336,#1a1c1e);border-radius:34px 34px 26px 26px;padding:16px 26px 14px;box-shadow:0 10px 30px #000a,inset 0 1px 0 #555}
+.brand{text-align:center;margin-bottom:8px}.brand span{background:#0e0f10;color:#ddd;font:900 16px Arial;letter-spacing:.3em;padding:2px 18px;border-radius:4px;border:1px solid #444}
+.bez{background:#111;border-radius:10px;padding:12px;box-shadow:inset 0 2px 8px #000}
+canvas#lcd{display:block;width:672px;height:381px;border-radius:3px}
+.kb{display:flex;align-items:center;gap:22px;margin-top:16px;padding-left:20px}
+.kg{display:grid;grid-template-columns:repeat(3,auto);gap:14px 18px}
+.k{width:96px;height:62px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#3a3e41,#141617);color:#f0f0f0;border:2px solid #0a0b0c;font:800 17px/1 Arial;cursor:pointer;box-shadow:0 4px 6px #000a}.k:active{transform:translateY(1px)}
+.spk{width:60px;height:60px;background:radial-gradient(#000 25%,transparent 26%) 0 0/10px 10px;opacity:.6;border-radius:50%}
+.pad{width:190px;height:150px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#2b2e31,#0f1011);position:relative;box-shadow:0 4px 8px #000}
+.pad button{position:absolute;width:50px;height:44px;background:none;border:0;color:#f4f4f4;font-size:30px;cursor:pointer}.pad button:active{color:#ffe36a}
+.model{color:#aaa;font:italic 700 13px Arial;letter-spacing:.1em;margin:10px 0 0 30px}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.card h3{margin:0 0 6px;font-size:12px;letter-spacing:.1em;color:#7fd6ee}
+.task{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid #22323a}.task.done{color:#7cf0a0}
+.small{color:var(--mut);font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0}
+.clock{font:700 16px Consolas,monospace;color:var(--acc)}.ok{color:#7cf0a0}.bad{color:#ff8080}
+.q{margin:6px 0;padding:6px;border:1px solid #22323a;border-radius:6px}.q label{display:block;cursor:pointer}
+.foot{padding:6px 14px;color:#ffd06a;font-size:11.5px;text-align:center;border-top:1px solid var(--line)}
+</style><style id="fitcss">
+html,body{height:100%}
+.wrap{display:flex!important;gap:12px;padding:12px;align-items:flex-start}
+.fitbox{flex:0 0 auto;position:sticky;top:8px;overflow:hidden}
+.fitbox>*{transform-origin:0 0;margin:0!important}
+.wrap>.side{flex:1 1 320px;min-width:300px;overflow:auto}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch}.fitbox{position:relative;top:0;margin:0 auto}.wrap>.side{max-height:none!important}}
+</style><style id="real3d">/* ===== ECADEMY 3D realism layer ===== */
+body{background:radial-gradient(ellipse at 30% 20%,#16232a 0%,#0b1114 55%,#06090b 100%) fixed!important}
+.dev,.frame,.ap,.rep,.mount .dev,.pad0{position:relative;box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -4px 8px rgba(0,0,0,.55),inset 2px 0 0 rgba(255,255,255,.05),inset -2px 0 0 rgba(0,0,0,.35),0 30px 60px rgba(0,0,0,.6),0 10px 18px rgba(0,0,0,.45)!important}
+.dev,.frame,.ap{isolation:isolate}
+.dev::before,.frame::before,.ap::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(170deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 35%,rgba(0,0,0,0) 65%,rgba(0,0,0,.28) 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,rgba(0,0,0,.018) 1px 3px);z-index:-1}
+.wall,.con,.mount,.stand{box-shadow:inset 0 0 80px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.25),0 20px 40px rgba(0,0,0,.5)!important;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 2px,rgba(0,0,0,.02) 2px 4px)!important}
+/* screens: recessed bezel + glass glare */
+.bez,.lcdw,.seg,.disp,.repin,.bezel{position:relative;box-shadow:inset 0 6px 14px rgba(0,0,0,.85),inset 0 -2px 0 rgba(255,255,255,.12),0 1px 0 rgba(255,255,255,.15)!important}
+.bez::after,.lcdw::after,.seg::after,.disp::after,.repin::after{content:"";position:absolute;inset:6%;border-radius:4px;pointer-events:none;z-index:3;background:linear-gradient(155deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.05) 28%,rgba(255,255,255,0) 42%),radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.18),transparent 60%)}
+canvas#lcd,canvas#scr,canvas#aps,canvas#rep,.lcd{box-shadow:0 0 0 2px #050505,0 0 18px rgba(0,0,0,.6)!important}
+/* hard keys */
+.k,.kb,.ob,.tk,.pad button,.dim button{transition:transform .06s,box-shadow .06s}
+.k,.kb{box-shadow:0 5px 0 #050607,0 8px 14px rgba(0,0,0,.65),inset 0 2px 0 rgba(255,255,255,.28),inset 0 -4px 6px rgba(0,0,0,.55)!important;background-image:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.22),rgba(255,255,255,0) 60%),radial-gradient(circle at 50% 40%,#43484c,#16191b)!important;text-shadow:0 1px 0 #000}
+.k:active,.kb:active{transform:translateY(4px)!important;box-shadow:0 1px 0 #050607,0 2px 4px rgba(0,0,0,.6),inset 0 2px 4px rgba(0,0,0,.6)!important}
+.ob{box-shadow:0 6px 0 #6a3a08,0 10px 16px rgba(0,0,0,.6),inset 0 3px 0 rgba(255,255,255,.55),inset 0 -6px 10px rgba(120,60,0,.55)!important}
+.ob:active{transform:translateY(5px)!important;box-shadow:0 1px 0 #6a3a08,0 2px 5px rgba(0,0,0,.6),inset 0 3px 6px rgba(0,0,0,.4)!important}
+.pad{box-shadow:0 8px 14px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.18),inset 0 -6px 12px rgba(0,0,0,.7),0 0 0 3px #0a0b0c!important;background:radial-gradient(circle at 50% 35%,#3a3f43,#141618 65%,#0a0b0c)!important}
+.pad button:active{transform:scale(.9)}
+.knob,.lock,.selk{box-shadow:0 10px 18px rgba(0,0,0,.75),0 0 0 4px #1a1b1c,0 0 0 6px #4a4d50,inset 0 3px 2px rgba(255,255,255,.22),inset 0 -6px 10px rgba(0,0,0,.8)!important}
+.knob{background:conic-gradient(from 0deg,#2a2c2e,#55595c,#2a2c2e,#5c6063,#2a2c2e,#55595c,#2a2c2e)!important}
+.plate{text-shadow:0 1px 0 rgba(255,255,255,.25),0 -1px 0 #000;box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.3)!important}
+.placard,.note,.ann span,.tag{box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.paper{box-shadow:0 10px 18px rgba(0,0,0,.55),inset 0 -20px 30px rgba(0,0,0,.08)!important}
+.cover{box-shadow:inset 0 4px 10px #000,0 2px 0 rgba(255,255,255,.12)!important}
+#wheel{filter:drop-shadow(0 14px 12px rgba(0,0,0,.6))}
+canvas#rai{filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.led i{box-shadow:inset 0 1px 3px #000,0 1px 0 rgba(255,255,255,.15)}
+</style></head><body>
+<header><b>ECADEMY</b><span>AIS TRANSPONDER TRAINER</span><span class="sub">· Class A shipborne AIS · voyage data · targets · CPA/TCPA · safety messages · AIS-SART (training)</span><span class="sp"></span>
+<span class="small">UTC</span><span class="clock" id="clk">--</span><span class="small">SIM</span>
+<button class="btn" data-acc="0">❚❚</button><button class="btn on" data-acc="1">×1</button><button class="btn" data-acc="5">×5</button><button class="btn" data-acc="20">×20</button><button class="btn" id="restart">↺ RESTART</button></header>
+<div class="wrap">
+ <div class="mount"><div class="plate">AIS</div>
+  <div class="pad0"><div class="dev"><div class="brand"><span>ECADEMY</span></div>
+   <div class="bez"><canvas id="lcd" width="480" height="272"></canvas></div>
+   <div class="kb"><div class="kg">
+     <button class="k" data-k="brill">BRILL</button><button class="k" data-k="disp">DISP</button><button class="k" data-k="menu">MENU<br>ESC</button>
+     <button class="k" data-k="power" style="font-size:28px">⏻</button><button class="k" data-k="nav">NAV<br>STATUS</button><button class="k" data-k="ent">ENT<br>ACK</button></div>
+    <div class="spk"></div>
+    <div class="pad"><button data-k="up" style="left:70px;top:6px">▲</button><button data-k="down" style="left:70px;bottom:6px">▼</button><button data-k="left" style="left:10px;top:52px">◀</button><button data-k="right" style="right:10px;top:52px">▶</button></div></div>
+   <div class="model">AIS  AT-170 · TRAINING</div></div></div>
+ </div>
+ <div class="side">
+  <div class="card"><h3>OWN SHIP · INSTRUCTOR</h3>
+   <div class="row">Heading <input type="range" id="hdg" min="0" max="359" style="width:120px"><b id="hdgv"></b> Speed <input type="range" id="stw" min="0" max="16" step="0.5" style="width:90px"><b id="stwv"></b></div>
+   <div class="row small">Events: <button class="btn red" data-f="gps">External GPS lost</button><button class="btn red" data-f="hdg">Gyro (HDG) lost</button><button class="btn red" data-f="vswr">Antenna VSWR</button><button class="btn" id="ev_sart">Trigger AIS-SART</button><button class="btn" id="ev_vts">VTS safety msg</button></div>
+   <div class="small" id="truth"></div></div>
+  <div class="card"><h3>TRAINING EXERCISES <span id="tdone" class="small"></span></h3><div id="tasks"></div></div>
+  <div class="card"><h3>VOYAGE ORDER (from the Master)</h3><div class="small">Departing Manila Bay anchorage for <b>Batangas</b> (UN/LOCODE <b>PH BTG</b>). ETA <b>01/OCT 22:00 LT</b>. General cargo, no dangerous goods (ship type <b>70</b>). Draught <b>8.6 m</b>. Persons on board <b>22</b> (one supernumerary joined). Status: <b>under way using engine</b>.<br>The AIS still shows the old data from the last port.</div></div>
+  <div class="card"><h3>WATCH REPORT</h3>
+   <div class="row">Dangerous target MMSI <input id="r_dg" size="11"> <button class="btn" data-r="dg">REPORT</button></div>
+   <div class="row">Target with wrong NAV STATUS MMSI <input id="r_er" size="11"> <button class="btn" data-r="er">REPORT</button></div>
+   <div class="row">AIS-SART MMSI <input id="r_sa" size="11"> BRG <input id="r_sb" size="5">° <button class="btn" data-r="sa">REPORT</button></div>
+   <div id="r_res" class="small"></div></div>
+  <div class="card"><h3>QUICK QUIZ</h3><div id="quiz"></div><button class="btn" id="quiz_go">SUBMIT</button> <span id="quiz_r" class="small"></span></div>
+  <div class="card"><h3>KEY GUIDE</h3><div class="small">
+   <b>DISP</b> PLOTTER ▸ TARGET LIST ▸ DANGEROUS ▸ OWN SHIP · <b>NAV STATUS</b> voyage data (status, destination, ETA, type, draught, persons) · <b>MENU/ESC</b> menu / back · <b>ENT/ACK</b> select / acknowledge alarm · <b>BRILL</b> brightness &amp; day/night · <b>▲▼◀▶</b> cursor.<br>
+   Plotter: ▲▼ range, ◀▶ select target, ENT target data. Text entry uses the on-screen keyboard (or type on the PC keyboard). MMSI first digits: 548… Philippine ship · 00548… base station · 99548… AtoN · 970… AIS-SART · 111… SAR aircraft.</div></div>
+ </div>
+</div>
+<div class="foot">TRAINING SIMULATOR · fictitious ships, MMSIs and messages · NOT FOR NAVIGATION · AIS is an aid — always use radar and visual lookout (COLREG Rule 5 / 7)</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const T0 = Date.UTC(2026, 9, 1, 7, 40, 0), D2R = Math.PI / 180, R2D = 180 / Math.PI;
+const NS = ["UNDER WAY USING ENGINE", "AT ANCHOR", "NOT UNDER COMMAND", "RESTRICTED MANOEUVRABILITY", "CONSTRAINED BY DRAUGHT", "MOORED", "AGROUND", "ENGAGED IN FISHING", "UNDER WAY SAILING", "(RESERVED HSC)", "(RESERVED WIG)", "TOWING ASTERN (REG.)", "PUSHING AHEAD (REG.)", "(RESERVED)", "AIS-SART ACTIVE", "NOT DEFINED"];
+const TYPES = [[30, "FISHING"], [31, "TOWING"], [52, "TUG"], [60, "PASSENGER SHIPS", "ALL SHIPS OF THIS TYPE"], [70, "CARGO SHIPS", "ALL SHIPS OF THIS TYPE"], [71, "CARGO SHIPS", "HAZARDOUS CATEGORY X"], [72, "CARGO SHIPS", "HAZARDOUS CATEGORY Y"], [73, "CARGO SHIPS", "HAZARDOUS CATEGORY Z"], [74, "CARGO SHIPS", "HAZARDOUS CATEGORY OS"], [80, "TANKERS", "ALL SHIPS OF THIS TYPE"], [81, "TANKERS", "HAZARDOUS CATEGORY X"], [90, "OTHER TYPE"]];
+const TN = c => (TYPES.find(t => t[0] === c) || [c, "TYPE " + c])[1];
+const DESTS = ["PH MNL", "PH BTG", "PH CEB", "PH SUB", "PH DVO", "KR KUV", "JP TYO", "SG SIN", "HK HKG"];
+const OWN = {mmsi:"548123456", name:"ECADEMY STAR", call:"DUAB7", imo:"9412345", A:150, B:40, C:16, D:16};
+const TASKS = [
+ ["on", "POWER ON and wait until the unit is transmitting (TRX icon)."],
+ ["voy", "Update the voyage data with NAV STATUS key as per the Voyage Order (status, destination, ETA, type, draught, persons)."],
+ ["cpa", "MENU ▸ CPA/TCPA: CPA alarm ON, CPA 1.0 NM, TCPA 12 min."],
+ ["dg", "Dangerous target: acknowledge the alarm (ENT/ACK), find the target (DISP ▸ DANGEROUS) and report its MMSI."],
+ ["er", "A target broadcasts AT ANCHOR but is moving at speed — find it and report its MMSI."],
+ ["inbox", "Read the safety message from MANILA VTS (MENU ▸ MESSAGE ▸ INBOX)."],
+ ["send", "Send a BROADCAST SAFETY message (MENU ▸ MESSAGE ▸ CREATE) — e.g. a SECURITE about a drifting object."],
+ ["sart", "AIS-SART: acknowledge the alarm, then report the SART MMSI and bearing."],
+ ["sens", "External GPS lost: acknowledge, then check MENU ▸ ALARM STATUS and SENSOR STATUS (AIS changes to internal GNSS)."],
+ ["quiz", "Answer the quick quiz."]];
+const QUIZ = [
+ ["Which AIS data is entered manually by the OOW each voyage?", ["MMSI and IMO number", "Navigational status, destination, ETA, draught, persons on board, cargo type", "Position and SOG", "Ship length and beam"], 1],
+ ["A target shows 'AT ANCHOR' but moves at 10 kn. You should:", ["trust the nav status", "trust your radar and eyes — AIS data entered by the other ship can be wrong", "ignore the target", "call the coast guard first"], 1],
+ ["A target with MMSI starting 970 is:", ["a SAR aircraft", "an AIS-SART (survival craft / person in distress)", "a base station", "an AtoN"], 1],
+ ["When may the Master switch the AIS to silent (TX off)?", ["any time to save power", "only where the Master believes continued operation compromises the ship's safety or security (e.g. piracy) — recorded in the log", "at anchor always", "never"], 1]];
+let S, acc = 1, last = performance.now(), audio = null, rep = null;
+// ---------- geo ----------
+function rl(a1, o1, a2, o2) { const dy = (a2 - a1) * 60, dx = (o2 - o1) * 60 * Math.cos((a1 + a2) / 2 * D2R); return {b:(Math.atan2(dx, dy) * R2D + 360) % 360, d:Math.hypot(dx, dy)}; }
+function mv(lat, lon, b, d) { const la = lat + d * Math.cos(b * D2R) / 60; return [la, lon + d * Math.sin(b * D2R) / (60 * Math.cos(lat * D2R))]; }
+function fLat(v) { const a = Math.abs(v), d = Math.floor(a); return String(d).padStart(2, "0") + "°" + ((a - d) * 60).toFixed(3).padStart(6, "0") + "'" + (v >= 0 ? "N" : "S"); }
+function fLon(v) { const a = Math.abs(v), d = Math.floor(a); return String(d).padStart(3, "0") + "°" + ((a - d) * 60).toFixed(3).padStart(6, "0") + "'" + (v >= 0 ? "E" : "W"); }
+function cpaOf(t) { const o = S.own, r = rl(o.lat, o.lon, t.lat, t.lon), rx = r.d * Math.sin(r.b * D2R), ry = r.d * Math.cos(r.b * D2R);
+  const vx = t.sog * Math.sin(t.cog * D2R) - o.sog * Math.sin(o.cog * D2R), vy = t.sog * Math.cos(t.cog * D2R) - o.sog * Math.cos(o.cog * D2R), v2 = vx * vx + vy * vy;
+  let tc = v2 > 1e-6 ? -(rx * vx + ry * vy) / v2 : 0; const cpa = tc > 0 ? Math.hypot(rx + vx * tc, ry + vy * tc) : r.d; return {brg:r.b, rng:r.d, cpa, tcpa:tc * 60}; }
+// ---------- targets ----------
+function mk(o) { return Object.assign({cls:"A", kind:"ship", lost:false, last:0, hdg:null, rot:0, ns:0, dest:"", eta:"", draught:0, pob:0, call:"", imo:"", type:70, L:0, Bm:0}, o); }
+function placeForCPA(own, cpaNM, side, tMin, cog, sog) { const p = mv(own.lat, own.lon, own.cog, own.sog * tMin / 60), q = mv(p[0], p[1], (own.cog + 90 * side + 360) % 360, cpaNM); return mv(q[0], q[1], (cog + 180) % 360, sog * tMin / 60); }
+function buildTargets(own) { const L = [];
+  let p = placeForCPA(own, 0.35, 1, 16, 300, 13); L.push(mk({mmsi:"563012340", name:"PACIFIC VOYAGER", call:"9V7712", imo:"9534120", type:70, lat:p[0], lon:p[1], cog:300, sog:13, hdg:299, dest:"SG SIN", eta:"05/OCT 08:00", draught:10.2, L:189, Bm:30, pob:19}));
+  p = placeForCPA(own, 2.1, -1, 20, 45, 16); L.push(mk({mmsi:"548000111", name:"LUZON STAR FERRY", call:"DUH2213", imo:"9221334", type:60, lat:p[0], lon:p[1], cog:45, sog:16, hdg:44, dest:"PH MNL", eta:"01/OCT 18:30", draught:5.1, L:120, Bm:21, pob:612}));
+  p = mv(own.lat, own.lon, 160, 5.2); L.push(mk({mmsi:"548220330", name:"PETRO MAKATI", call:"DUA4470", imo:"9300456", type:80, ns:1, lat:p[0], lon:p[1], cog:12, sog:0.1, hdg:35, dest:"PH MNL", eta:"30/SEP 06:00", draught:9.8, L:144, Bm:23, pob:24}));
+  p = placeForCPA(own, 0.8, -1, 28, 170, 4); L.push(mk({mmsi:"548901234", name:"FB MARIA 3", cls:"B", type:30, ns:7, lat:p[0], lon:p[1], cog:170, sog:4, hdg:null, L:22, Bm:5}));
+  p = mv(own.lat, own.lon, 285, 4.0); L.push(mk({mmsi:"548330771", name:"TUG SAMAL", call:"DUB8811", type:52, ns:11, lat:p[0], lon:p[1], cog:30, sog:5.5, hdg:31, dest:"PH MNL", eta:"01/OCT 17:00", draught:4.0, L:32, Bm:10, pob:8}));
+  p = mv(own.lat, own.lon, 205, 7.5); L.push(mk({mmsi:"548771200", name:"SEA FORTUNE", call:"DUC5120", imo:"9188221", type:70, ns:1, lat:p[0], lon:p[1], cog:20, sog:10.4, hdg:21, dest:"PH MNL", eta:"01/OCT 16:40", draught:7.2, L:112, Bm:18, pob:17, err:true}));
+  p = mv(own.lat, own.lon, 330, 3.1); L.push(mk({mmsi:"548550090", name:"KAPITAN JOSE", call:"DUD1234", type:70, lat:p[0], lon:p[1], cog:120, sog:9, hdg:121, dest:"PH SUB", eta:"02/OCT 04:00", draught:6.0, L:98, Bm:16, pob:15, offAt:420}));
+  L.push(mk({mmsi:"005480001", name:"MANILA VTS", kind:"base", cls:"-", lat:14 + 23.3 / 60, lon:120 + 34.6 / 60, cog:0, sog:0}));
+  L.push(mk({mmsi:"995481001", name:"CORREGIDOR LT", kind:"aton", cls:"-", lat:14 + 22.8 / 60, lon:120 + 33.9 / 60, cog:0, sog:0}));
+  L.push(mk({mmsi:"995481007", name:"BAY LBB 7", kind:"aton", cls:"-", lat:14 + 28.0 / 60, lon:120 + 47.5 / 60, cog:0, sog:0}));
+  return L; }
+function reset() { const tr = S ? S.tr : {};
+  S = {on:false, boot:0, t:0, own:{lat:14 + 24 / 60, lon:120 + 43 / 60, hdg:225, stw:12, cog:225, sog:12, rot:0}, f:{gps:false, hdg:false, vswr:false},
+    voy:{ns:5, dest:"KR KUV", eta:{d:30, m:9, h:16, mi:0}, type:70, draught:9.2, pob:21}, cpa:{on:false, v:2.0, t:30, lost:true, sort:"RANGE"},
+    disp:{units:"NM", orient:"HDG UP", rng:3}, silent:false, br:6, night:false, scr:0, ui:[], sel:0, listCur:0,
+    alarms:[], alog:[], inbox:[], outbox:[], tgts:[], tr, sartAt:1500, vtsAt:240, sartOn:false, vtsSent:false, ackTimes:{}};
+  S.tgts = buildTargets(S.own); ui(); }
+// ---------- alarms ----------
+const AL = {"001":"TX MALFUNCTION", "002":"ANTENNA VSWR EXCEEDS LIMIT", "025":"EXTERNAL EPFS LOST", "026":"NO SENSOR POSITION IN USE", "029":"NO VALID SOG INFORMATION", "030":"NO VALID COG INFORMATION", "032":"HEADING LOST / INVALID", "035":"NO VALID ROT INFORMATION"};
+function raise(id, txt, kind = "SYS") { if (S.alarms.some(a => a.id === id)) return; S.alarms.push({id, txt, kind, ack:false, t:S.t}); S.alog.unshift({t:S.t, id, txt}); }
+function clearA(id) { S.alarms = S.alarms.filter(a => a.id !== id); }
+function beep(f = 2400, l = 0.14, v = 0.05) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = f; g.gain.value = v; o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + l); } catch (e) {} }
+setInterval(() => { if (S.on && S.boot <= 0 && S.alarms.some(a => !a.ack)) beep(); }, 800);
+// ---------- sim ----------
+function step(dt) { const o = S.own; o.cog = o.hdg; o.sog = o.stw; const p = mv(o.lat, o.lon, o.cog, o.sog * dt / 3600); o.lat = p[0]; o.lon = p[1];
+  for (const t of S.tgts) { if (t.sog > 0.05 && !(t.ns === 1 && !t.err)) { const q = mv(t.lat, t.lon, t.cog, t.sog * dt / 3600); t.lat = q[0]; t.lon = q[1]; }
+    if (t.offAt && S.t > t.offAt) t.silentSince = t.silentSince ?? S.t; t.lost = t.silentSince != null && S.t - t.silentSince > 360; }
+  if (!S.sartOn && S.t > S.sartAt) triggerSART(); if (!S.vtsSent && S.t > S.vtsAt) sendVTS();
+  if (!S.on || S.boot > 0) return;
+  // sensor alarms
+  if (S.f.gps) raise("025", AL["025"]); else clearA("025");
+  if (S.f.hdg) { raise("032", AL["032"]); raise("035", AL["035"]); } else { clearA("032"); clearA("035"); }
+  if (S.f.vswr && !S.silent) { raise("002", AL["002"]); raise("001", AL["001"]); } else { clearA("002"); clearA("001"); }
+  // CPA
+  for (const t of S.tgts) { if (t.kind !== "ship" || t.lost) { clearA("CPA" + t.mmsi); continue; } const c = cpaOf(t); t.c = c;
+    const dang = S.cpa.on && c.cpa < S.cpa.v && c.tcpa > 0 && c.tcpa < S.cpa.t; t.dang = dang;
+    if (dang) raise("CPA" + t.mmsi, "DANGEROUS TARGET  " + t.name + "  CPA " + c.cpa.toFixed(2) + "NM TCPA " + c.tcpa.toFixed(0) + "min", "TGT"); else clearA("CPA" + t.mmsi); }
+  for (const t of S.tgts) if (t.kind !== "ship") t.c = cpaOf(t);
+  if (S.cpa.lost) { for (const t of S.tgts) if (t.lost && !t.lostRaised && t.c && t.c.rng < 12) { t.lostRaised = true; raise("LOST" + t.mmsi, "LOST TARGET  " + t.name, "TGT"); } }
+  trainCheck(); }
+function triggerSART() { if (S.sartOn) return; S.sartOn = true; const p = mv(S.own.lat, S.own.lon, 252, 5.6);
+  S.tgts.push(mk({mmsi:"970012345", name:"SART ACTIVE", kind:"sart", cls:"-", ns:14, lat:p[0], lon:p[1], cog:0, sog:0.4}));
+  if (S.on) { raise("SART", "AIS-SART ACTIVE  MMSI 970012345", "TGT"); S.inbox.unshift({t:S.t, from:"970012345", cat:"SAFETY", txt:"SART ACTIVE", read:false, br:true}); } }
+function sendVTS() { S.vtsSent = true; S.inbox.unshift({t:S.t, from:"005480001 MANILA VTS", cat:"SAFETY", txt:"SECURITE ALL SHIPS. DREDGER GALLANT ENGAGED IN DREDGING 14-21.0N 120-40.5E. RESTRICTED IN ABILITY TO MANOEUVRE. KEEP CLEAR 0.5NM. CH 12.", read:false, br:true});
+  if (S.on) raise("MSG", "SAFETY MESSAGE RECEIVED  005480001", "MSG"); }
+// ---------- training ----------
+function done(k) { if (!S.tr[k]) { S.tr[k] = true; tasks(); beep(1500, 0.08, 0.03); } }
+function trainCheck() { const v = S.voy;
+  if (S.on && S.boot <= 0 && !S.silent) done("on");
+  if (v.ns === 0 && v.dest.trim() === "PH BTG" && v.eta.d === 1 && v.eta.m === 10 && v.eta.h === 22 && v.eta.mi === 0 && v.type === 70 && Math.abs(v.draught - 8.6) < 0.05 && v.pob === 22) done("voy");
+  if (S.cpa.on && Math.abs(S.cpa.v - 1) < 0.01 && S.cpa.t === 12) done("cpa"); }
+function tasks() { const n = TASKS.filter(t => S.tr[t[0]]).length; $("tdone").textContent = n + " / " + TASKS.length;
+  $("tasks").innerHTML = TASKS.map((t, i) => `<div class="task ${S.tr[t[0]] ? "done" : ""}"><span>${S.tr[t[0]] ? "✅" : "⬜"}</span><span><b>${i + 1}.</b> ${t[1]}</span></div>`).join(""); }
+// ---------- UI ----------
+const topUI = () => S.ui[S.ui.length - 1];
+function push(o) { S.ui.push(Object.assign({cur:0}, o)); }
+const SCR = ["PLOTTER", "TARGET LIST", "DANGEROUS TARGETS", "OWN SHIP"];
+function visible() { return S.tgts.filter(t => !(t.silentSince != null && S.t - t.silentSince > 1200)); }
+function sorted(list) { return list.slice().sort((a, b) => S.cpa.sort === "CPA" ? (a.c?.cpa ?? 99) - (b.c?.cpa ?? 99) : (a.c?.rng ?? 99) - (b.c?.rng ?? 99)); }
+function menu() { push({t:"menu", title:"MENU", items:[["MESSAGE", () => push({t:"menu", title:"MESSAGE", items:[["CREATE MESSAGE", () => push({t:"create", f:{type:"BROADCAST", to:"", cat:"SAFETY", ch:"A/B", txt:""}})], ["INBOX", () => push({t:"inbox"})], ["OUTBOX", () => push({t:"outbox"})]]})],
+  ["ALARM STATUS", () => push({t:"alarms"})], ["SENSOR STATUS", () => push({t:"sensor"})],
+  ["CPA/TCPA SETTING", () => push({t:"set", title:"CPA/TCPA SETTING", items:[opt("CPA/TCPA ALARM", () => S.cpa, "on", [false, true], v => v ? "ON" : "OFF"), num("CPA", () => S.cpa, "v", 0.1, 0.1, 6, 1, "NM"), num("TCPA", () => S.cpa, "t", 1, 1, 60, 0, "min"), opt("LOST TARGET ALARM", () => S.cpa, "lost", [true, false], v => v ? "ON" : "OFF"), opt("LIST SORT", () => S.cpa, "sort", ["RANGE", "CPA"])]})],
+  ["DISPLAY SETTING", () => push({t:"set", title:"DISPLAY SETTING", items:[opt("PLOTTER ORIENT.", () => S.disp, "orient", ["HDG UP", "NORTH UP"]), opt("PLOTTER RANGE", () => S.disp, "rng", [0.75, 1.5, 3, 6, 12, 24], v => v + " NM"), opt("DAY / NIGHT", () => S, "night", [false, true], v => v ? "NIGHT" : "DAY")]})],
+  ["TX SETTING (SILENT MODE)", () => push({t:"confirm", txt:S.silent ? "RESUME TRANSMISSION?" : "STOP TRANSMISSION (SILENT MODE)? Only on Master's order — record in log book.", ok:() => { S.silent = !S.silent; }})],
+  ["STATIC DATA (VIEW)", () => push({t:"static"})], ["DIAGNOSTICS", () => push({t:"diag"})], ["REGIONAL SETTING", () => push({t:"regional"})]]}); }
+function num(l, o, k, st, mn, mx, dp, u) { return {l, get:() => o()[k].toFixed(dp) + " " + u, adj:s => { const r = o(); r[k] = Math.round(Math.min(mx, Math.max(mn, r[k] + s * st)) * 100) / 100; }}; }
+function opt(l, o, k, opts, fmt) { return {l, get:() => fmt ? fmt(o()[k]) : String(o()[k]), adj:s => { const r = o(), i = opts.indexOf(r[k]); r[k] = opts[(i + s + opts.length) % opts.length]; }}; }
+const KB = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ0123", "456789 -./", "←␣↵"];
+function keyboard(title, val, max, done) { push({t:"kbd", title, val, max, done, r:0, c:0}); }
+function voyItems() { const v = S.voy, MN = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  return [["NAV STATUS", String(v.ns).padStart(2, "0"), NS[v.ns]], ["DESTINATION", v.dest, "[DESTINATION LIST]"], ["ETA[LT]", String(v.eta.d).padStart(2, "0") + "/" + MN[v.eta.m - 1] + " " + String(v.eta.h).padStart(2, "0") + ":" + String(v.eta.mi).padStart(2, "0"), ""],
+    ["TYPE OF SHIP", String(v.type), TN(v.type) + (TYPES.find(t => t[0] === v.type)?.[2] ? "\n" + TYPES.find(t => t[0] === v.type)[2] : "")], ["DRAUGHT", v.draught.toFixed(1) + " m", ""], ["NO. OF PERSONS", String(v.pob), ""]]; }
+function voyEdit(i) { const v = S.voy;
+  if (i === 0) push({t:"pick", title:"NAV STATUS", opts:NS.map((n, k) => String(k).padStart(2, "0") + " " + n).filter((_, k) => k !== 14 && k !== 9 && k !== 10 && k !== 13), map:NS.map((_, k) => k).filter(k => k !== 14 && k !== 9 && k !== 10 && k !== 13), cur0:v.ns, set:k => v.ns = k});
+  if (i === 1) push({t:"menu", title:"DESTINATION", items:[["ENTER TEXT", () => { S.ui.pop(); keyboard("DESTINATION", v.dest, 20, s => v.dest = s); }], ["DESTINATION LIST", () => { S.ui.pop(); push({t:"pick", title:"DESTINATION LIST", opts:DESTS, map:DESTS, cur0:v.dest, set:s => v.dest = s}); }]]});
+  if (i === 2) push({t:"digits", title:"ETA [LT]  DD/MM HH:MM", d:[...String(v.eta.d).padStart(2, "0"), ...String(v.eta.m).padStart(2, "0"), ...String(v.eta.h).padStart(2, "0"), ...String(v.eta.mi).padStart(2, "0")].map(Number), mask:"DD/MM HH:MM", done:d => { const n = (a, b) => d[a] * 10 + d[b]; const e = {d:n(0, 1), m:n(2, 3), h:n(4, 5), mi:n(6, 7)}; if (e.d < 1 || e.d > 31 || e.m < 1 || e.m > 12 || e.h > 23 || e.mi > 59) return "INVALID DATE/TIME"; v.eta = e; }});
+  if (i === 3) push({t:"pick", title:"TYPE OF SHIP", opts:TYPES.map(t => t[0] + "  " + t[1] + (t[2] ? " · " + t[2] : "")), map:TYPES.map(t => t[0]), cur0:v.type, set:k => v.type = k});
+  if (i === 4) push({t:"digits", title:"DRAUGHT (m)  00.0–25.5", d:[...String(Math.round(v.draught * 10)).padStart(3, "0")].map(Number), mask:"DD.D", done:d => { const x = (d[0] * 100 + d[1] * 10 + d[2]) / 10; if (x > 25.5) return "MAX 25.5 m"; v.draught = x; }});
+  if (i === 5) push({t:"digits", title:"NO. OF PERSONS  0–8191", d:[...String(v.pob).padStart(4, "0")].map(Number), mask:"DDDD", done:d => { const x = +d.join(""); if (x > 8191) return "MAX 8191"; v.pob = x; }}); }
+let FL = null; function flash(t) { FL = {t, until:performance.now() + 1700}; }
+function key(k) {
+  if (k === "power") { S.on = !S.on; if (S.on) S.boot = 4; else S.ui = []; return; }
+  if (!S.on || S.boot > 0) return; beep(3400, 0.025, 0.015);
+  const un = S.alarms.find(a => !a.ack);
+  if (k === "ent" && un && !(topUI() && ["kbd", "digits", "create"].includes(topUI().t))) { ackAlarm(un); return; }
+  if (k === "brill") { if (!topUI() || topUI().t !== "brill") push({t:"brill"}); else S.ui.pop(); return; }
+  if (k === "nav") { S.ui = []; push({t:"voy", tab:0}); return; }
+  if (k === "disp" && !topUI()) { S.scr = (S.scr + 1) % SCR.length; S.listCur = 0; return; }
+  if (k === "disp") { S.ui = []; return; }
+  const T = topUI(); if (T) return uiKey(T, k);
+  if (k === "menu") return menu();
+  const scr = SCR[S.scr], vis = sorted(visible());
+  if (scr === "PLOTTER") { const R = [0.75, 1.5, 3, 6, 12, 24], i = R.indexOf(S.disp.rng);
+    if (k === "up") S.disp.rng = R[Math.max(0, i - 1)]; if (k === "down") S.disp.rng = R[Math.min(5, i + 1)];
+    const inR = vis.filter(t => t.c && t.c.rng < S.disp.rng * 1.05); if (inR.length) { if (k === "right") S.sel = (S.sel + 1) % inR.length; if (k === "left") S.sel = (S.sel + inR.length - 1) % inR.length; S.sel = Math.min(S.sel, inR.length - 1); if (k === "ent") push({t:"tdata", tg:inR[S.sel]}); } }
+  if (scr === "TARGET LIST" || scr === "DANGEROUS TARGETS") { const L = scr === "TARGET LIST" ? vis : vis.filter(t => t.dang); if (k === "up") S.listCur = Math.max(0, S.listCur - 1); if (k === "down") S.listCur = Math.min(L.length - 1, S.listCur + 1); if (k === "ent" && L[S.listCur]) push({t:"tdata", tg:L[S.listCur]}); } }
+function ackAlarm(a) { a.ack = true; if (a.id.startsWith("CPA")) S.ackDg = true; if (a.id === "SART") S.ackSart = true; if (a.id === "025") S.ackGps = true; if (a.id === "MSG") clearA("MSG"); if (a.id.startsWith("LOST")) clearA(a.id); }
+function uiKey(T, k) { const up = k === "up", dn = k === "down", lf = k === "left", rt = k === "right";
+  if (T.t === "brill") { if (lf || dn) S.br = Math.max(1, S.br - 1); if (rt || up) S.br = Math.min(8, S.br + 1); if (k === "ent") S.night = !S.night; if (k === "menu") S.ui.pop(); return; }
+  if (k === "menu") { S.ui.pop(); return; }
+  if (T.t === "menu") { if (up) T.cur = (T.cur + T.items.length - 1) % T.items.length; if (dn) T.cur = (T.cur + 1) % T.items.length; if (k === "ent" || rt) T.items[T.cur][1](); return; }
+  if (T.t === "set") { if (up) T.cur = (T.cur + T.items.length - 1) % T.items.length; if (dn) T.cur = (T.cur + 1) % T.items.length; if (lf || rt) T.items[T.cur].adj(rt ? 1 : -1); if (k === "ent") S.ui.pop(); trainCheck(); return; }
+  if (T.t === "voy") { if (lf || rt) T.tab = 1 - T.tab; if (T.tab === 0) { if (up) T.cur = Math.max(0, T.cur - 1); if (dn) T.cur = Math.min(5, T.cur + 1); if (k === "ent") voyEdit(T.cur); } return; }
+  if (T.t === "pick") { if (T.init == null) { T.init = 1; T.cur = Math.max(0, T.map.indexOf(T.cur0)); } if (up) T.cur = (T.cur + T.opts.length - 1) % T.opts.length; if (dn) T.cur = (T.cur + 1) % T.opts.length; if (k === "ent") { T.set(T.map[T.cur]); S.ui.pop(); flash("SAVED"); trainCheck(); } return; }
+  if (T.t === "digits") { if (lf) T.cur = Math.max(0, T.cur - 1); if (rt) T.cur = Math.min(T.d.length - 1, T.cur + 1); if (up) T.d[T.cur] = (T.d[T.cur] + 1) % 10; if (dn) T.d[T.cur] = (T.d[T.cur] + 9) % 10;
+    if (k === "ent") { const e = T.done(T.d); if (e) { flash(e); return; } S.ui.pop(); flash("SAVED"); trainCheck(); } return; }
+  if (T.t === "kbd") { if (up) T.r = (T.r + 4) % 5; if (dn) T.r = (T.r + 1) % 5; const rowLen = KB[T.r].length; T.c = Math.min(T.c, rowLen - 1); if (lf) T.c = (T.c + rowLen - 1) % rowLen; if (rt) T.c = (T.c + 1) % rowLen;
+    if (k === "ent") { const ch = KB[T.r][T.c]; if (ch === "←") T.val = T.val.slice(0, -1); else if (ch === "↵") { T.done(T.val); S.ui.pop(); flash("SAVED"); trainCheck(); } else if (T.val.length < T.max) T.val += ch === "␣" ? " " : ch; } return; }
+  if (T.t === "create") { const F = T.f; if (up) T.cur = (T.cur + 5) % 6; if (dn) T.cur = (T.cur + 1) % 6;
+    if (lf || rt) { if (T.cur === 0) F.type = F.type === "BROADCAST" ? "ADDRESSED" : "BROADCAST"; if (T.cur === 2) F.cat = F.cat === "SAFETY" ? "ROUTINE" : "SAFETY"; if (T.cur === 3) F.ch = ["A/B", "A", "B"][(["A/B", "A", "B"].indexOf(F.ch) + 1) % 3]; }
+    if (k === "ent") { if (T.cur === 1 && F.type === "ADDRESSED") keyboard("DESTINATION MMSI", F.to, 9, s => F.to = s.replace(/\D/g, ""));
+      if (T.cur === 4) keyboard("MESSAGE TEXT", F.txt, 156, s => F.txt = s);
+      if (T.cur === 5) { if (!F.txt.trim()) { flash("NO TEXT"); return; } if (S.silent) { flash("SILENT MODE — TX OFF"); return; } if (F.type === "ADDRESSED" && !/^\d{9}$/.test(F.to)) { flash("ENTER 9-DIGIT MMSI"); return; }
+        const tg = S.tgts.find(t => t.mmsi === F.to); S.outbox.unshift({t:S.t, ...F, st:F.type === "BROADCAST" ? "SENT (MSG 14)" : tg && !tg.lost ? "ACK RECEIVED (MSG 12/13)" : "NO ACK"});
+        if (F.type === "BROADCAST" && F.cat === "SAFETY" && F.txt.trim().length >= 10) done("send"); S.ui.pop(); flash("MESSAGE SENT"); } } return; }
+  if (T.t === "inbox") { if (up) T.cur = Math.max(0, T.cur - 1); if (dn) T.cur = Math.min(S.inbox.length - 1, T.cur + 1); if (k === "ent" && S.inbox[T.cur]) { const m = S.inbox[T.cur]; m.read = true; push({t:"read", m}); if (m.from.startsWith("005480001")) done("inbox"); } return; }
+  if (T.t === "outbox" || T.t === "read" || T.t === "static" || T.t === "diag" || T.t === "regional" || T.t === "tdata") { if (k === "ent") S.ui.pop(); if (T.t === "outbox") { if (up) T.cur = Math.max(0, T.cur - 1); if (dn) T.cur++; } return; }
+  if (T.t === "alarms") { if (up) T.cur = Math.max(0, T.cur - 1); if (dn) T.cur++; if (k === "ent") { const a = S.alarms[T.cur]; if (a) ackAlarm(a); } if (S.ackGps && S.alarms.some(a => a.id === "025")) S.sawAl = true; chkSens(); return; }
+  if (T.t === "sensor") { if (k === "ent") S.ui.pop(); if (S.f.gps) S.sawSens = true; chkSens(); return; }
+  if (T.t === "confirm") { if (lf || rt) T.cur = 1 - T.cur; if (k === "ent") { if (T.cur === 1) { T.ok(); flash(S.silent ? "TX OFF — SILENT MODE" : "TX RESUMED"); } S.ui.pop(); } return; } }
+function chkSens() { if (S.ackGps && S.sawAl && S.sawSens) done("sens"); }
+// ---------- draw ----------
+const cv = $("lcd"), g = cv.getContext("2d"), W = 480, H = 272;
+let C;
+function pal() { C = S.night ? {bg:"#0a0f1a", tx:"#d0d8e8", hb:"#1a3a8a", ht:"#fff", ln:"#4a5a7a", sel:"#2a4a9a", rd:"#ff5050", gn:"#40d070", dim:"#7a88a0", ring:"#3a4a6a"} : {bg:"#e6ecf4", tx:"#1a1e28", hb:"#1e5ad8", ht:"#fff", ln:"#7c8aa8", sel:"#1e5ad8", rd:"#e01818", gn:"#108040", dim:"#5a6478", ring:"#a8b4cc"}; }
+function tx(x, y, s, sz = 12, al = "left", col = C.tx, w = "normal") { g.font = `${w} ${sz}px "DejaVu Sans Mono",Consolas,monospace`; g.textAlign = al; g.fillStyle = col; g.fillText(s, x, y); }
+function status() { g.fillStyle = S.night ? "#1a2030" : "#c8d4e8"; g.fillRect(0, 0, W, 20);
+  const bars = S.f.vswr ? 1 : 4; for (let i = 0; i < 4; i++) { g.fillStyle = i < bars ? (S.night ? "#8a8" : "#2a7a2a") : "#888"; g.fillRect(4 + i * 4, 15 - i * 3, 3, 3 + i * 3); }
+  const icon = (x, t, on, col) => { g.strokeStyle = C.ln; g.strokeRect(x + 0.5, 2.5, 34, 15); tx(x + 17, 14, t, 9, "center", on ? (col || C.tx) : "#999", "bold"); };
+  icon(24, "CLS A", true); icon(62, S.silent ? "RX" : "TRX", true, S.silent ? C.rd : C.gn); icon(100, "HIGH", !S.silent); const unread = S.inbox.some(m => !m.read); icon(138, "MSG", unread, unread && Math.floor(performance.now() / 500) % 2 ? C.rd : C.tx);
+  if (S.alarms.length) icon(176, "ALM", true, S.alarms.some(a => !a.ack) ? C.rd : "#b07000");
+  tx(472, 14, "MMSI:" + OWN.mmsi, 12, "right", C.tx, "bold"); }
+function title(t, tabs, tab) { g.fillStyle = S.night ? "#202838" : "#d4dcea"; g.fillRect(0, 20, W, 26); tx(10, 40, t, 18, "left", C.tx, "bold");
+  if (tabs) { tabs.forEach((s, i) => { const x = 10 + i * 230; g.fillStyle = i === tab ? C.hb : (S.night ? "#2a3448" : "#bfc9dc"); g.beginPath(); g.moveTo(x, 62); g.lineTo(x + 8, 46); g.lineTo(x + 222, 46); g.lineTo(x + 230, 62); g.fill(); tx(x + 115, 58, s, 12, "center", i === tab ? "#fff" : C.tx, "bold"); }); } }
+function guide(s) { g.fillStyle = S.night ? "#1a2030" : "#c8d4e8"; g.fillRect(0, 254, W, 18); tx(8, 267, s, 11, "left", C.tx); }
+function list(rows, cur, y0 = 62, lh = 18) { const n = Math.floor((250 - y0) / lh), first = Math.max(0, Math.min(cur - n + 2, rows.length - n)); rows.slice(first, first + n).forEach((r, i) => { const y = y0 + i * lh, sel = first + i === cur;
+  if (sel) { g.fillStyle = C.sel; g.fillRect(4, y - 13, W - 8, lh - 1); } (Array.isArray(r) ? r : [r]).forEach((c, j) => { if (c == null) return; const [x, al] = j === 0 ? [10, "left"] : [W - 10, "right"]; tx(x, y, c, 12, al, sel ? "#fff" : C.tx); }); }); }
+function plotter() { title("PLOTTER"); const cx = 200, cy = 152, R = 98, rng = S.disp.rng, k = R / rng, hu = S.disp.orient === "HDG UP", rot = hu ? -S.own.hdg : 0;
+  g.strokeStyle = C.ring; g.lineWidth = 1; [1, 0.5].forEach(f => { g.beginPath(); g.arc(cx, cy, R * f, 0, 7); g.stroke(); });
+  tx(cx + R - 2, cy - 4, rng + "", 10, "right", C.dim); tx(8, 62, hu ? "HDG UP" : "NORTH UP", 11, "left", C.dim); tx(8, 76, "RNG " + rng + "NM", 11, "left", C.dim);
+  const vis = sorted(visible()), inR = vis.filter(t => t.c && t.c.rng < rng * 1.05); S.sel = Math.min(S.sel, Math.max(0, inR.length - 1));
+  g.save(); g.beginPath(); g.arc(cx, cy, R + 4, 0, 7); g.clip();
+  for (const t of vis) { if (!t.c) continue; const b = (t.c.brg + rot) * D2R, x = cx + Math.sin(b) * t.c.rng * k, y = cy - Math.cos(b) * t.c.rng * k; const col = t.dang && Math.floor(performance.now() / 400) % 2 ? C.rd : t.lost ? C.dim : C.tx;
+    g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 1.5;
+    if (t.kind === "ship") { const a = ((t.hdg ?? t.cog) + rot) * D2R; g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); g.moveTo(0, -8); g.lineTo(5, 6); g.lineTo(-5, 6); g.closePath(); t.cls === "A" ? g.stroke() : (g.setLineDash([2, 2]), g.stroke(), g.setLineDash([])); if (t.sog > 0.5) { g.beginPath(); g.moveTo(0, -8); g.lineTo(0, -8 - t.sog * 1.6); g.stroke(); } g.restore();
+      if (t.lost) { g.beginPath(); g.moveTo(x - 7, y - 7); g.lineTo(x + 7, y + 7); g.moveTo(x + 7, y - 7); g.lineTo(x - 7, y + 7); g.stroke(); } }
+    if (t.kind === "aton") { g.beginPath(); g.moveTo(x, y - 6); g.lineTo(x + 6, y); g.lineTo(x, y + 6); g.lineTo(x - 6, y); g.closePath(); g.stroke(); g.beginPath(); g.arc(x, y, 1.5, 0, 7); g.fill(); }
+    if (t.kind === "base") { g.strokeRect(x - 5, y - 5, 10, 10); g.beginPath(); g.moveTo(x - 5, y - 5); g.lineTo(x + 5, y + 5); g.stroke(); }
+    if (t.kind === "sart") { g.strokeStyle = C.rd; g.beginPath(); g.arc(x, y, 7, 0, 7); g.moveTo(x - 5, y - 5); g.lineTo(x + 5, y + 5); g.moveTo(x + 5, y - 5); g.lineTo(x - 5, y + 5); g.stroke(); }
+    if (inR[S.sel] === t) { g.strokeStyle = C.sel; g.lineWidth = 1.5; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { g.beginPath(); g.moveTo(x + sx * 11, y + sy * 6); g.lineTo(x + sx * 11, y + sy * 11); g.lineTo(x + sx * 6, y + sy * 11); g.stroke(); }); } }
+  g.restore(); g.fillStyle = C.tx; g.strokeStyle = C.tx; g.save(); g.translate(cx, cy); g.rotate((S.own.hdg + rot) * D2R); g.beginPath(); g.moveTo(0, -10); g.lineTo(6, 8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.beginPath(); g.moveTo(0, -10); g.lineTo(0, -R); g.setLineDash([4, 3]); g.stroke(); g.setLineDash([]); g.restore();
+  const t = inR[S.sel]; g.fillStyle = S.night ? "#141c2c" : "#f4f7fb"; g.fillRect(308, 50, 168, 200); g.strokeStyle = C.ln; g.strokeRect(308.5, 50.5, 167, 199);
+  if (t) { tx(314, 66, t.name.slice(0, 18), 12, "left", C.tx, "bold"); [["MMSI", t.mmsi], ["BRG", t.c.brg.toFixed(1) + "°"], ["RNG", t.c.rng.toFixed(2) + "NM"], ["COG", t.kind === "ship" ? t.cog.toFixed(1) + "°" : "---"], ["SOG", t.kind === "ship" ? t.sog.toFixed(1) + "kn" : "---"], ["CPA", t.kind === "ship" ? t.c.cpa.toFixed(2) + "NM" : "---"], ["TCPA", t.kind === "ship" && t.c.tcpa > 0 ? t.c.tcpa.toFixed(1) + "min" : "---"], ["STATUS", t.kind === "ship" ? NS[t.ns].slice(0, 13) : t.kind.toUpperCase()]]
+    .forEach((r, i) => { tx(314, 86 + i * 19, r[0], 11, "left", C.dim); tx(470, 86 + i * 19, r[1], 12, "right", r[0] === "CPA" && t.dang ? C.rd : C.tx); }); if (t.lost) tx(392, 244, "LOST TARGET", 11, "center", C.rd, "bold"); }
+  else tx(392, 140, "NO TARGET", 12, "center", C.dim);
+  guide("▲▼:RANGE  ◀▶:SELECT TARGET  ENT:DETAIL  DISP:LIST"); }
+function tList(dang) { title(dang ? "DANGEROUS TARGETS" : "TARGET LIST"); const L = sorted(visible()).filter(t => !dang || t.dang); S.listCur = Math.min(S.listCur, Math.max(0, L.length - 1));
+  tx(10, 60, "NAME/MMSI", 11, "left", C.dim); tx(250, 60, "BRG", 11, "right", C.dim); tx(320, 60, "RNG", 11, "right", C.dim); tx(395, 60, "CPA", 11, "right", C.dim); tx(470, 60, "TCPA", 11, "right", C.dim);
+  if (!L.length) tx(240, 140, dang ? "NO DANGEROUS TARGET" : "NO TARGET", 13, "center", C.dim);
+  const n = 10, first = Math.max(0, Math.min(S.listCur - n + 2, L.length - n));
+  L.slice(first, first + n).forEach((t, i) => { const y = 78 + i * 17.5, sel = first + i === S.listCur, col = sel ? "#fff" : t.dang ? C.rd : t.lost ? C.dim : C.tx; if (sel) { g.fillStyle = C.sel; g.fillRect(4, y - 13, W - 8, 17); }
+    const nm = (t.kind === "sart" ? "⊗" : t.kind === "aton" ? "◇" : t.kind === "base" ? "▣" : t.cls === "B" ? "△" : "▲") + " " + (t.name || t.mmsi).slice(0, 18);
+    tx(10, y, nm, 12, "left", col); tx(250, y, t.c.brg.toFixed(1), 12, "right", col); tx(320, y, t.c.rng.toFixed(2), 12, "right", col); tx(395, y, t.kind === "ship" ? t.c.cpa.toFixed(2) : "--", 12, "right", col); tx(470, y, t.kind === "ship" && t.c.tcpa > 0 ? t.c.tcpa.toFixed(1) : "--", 12, "right", col); });
+  guide("▲▼:CURSOR  ENT:TARGET DATA  SORT:" + S.cpa.sort + "  CPA " + (S.cpa.on ? S.cpa.v.toFixed(1) + "NM/" + S.cpa.t + "min" : "OFF")); }
+function ownShip() { title("OWN SHIP"); const o = S.own, gps = !S.f.gps;
+  const rows = [["POSITION", fLat(o.lat)], ["", fLon(o.lon)], ["POS SOURCE", gps ? "EXTERNAL GNSS (DGNSS)" : "INTERNAL GNSS"], ["POS ACCURACY", gps ? "HIGH (<10m)" : "LOW (>10m)"], ["COG / SOG", o.cog.toFixed(1) + "° / " + o.sog.toFixed(1) + "kn"], ["HDG", S.f.hdg ? "--- (LOST)" : o.hdg.toFixed(1) + "°"], ["ROT", S.f.hdg ? "---" : "0°/min"], ["NAV STATUS", String(S.voy.ns).padStart(2, "0") + " " + NS[S.voy.ns]], ["UTC", utc(S.t)]];
+  rows.forEach((r, i) => { tx(12, 66 + i * 20, r[0], 12, "left", C.dim); tx(470, 66 + i * 20, r[1], 13, "right", (r[1].includes("LOST") || r[1].includes("INTERNAL") || r[1].includes("LOW")) ? C.rd : C.tx); }); guide("DISP:NEXT  NAV STATUS:VOYAGE DATA  MENU:MENU"); }
+function utc(t) { const d = new Date(T0 + t * 1000); return d.toISOString().slice(0, 16).replace("T", " "); }
+function ltStr(t) { const d = new Date(T0 + t * 1000 + 8 * 3600000), M = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; return String(d.getUTCDate()).padStart(2, "0") + "/" + M[d.getUTCMonth()] + " " + d.toISOString().slice(11, 16); }
+function drawUI(T) {
+  if (T.t === "menu") { title(T.title); list(T.items.map((it, i) => [(i + 1) + ". " + it[0]]), T.cur, 66, 20); guide("▲▼:CURSOR  ENT:SELECT  MENU/ESC:BACK"); }
+  if (T.t === "set") { title(T.title); list(T.items.map(it => [it.l, it.get()]), T.cur, 66, 22); guide("▲▼:CURSOR  ◀▶:CHANGE  ENT/ESC:BACK"); }
+  if (T.t === "voy") { title("NAV STATUS", ["VOYAGE", "STATIC"], T.tab);
+    if (T.tab === 0) { let y = 80; voyItems().forEach((r, i) => { const sel = i === T.cur, lines = (r[2] || "").split("\n"); tx(10, y, r[0], 12, "left", C.tx); tx(170, y, ":", 12); if (sel) { g.fillStyle = C.sel; g.fillRect(184, y - 12, Math.max(20, r[1].length * 7.4 + 4), 16); } tx(186, y, r[1], 12, "left", sel ? "#fff" : C.tx);
+        lines.forEach((l, j) => l && tx(i === 1 ? 196 : 230, y + j * 15 + (i === 1 ? 15 : 0), l, 12)); y += i === 1 || lines.length > 1 ? 34 : 24; }); guide("▲▼:CURSOR  ENT:SELECT  ◀▶:TAB  ESC:EXIT"); }
+    else { [["SHIP'S NAME", OWN.name], ["CALL SIGN", OWN.call], ["IMO No.", OWN.imo], ["MMSI", OWN.mmsi], ["LENGTH / BEAM", (OWN.A + OWN.B) + " m / " + (OWN.C + OWN.D) + " m"], ["GNSS ANT. (EXT)", "A" + OWN.A + " B" + OWN.B + " C" + OWN.C + " D" + OWN.D], ["(password-protected — set at installation)", ""]].forEach((r, i) => { tx(10, 82 + i * 22, r[0], 12, "left", C.dim); tx(470, 82 + i * 22, r[1], 12, "right"); }); guide("◀▶:TAB  ESC:EXIT"); } }
+  if (T.t === "pick") { if (T.init == null) { T.init = 1; T.cur = Math.max(0, T.map.indexOf(T.cur0)); } title(T.title); list(T.opts, T.cur, 66, 17); guide("▲▼:CURSOR  ENT:SET  ESC:CANCEL"); }
+  if (T.t === "digits") { title(T.title); let x = 120, di = 0; for (const ch of T.mask) { if (ch === "D") { const sel = di === T.cur; if (sel) { g.fillStyle = C.sel; g.fillRect(x - 2, 112, 22, 32); } tx(x + 9, 138, String(T.d[di]), 26, "center", sel ? "#fff" : C.tx, "bold"); di++; x += 24; } else { tx(x + 6, 138, ch, 26, "center"); x += 14; } }
+    guide("◀▶:MOVE  ▲▼:CHANGE  ENT:SAVE  ESC:CANCEL"); }
+  if (T.t === "kbd") { title(T.title); g.strokeStyle = C.ln; g.strokeRect(10.5, 54.5, 459, 26); tx(16, 73, T.val + (Math.floor(performance.now() / 500) % 2 ? "_" : ""), 13); tx(466, 73, T.val.length + "/" + T.max, 10, "right", C.dim);
+    KB.forEach((row, r) => [...row].forEach((ch, c) => { const w = r === 4 ? 140 : 42, x = 20 + c * (r === 4 ? 150 : 44), y = 90 + r * 32, sel = r === T.r && c === T.c; g.fillStyle = sel ? C.sel : (S.night ? "#1e2638" : "#fff"); g.fillRect(x, y, w, 28); g.strokeStyle = C.ln; g.strokeRect(x + 0.5, y + 0.5, w, 28);
+      tx(x + w / 2, y + 20, ch === "←" ? "← DEL" : ch === "␣" ? "SPACE" : ch === "↵" ? "END (SAVE)" : ch, 14, "center", sel ? "#fff" : C.tx, "bold"); }));
+    guide("▲▼◀▶:SELECT  ENT:INPUT  ESC:CANCEL  (PC keyboard OK)"); }
+  if (T.t === "create") { title("CREATE MESSAGE"); const F = T.f; list([["TYPE", F.type], ["DEST MMSI", F.type === "ADDRESSED" ? (F.to || "(ENT to input)") : "---"], ["CATEGORY", F.cat], ["CHANNEL", F.ch], ["TEXT", F.txt ? F.txt.slice(0, 26) + (F.txt.length > 26 ? "…" : "") : "(ENT to input)"], ["[ SEND ]", ""]], T.cur, 72, 26);
+    tx(10, 236, F.type === "BROADCAST" ? "MSG 14 broadcast · " + F.txt.length + "/156 chr" : "MSG 12 addressed · " + F.txt.length + "/156 chr", 11, "left", C.dim); guide("▲▼:CURSOR  ◀▶:CHANGE  ENT:INPUT/SEND  ESC:BACK"); }
+  if (T.t === "inbox") { title("INBOX"); list(S.inbox.length ? S.inbox.map(m => [(m.read ? "  " : "✉ ") + ltStr(m.t) + " " + m.from.slice(0, 20), m.cat]) : [["(no message)"]], T.cur, 66, 20); guide("▲▼:CURSOR  ENT:READ  ESC:BACK"); }
+  if (T.t === "outbox") { title("OUTBOX"); list(S.outbox.length ? S.outbox.map(m => [ltStr(m.t) + " " + (m.type === "BROADCAST" ? "ALL SHIPS" : m.to) + " " + m.txt.slice(0, 14), m.st]) : [["(no message)"]], Math.min(T.cur, S.outbox.length - 1), 66, 20); guide("▲▼:CURSOR  ENT/ESC:BACK"); }
+  if (T.t === "read") { title("MESSAGE"); const m = T.m; tx(10, 66, "FROM : " + m.from, 12); tx(10, 84, "TIME : " + ltStr(m.t) + " LT   " + m.cat + (m.br ? " · BROADCAST" : ""), 12); g.fillStyle = C.ln; g.fillRect(8, 92, 464, 1);
+    const words = m.txt.split(" "); let line = "", y = 112; for (const w of words) { if ((line + w).length > 52) { tx(10, y, line, 13); y += 18; line = ""; } line += w + " "; } tx(10, y, line, 13); guide("ENT/ESC:BACK"); }
+  if (T.t === "alarms") { title("ALARM STATUS"); list(S.alarms.length ? S.alarms.map(a => [(a.ack ? "  " : "! ") + (AL[a.id] ? a.id + " " : "") + a.txt.slice(0, 40), a.ack ? "ACK" : "NEW"]) : [["NO ACTIVE ALARM"]], Math.min(T.cur, S.alarms.length - 1), 66, 20); guide("▲▼:CURSOR  ENT:ACK  ESC:BACK"); }
+  if (T.t === "sensor") { title("SENSOR STATUS"); [["EXTERNAL GNSS (POS)", S.f.gps ? "LOST" : "OK · DGNSS"], ["INTERNAL GNSS", "OK" + (S.f.gps ? " · IN USE" : " · STANDBY")], ["SOG / COG SOURCE", S.f.gps ? "INTERNAL GNSS" : "EXTERNAL GNSS"], ["HEADING (GYRO)", S.f.hdg ? "LOST" : "OK"], ["ROT", S.f.hdg ? "NOT AVAILABLE" : "FROM HDG"], ["UTC CLOCK", "SYNC (GNSS)"]].forEach((r, i) => { tx(10, 74 + i * 24, r[0], 12, "left", C.dim); tx(470, 74 + i * 24, r[1], 13, "right", /LOST|NOT/.test(r[1]) ? C.rd : C.tx); }); guide("ENT/ESC:BACK"); }
+  if (T.t === "static") { title("STATIC DATA"); [["NAME", OWN.name], ["CALL SIGN", OWN.call], ["IMO", OWN.imo], ["MMSI", OWN.mmsi], ["TYPE", S.voy.type + " " + TN(S.voy.type)], ["DIM A/B/C/D", OWN.A + "/" + OWN.B + "/" + OWN.C + "/" + OWN.D + " m"], ["EDIT", "PASSWORD REQUIRED"]].forEach((r, i) => { tx(10, 72 + i * 24, r[0], 12, "left", C.dim); tx(470, 72 + i * 24, r[1], 13, "right"); }); guide("ENT/ESC:BACK"); }
+  if (T.t === "diag") { title("DIAGNOSTICS"); [["TX POWER", S.silent ? "TX OFF" : "12.5 W (HIGH)"], ["ANTENNA VSWR", S.f.vswr ? "4.2 : 1  NG" : "1.3 : 1  OK"], ["RX CH A 161.975", "OK"], ["RX CH B 162.025", "OK"], ["DSC RX CH70", "OK"], ["SUPPLY", "24.1 V"], ["PROGRAM", "AT-170 TRAINING 1.00"]].forEach((r, i) => { tx(10, 72 + i * 24, r[0], 12, "left", C.dim); tx(470, 72 + i * 24, r[1], 13, "right", r[1].includes("NG") ? C.rd : C.tx); }); guide("ENT/ESC:BACK"); }
+  if (T.t === "regional") { title("REGIONAL SETTING"); [["REGION", "DEFAULT (HIGH SEAS)"], ["CH A / CH B", "2087 / 2088"], ["TX/RX MODE", "TX A+B / RX A+B"], ["POWER", "HIGH"], ["ZONE SIZE", "5 NM"]].forEach((r, i) => { tx(10, 74 + i * 24, r[0], 12, "left", C.dim); tx(470, 74 + i * 24, r[1], 13, "right"); }); guide("ENT/ESC:BACK"); }
+  if (T.t === "tdata") { const t = T.tg; title(t.kind === "ship" ? "TARGET DATA" : t.kind === "sart" ? "AIS-SART" : t.kind === "aton" ? "AtoN DATA" : "BASE STATION");
+    const c = t.c || cpaOf(t), rows = t.kind === "ship" ? [["NAME", t.name], ["MMSI / CLASS", t.mmsi + " / " + t.cls], ["CALL / IMO", (t.call || "---") + " / " + (t.imo || "---")], ["TYPE", t.type + " " + TN(t.type)], ["NAV STATUS", String(t.ns).padStart(2, "0") + " " + NS[t.ns]], ["POSITION", fLat(t.lat) + " " + fLon(t.lon)], ["COG/SOG/HDG", t.cog.toFixed(1) + "° " + t.sog.toFixed(1) + "kn " + (t.hdg == null ? "---" : t.hdg + "°")], ["BRG / RNG", c.brg.toFixed(1) + "° / " + c.rng.toFixed(2) + "NM"], ["CPA / TCPA", c.cpa.toFixed(2) + "NM / " + (c.tcpa > 0 ? c.tcpa.toFixed(1) + "min" : "---")], ["DEST / ETA", (t.dest || "---") + " / " + (t.eta || "---")], ["DRAUGHT / L x B", (t.draught || "--") + "m / " + (t.L || "--") + "x" + (t.Bm || "--") + "m"]]
+      : [["NAME", t.name], ["MMSI", t.mmsi], ["POSITION", fLat(t.lat) + " " + fLon(t.lon)], ["BRG / RNG", c.brg.toFixed(1) + "° / " + c.rng.toFixed(2) + "NM"], t.kind === "sart" ? ["STATUS", "14 AIS-SART ACTIVE — PERSON / CRAFT IN DISTRESS"] : ["TYPE", t.kind === "aton" ? "REAL AtoN · LIGHT OK" : "COAST STATION"]];
+    rows.forEach((r, i) => { tx(10, 64 + i * 17, r[0], 11, "left", C.dim); tx(470, 64 + i * 17, r[1], 12, "right", (r[0] === "CPA / TCPA" && t.dang) || t.kind === "sart" ? C.rd : C.tx); }); if (t.lost) tx(240, 250, "LOST TARGET — LAST DATA", 12, "center", C.rd, "bold"); guide("ENT/ESC:BACK"); }
+  if (T.t === "confirm") { g.fillStyle = S.night ? "#202838" : "#fff"; g.fillRect(50, 80, 380, 120); g.strokeStyle = C.tx; g.strokeRect(50.5, 80.5, 379, 119); const words = T.txt.split(" "); let line = "", y = 108; for (const w of words) { if ((line + w).length > 44) { tx(240, y, line, 12, "center"); y += 16; line = ""; } line += w + " "; } tx(240, y, line, 12, "center");
+    ["NO", "YES"].forEach((s, i) => { const x = 150 + i * 110, sel = T.cur === i; g.fillStyle = sel ? C.sel : "transparent"; g.fillRect(x, 168, 70, 22); g.strokeRect(x + 0.5, 168.5, 70, 22); tx(x + 35, 184, s, 13, "center", sel ? "#fff" : C.tx, "bold"); }); }
+  if (T.t === "brill") { g.fillStyle = S.night ? "#202838" : "#fff"; g.fillRect(120, 100, 240, 80); g.strokeStyle = C.tx; g.strokeRect(120.5, 100.5, 239, 79); tx(240, 122, "BRILL  " + S.br + "/8   " + (S.night ? "NIGHT" : "DAY"), 13, "center", C.tx, "bold");
+    for (let i = 0; i < 8; i++) { g.fillStyle = i < S.br ? C.sel : "transparent"; g.fillRect(140 + i * 26, 134, 20, 14); g.strokeRect(140.5 + i * 26, 134.5, 20, 14); } tx(240, 170, "◀▶:ADJUST  ENT:DAY/NIGHT  BRILL:CLOSE", 10, "center"); } }
+function draw() { pal();
+  if (!S.on) { cv.style.filter = "none"; g.fillStyle = "#101418"; g.fillRect(0, 0, W, H); return; }
+  cv.style.filter = `brightness(${0.4 + S.br * 0.075})`; g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+  if (S.boot > 0) { tx(240, 110, "ECADEMY", 26, "center", C.tx, "bold"); tx(240, 136, "AIS AT-170 · CLASS A", 14, "center"); tx(240, 166, S.boot > 2.5 ? "SELF TEST ..." : S.boot > 1.2 ? "ROM OK  RAM OK  TX OK" : "SYNC UTC / START TDMA", 12, "center", C.dim); return; }
+  status(); const T = topUI();
+  if (T && T.t !== "brill" && T.t !== "confirm") drawUI(T); else { [plotter, () => tList(false), () => tList(true), ownShip][S.scr](); if (T) drawUI(T); }
+  const un = S.alarms.find(a => !a.ack); if (un && !(T && ["kbd", "digits", "create"].includes(T.t))) { g.fillStyle = un.kind === "SYS" ? "#b06000" : C.rd; g.fillRect(20, 196, 440, 52); g.fillStyle = "#fff"; g.fillRect(23, 199, 434, 46);
+    tx(240, 216, (un.kind === "MSG" ? "✉ " : "⚠ ") + un.txt.slice(0, 54), 12, "center", un.kind === "SYS" ? "#8a4a00" : C.rd, "bold"); tx(240, 236, "PRESS ENT/ACK TO ACKNOWLEDGE", 11, "center", "#333"); }
+  if (FL && performance.now() < FL.until) { g.fillStyle = C.hb; g.fillRect(140, 112, 200, 30); tx(240, 132, FL.t, 13, "center", "#fff", "bold"); } }
+// ---------- loop ----------
+let sideT = 0;
+function loop(now) { const rdt = Math.min(0.25, (now - last) / 1000); last = now; const dt = rdt * acc; if (S.boot > 0) S.boot -= rdt;
+  if (dt > 0) { S.t += dt; step(dt); } draw(); $("clk").textContent = utc(S.t).slice(11) + " UTC";
+  if ((sideT += rdt) > 0.5) { sideT = 0; side(); } requestAnimationFrame(loop); }
+function side() { $("hdgv").textContent = Math.round(S.own.hdg) + "°"; $("stwv").textContent = S.own.stw.toFixed(1) + " kn";
+  const nx = []; if (!S.vtsSent) nx.push("VTS message in " + Math.max(0, (S.vtsAt - S.t) / 60).toFixed(1) + " min"); if (!S.sartOn) nx.push("AIS-SART in " + Math.max(0, (S.sartAt - S.t) / 60).toFixed(1) + " min");
+  $("truth").textContent = "Own ship " + fLat(S.own.lat) + " " + fLon(S.own.lon) + (nx.length ? " · next: " + nx.join(", ") : ""); }
+function ui() { $("hdg").value = Math.round(S.own.hdg); $("stw").value = S.own.stw; document.querySelectorAll("[data-f]").forEach(b => b.classList.toggle("on", S.f[b.dataset.f])); tasks(); side(); }
+document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k; b.addEventListener("pointerdown", e => { e.preventDefault(); key(k); if (["up", "down", "left", "right"].includes(k)) { clearTimeout(rep); let n = 0; const f = () => { key(k); n++; rep = setTimeout(f, n > 8 ? 50 : 110); }; rep = setTimeout(f, 450); } });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(t => b.addEventListener(t, () => clearTimeout(rep))); });
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; const T = topUI();
+  if (T && T.t === "kbd" && S.on) { if (e.key.length === 1 && /[A-Za-z0-9 \-./]/.test(e.key)) { e.preventDefault(); if (T.val.length < T.max) T.val += e.key.toUpperCase(); return; } if (e.key === "Backspace") { e.preventDefault(); T.val = T.val.slice(0, -1); return; } if (e.key === "Enter") { e.preventDefault(); T.done(T.val); S.ui.pop(); flash("SAVED"); trainCheck(); return; } }
+  if (T && T.t === "digits" && /^[0-9]$/.test(e.key)) { T.d[T.cur] = +e.key; T.cur = Math.min(T.d.length - 1, T.cur + 1); return; }
+  const m = {ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right", Enter:"ent", Escape:"menu", d:"disp", n:"nav", b:"brill"}[e.key]; if (m) { e.preventDefault(); key(m); } });
+$("hdg").oninput = () => { S.own.hdg = +$("hdg").value; side(); }; $("stw").oninput = () => { S.own.stw = +$("stw").value; side(); };
+document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { S.f[b.dataset.f] = !S.f[b.dataset.f]; b.classList.toggle("on", S.f[b.dataset.f]); });
+$("ev_sart").onclick = () => triggerSART(); $("ev_vts").onclick = () => { if (!S.vtsSent) sendVTS(); };
+document.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => { acc = +b.dataset.acc; document.querySelectorAll("[data-acc]").forEach(q => q.classList.toggle("on", q === b)); });
+$("restart").onclick = () => { S = null; reset(); };
+document.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { const r = b.dataset.r, out = $("r_res");
+  if (r === "dg") { const v = $("r_dg").value.trim(), t = S.tgts.find(x => x.mmsi === v); if (!S.ackDg) { out.innerHTML = '<span class="bad">First get the dangerous-target alarm (set CPA/TCPA) and acknowledge it with ENT/ACK.</span>'; return; }
+    if (t && t.dang) { out.innerHTML = `<span class="ok">✔ ${t.name} (${t.mmsi}) CPA ${t.c.cpa.toFixed(2)} NM TCPA ${t.c.tcpa.toFixed(1)} min — now confirm on radar, call on VHF if needed and act per COLREG.</span>`; done("dg"); } else out.innerHTML = '<span class="bad">✘ That MMSI is not the dangerous target. Use DISP ▸ DANGEROUS TARGETS.</span>'; }
+  if (r === "er") { const v = $("r_er").value.trim(), t = S.tgts.find(x => x.mmsi === v); if (t && t.err) { out.innerHTML = `<span class="ok">✔ ${t.name} shows "AT ANCHOR" but SOG ${t.sog} kn — the other ship forgot to update its AIS. Trust radar / visual; treat as a vessel under way.</span>`; done("er"); } else out.innerHTML = '<span class="bad">✘ Check each target: NAV STATUS vs SOG in TARGET DATA.</span>'; }
+  if (r === "sa") { const v = $("r_sa").value.trim(), b2 = parseFloat($("r_sb").value), t = S.tgts.find(x => x.kind === "sart"); if (!t) { out.innerHTML = '<span class="bad">No AIS-SART received yet.</span>'; return; }
+    if (v === t.mmsi && Math.abs(((b2 - t.c.brg + 540) % 360) - 180) < 3 && S.ackSart) { out.innerHTML = `<span class="ok">✔ AIS-SART ${t.mmsi} bearing ${t.c.brg.toFixed(1)}° ${t.c.rng.toFixed(2)} NM — inform Master, relay to MRCC / VTS, proceed to assist (SOLAS V/33).</span>`; done("sart"); }
+    else out.innerHTML = `<span class="bad">✘ ${S.ackSart ? "" : "Acknowledge the SART alarm first. "}Check MMSI and bearing (±3°) in the target data.</span>`; } });
+$("quiz").innerHTML = QUIZ.map((q, i) => `<div class="q"><b>${i + 1}. ${q[0]}</b>${q[1].map((o, j) => `<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join("")}</div>`).join("");
+$("quiz_go").onclick = () => { let n = 0; QUIZ.forEach((q, i) => { const v = document.querySelector(`input[name=q${i}]:checked`); if (v && +v.value === q[2]) n++; }); $("quiz_r").innerHTML = `<span class="${n === QUIZ.length ? "ok" : "bad"}">${n} / ${QUIZ.length} correct</span>`; if (n === QUIZ.length) done("quiz"); };
+reset();
+window.AIS = {S:() => S, key, triggerSART, sendVTS, reset};
+requestAnimationFrame(loop);
+</script><script id="fitjs">(function(){const wrap=document.querySelector(".wrap"),dev=wrap.firstElementChild,box=document.createElement("div");box.className="fitbox";wrap.insertBefore(box,dev);box.appendChild(dev);dev.style.width="800px";
+const side=wrap.querySelector(".side"),hd=document.querySelector("header"),ft=document.querySelector(".foot");
+function fit(){dev.style.transform="none";const w=dev.offsetWidth,h=dev.offsetHeight,narrow=innerWidth<=900;
+const availH=innerHeight-(hd?hd.offsetHeight:0)-(ft?ft.offsetHeight:0)-28,availW=narrow?innerWidth-24:innerWidth-24-12-Math.min(460,Math.max(300,innerWidth*0.3));
+let s=Math.min(1.3,availW/w,narrow?9:availH/h);s=Math.max(0.3,s);dev.style.transform="scale("+s+")";box.style.width=w*s+"px";box.style.height=h*s+"px";
+if(side)side.style.maxHeight=narrow?"none":(innerHeight-(hd?hd.offsetHeight:0)-(ft?ft.offsetHeight:0)-28)+"px";}
+addEventListener("resize",fit);fit();setTimeout(fit,300);window.ECADEMY_FIT=fit;})();</script></body></html>
