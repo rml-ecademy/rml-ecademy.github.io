@@ -1857,7 +1857,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   /* ===== CONFIG ===== */
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';   // publishable key: safe in the browser, data protected by RLS
-  const HUB = 'https://rml-ecademy.github.io/';
+  const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
   const CONTACT = 'https://m.me/';            // Messenger / email link para sa "Enroll" (palitan)
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',

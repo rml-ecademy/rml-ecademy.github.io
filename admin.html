@@ -108,7 +108,7 @@ td small{display:block;color:var(--muted)}
 (function(){
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
-  const HUB = 'https://rml-ecademy.github.io/';
+  const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
   const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
   const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit' } });
   const $ = id => document.getElementById(id);
@@ -117,7 +117,7 @@ td small{display:block;color:var(--muted)}
   let members = [], lastLink = '';
 
   async function call(body){
-    const { data, error } = await sb.functions.invoke('admin', { body });
+    const { data, error } = await sb.functions.invoke('admin', { body: { ...body, hub: HUB } });
     if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} throw new Error(m); }
     return data;
   }
