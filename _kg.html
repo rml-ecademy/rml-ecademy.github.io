@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ECADEMY — Access Key Generator (PRIVATE)</title>
+<title>ECADEMY — Student list export</title>
 <style>
 :root{--navy:#061622;--navy2:#0a2235;--cyan:#64ddff;--white:#f4fbff;--muted:#9fb8c7;--amber:#ffc857;--green:#5ee6a8}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#0d3049,var(--navy));color:var(--white);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}
@@ -46,7 +46,7 @@ td button{margin:0;width:auto;padding:5px 9px;font-size:.72rem;background:transp
 </div></div>
 </div>
 <script>
-const PRIV = {"kty": "EC", "crv": "P-256", "x": "MtUpDnnFjxjC0bFfCVLpxs0UxDuY_EydrGyNxfvh_HY", "y": "agGSXWmgRmBmzKcS0e3I5SYcB7tQwSI9MTbTTIacBoE", "d": "4dHw6N9vWIt5vzxRWx-G2L0ajrVGB5WsBg0jEgxdnWI"};
+
 const HUB = 'https://rml-ecademy.github.io/';
 const NAMES = {J:'Junior Officers', C:'Chief Mate', A:'All Access · Master'};
 const fmtUntil = exp => exp==='9999999999' ? 'Lifetime access' : (/^\d{6}$/.test(exp) ? `Valid until ${exp.slice(0,4)}-${exp.slice(4)}` : 'Valid until ' + new Date(parseInt(exp)*1000).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}));
@@ -110,7 +110,7 @@ document.getElementById('importFile').onchange = async e => {
   save(list); render(); alert(added + ' students imported.'); e.target.value = '';
 };
 render();
-document.getElementById('go').onclick = gen;
+document.getElementById('go').onclick = () => alert('Key generation has moved to your private Key Generator file. This page only keeps your old student list so you can export it.');
 document.getElementById('copyKey').onclick = () => navigator.clipboard.writeText(document.getElementById('key').textContent);
 document.getElementById('copyMsg').onclick = () => navigator.clipboard.writeText(document.getElementById('msg').textContent);
 </script></body></html>
