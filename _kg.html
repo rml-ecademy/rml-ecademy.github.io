@@ -25,8 +25,9 @@ td button{margin:0;width:auto;padding:5px 9px;font-size:.72rem;background:transp
 <div class="card">
 <div class="grid"><div>
  <div class="brand"><b>E</b>CADEMY</div><div class="sub">Access Key Generator · private · huwag ipamahagi ang file na ito</div>
- <label>Email ng estudyante</label><input id="email" type="email" placeholder="juan.delacruz@gmail.com" autocomplete="off">
- <label>Pangalan (lalabas sa hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
+ <label>Uri ng code</label><select id="kind"><option value="personal">Personal — isang estudyante (naka-tali sa email)</option><option value="general">GENERAL — kahit sino, kahit anong email (para sa test / promo)</option></select>
+ <label id="emailLbl">Email ng estudyante</label><input id="email" type="email" placeholder="juan.delacruz@gmail.com" autocomplete="off">
+ <label id="nameLbl">Pangalan (lalabas sa hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
  <label>Package</label><select id="pkg"><option value="J">A · Junior Officers (3rd &amp; 2nd Mate)</option><option value="C" selected>B · Chief Mate</option><option value="A">C · All Access / Master</option></select>
  <div class="two"><div><label>Halaga na binayad (optional)</label><input id="amt" placeholder="2499"></div><div><label>GCash / Maya ref no. (optional)</label><input id="ref" placeholder="1234 5678 9012"></div></div>
  <label>Validity</label><select id="exp"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1">1 month</option><option value="m6">6 months</option><option value="m12" selected>12 months</option><option value="life">Lifetime</option></select>
@@ -50,11 +51,13 @@ const HUB = 'https://rml-ecademy.github.io/';
 const NAMES = {J:'Junior Officers', C:'Chief Mate', A:'All Access · Master'};
 const fmtUntil = exp => exp==='9999999999' ? 'Lifetime access' : (/^\d{6}$/.test(exp) ? `Valid until ${exp.slice(0,4)}-${exp.slice(4)}` : 'Valid until ' + new Date(parseInt(exp)*1000).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}));
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+document.getElementById('kind').onchange = () => { const gen = document.getElementById('kind').value==='general'; document.getElementById('email').disabled = gen; document.getElementById('email').value = gen ? '*' : ''; document.getElementById('emailLbl').textContent = gen ? 'Email — hindi kailangan (general code)' : 'Email ng estudyante'; document.getElementById('nameLbl').textContent = gen ? 'Pangalan ng code / grupo (hal. "Beta Tester")' : 'Pangalan (lalabas sa hub)'; };
 async function gen(){
-  const email = document.getElementById('email').value.trim().toLowerCase();
+  const general = document.getElementById('kind').value==='general';
+  const email = general ? '*' : document.getElementById('email').value.trim().toLowerCase();
   const name = document.getElementById('name').value.trim();
   const pkg = document.getElementById('pkg').value; const ev = document.getElementById('exp').value;
-  if(!email || !email.includes('@')) return alert('Ilagay ang email ng estudyante.');
+  if(!general && (!email || !email.includes('@'))) return alert('Ilagay ang email ng estudyante.');
   if(!name) return alert('Ilagay ang pangalan.');
   let exp='9999999999'; if(ev!=='life'){ const d=new Date(); if(ev[0]==='h') d.setHours(d.getHours()+parseInt(ev.slice(1))); else if(ev[0]==='d') d.setDate(d.getDate()+parseInt(ev.slice(1))); else d.setMonth(d.getMonth()+parseInt(ev.slice(1))); exp = String(Math.floor(d.getTime()/1000)); }
   const payload = new TextEncoder().encode(`${pkg}|${exp}|${email}|${name}`);
@@ -64,7 +67,9 @@ async function gen(){
   const k = `ECD-${pkg}${exp}-${nameB}-${b64u(sig)}`;
   document.getElementById('key').textContent = k;
   const until = fmtUntil(exp);
-  document.getElementById('msg').textContent = `Welcome aboard ECADEMY, ${name}!\n\nPackage: ${NAMES[pkg]}\n${until}${ev==='h1'?'\n(Trial access — 1 hour from the time this key was generated.)':''}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: ${email}\n4. Access key:\n${k}\n\nYour browser remembers the login. Use the same email + key on your phone or laptop.\n\nFair winds,\nCaptain Rey · ECADEMY`;
+  document.getElementById('msg').textContent = general
+    ? `You're invited to test ECADEMY — ${NAMES[pkg]} package.\n${until}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: your own email address\n4. Access key:\n${k}\n\nTry the simulators and tell me what you think!\n\nCaptain Rey · ECADEMY`
+    : `Welcome aboard ECADEMY, ${name}!\n\nPackage: ${NAMES[pkg]}\n${until}${ev==='h1'?'\n(Trial access — 1 hour from the time this key was generated.)':''}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: ${email}\n4. Access key:\n${k}\n\nYour browser remembers the login. Use the same email + key on your phone or laptop.\n\nFair winds,\nCaptain Rey · ECADEMY`;
   document.getElementById('out').classList.add('show');
   const amt = document.getElementById('amt').value.trim(), ref = document.getElementById('ref').value.trim();
   const list = load(); const i = list.findIndex(r => r.email === email && r.pkg === pkg);
@@ -80,14 +85,14 @@ function render(){
   const q = (document.getElementById('q').value || '').toLowerCase(); const list = load();
   const rows = list.filter(r => !q || (r.name+' '+r.email+' '+NAMES[r.pkg]).toLowerCase().includes(q));
   document.getElementById('count').textContent = list.length + ' students · ' + list.filter(r=>r.pkg==='J').length + ' Junior · ' + list.filter(r=>r.pkg==='C').length + ' Chief Mate · ' + list.filter(r=>r.pkg==='A').length + ' All Access';
-  document.getElementById('rows').innerHTML = rows.map((r,i) => `<tr><td>${r.date}</td><td><b>${r.name}</b><br><span style="color:var(--muted)">${r.email}</span></td><td><span class="pk ${r.pkg}">${NAMES[r.pkg]}</span></td><td><span class="exp ${expCls(r.exp)}">${fmtUntil(r.exp).replace('Valid until ','').replace(' access','')}</span></td><td>${r.amt?'₱'+r.amt:''}${r.ref?'<br><span style="color:var(--muted)">'+r.ref+'</span>':''}</td><td><button data-i="${list.indexOf(r)}" data-act="msg">Message</button> <button data-i="${list.indexOf(r)}" data-act="del">✕</button></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--muted)">Wala pang estudyante. Mag-generate ng unang key.</td></tr>';
+  document.getElementById('rows').innerHTML = rows.map((r,i) => `<tr><td>${r.date}</td><td><b>${r.name}</b><br><span style="color:var(--muted)">${r.email==='*'?'GENERAL CODE · any email':r.email}</span></td><td><span class="pk ${r.pkg}">${NAMES[r.pkg]}</span></td><td><span class="exp ${expCls(r.exp)}">${fmtUntil(r.exp).replace('Valid until ','').replace(' access','')}</span></td><td>${r.amt?'₱'+r.amt:''}${r.ref?'<br><span style="color:var(--muted)">'+r.ref+'</span>':''}</td><td><button data-i="${list.indexOf(r)}" data-act="msg">Message</button> <button data-i="${list.indexOf(r)}" data-act="del">✕</button></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--muted)">Wala pang estudyante. Mag-generate ng unang key.</td></tr>';
 }
 document.getElementById('q').addEventListener('input', render);
 document.getElementById('rows').addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return; const list = load(); const r = list[+b.dataset.i];
   if(b.dataset.act === 'del'){ if(confirm('Remove ' + r.name + ' from the list? (Hindi nito pinapawalang-bisa ang key niya.)')){ list.splice(+b.dataset.i,1); save(list); render(); } return; }
   const until = fmtUntil(r.exp);
-  const msg = `Welcome aboard ECADEMY, ${r.name}!\n\nPackage: ${NAMES[r.pkg]}\n${until}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: ${r.email}\n4. Access key:\n${r.key}\n\nYour browser remembers the login. Use the same email + key on your phone or laptop.\n\nFair winds,\nCaptain Rey · ECADEMY`;
+  const msg = r.email==='*' ? `You're invited to test ECADEMY — ${NAMES[r.pkg]} package.\n${until}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: your own email address\n4. Access key:\n${r.key}\n\nCaptain Rey · ECADEMY` : `Welcome aboard ECADEMY, ${r.name}!\n\nPackage: ${NAMES[r.pkg]}\n${until}\n\n1. Open ${HUB}\n2. Click "Log in" (top right)\n3. Email: ${r.email}\n4. Access key:\n${r.key}\n\nYour browser remembers the login. Use the same email + key on your phone or laptop.\n\nFair winds,\nCaptain Rey · ECADEMY`;
   navigator.clipboard.writeText(msg); b.textContent = 'Copied!'; setTimeout(() => b.textContent = 'Message', 1200);
 });
 document.getElementById('exportCsv').onclick = () => {

@@ -1817,8 +1817,12 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(isExpired(exp)) return { ok:false, why:'This access key expired on ' + fmtExp(exp) + '. Please renew.' };
     try {
       const k = await crypto.subtle.importKey('jwk', PUBLIC_JWK, {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']);
-      const ok = await crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, b64d(sigB), new TextEncoder().encode(`${pkg}|${exp}|${email}|${name}`));
+      const chk = em => crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, b64d(sigB), new TextEncoder().encode(`${pkg}|${exp}|${em}|${name}`));
+      if(!email.includes('@')) return { ok:false, why:'Please enter your email address.' };
+      let ok = await chk(email); let general = false;
+      if(!ok){ ok = await chk('*'); general = ok; }
       if(!ok) return { ok:false, why:'Email and access key do not match. Check the email you enrolled with.' };
+      if(general) return { ok:true, pkg, exp, email, name: email.split('@')[0], general:true, group:name };
     } catch(e) { return { ok:false, why:'Your browser could not verify the key (' + e.message + ').' }; }
     return { ok:true, pkg, exp, email, name };
   }
@@ -1866,7 +1870,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     let r; try { r = await verify(document.getElementById('loginEmail').value, document.getElementById('loginKey').value); } catch(err) { r = { ok:false, why:'Could not check the key: ' + err.message }; }
     btn.disabled = false; btn.textContent = 'Unlock my decks';
     if(!r.ok){ document.getElementById('loginErr').textContent = r.why; return; }
-    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, at:Date.now() }));
+    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, general:!!r.general, group:r.group||'', at:Date.now() }));
     document.getElementById('loginErr').style.color = 'var(--green)'; document.getElementById('loginErr').textContent = 'Welcome aboard, ' + r.name + '. Unlocking ' + PACKAGES[r.pkg].name + '…';
     setTimeout(() => location.reload(), 900);
   });
@@ -1888,7 +1892,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       <div class="fine">${p.url ? 'Secure checkout · access key by email' : 'GCash · Maya · bank transfer · card — access key sent within the day'}</div>
     </article>`).join('');
   /* member bar */
-  if(pkg){ const bar = document.getElementById('memberBar'); const until = expMs(session.exp) === Infinity ? 'lifetime' : 'until ' + fmtExp(session.exp); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + session.name.toUpperCase() + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
+  if(pkg){ const bar = document.getElementById('memberBar'); const until = expMs(session.exp) === Infinity ? 'lifetime' : 'until ' + fmtExp(session.exp); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + (session.general ? ' TEST ACCESS · ' + (session.group||'').toUpperCase() + ' · ' : ' ENROLLED · ' + session.name.toUpperCase() + ' · ') + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
 })();
 </script>
 </body>
