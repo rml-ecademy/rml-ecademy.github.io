@@ -125,8 +125,8 @@ td small{display:block;color:var(--muted)}
   function message(name, pkg, exp, link){
     const until = exp ? 'Valid until ' + fmt(exp) : 'Lifetime access';
     return link
-      ? `Welcome aboard ECADEMY, ${name || 'officer'}!\n\nPackage: ${NAMES[pkg]}\n${until}\n\n1. Open this link to set your password:\n${link}\n\n2. After that, log in anytime at ${HUB} with your email and password.\n\nFair winds,\nCaptain Rey`
-      : `Hi ${name || 'officer'}, your ECADEMY access is updated.\n\nPackage: ${NAMES[pkg]}\n${until}\n\nLog in at ${HUB} with your email and password. Forgot it? Press "Forgot password" on the login.\n\nCaptain Rey`;
+      ? `Welcome aboard ECADEMY, ${name || 'officer'}!\n\nPackage: ${NAMES[pkg]}\n${until}\n\n1. Open this link to set your password:\n${link}\n\n2. After that, log in anytime at ${HUB} with your email and password.\n\nFair winds,\nThe ECADEMY Team`
+      : `Hi ${name || 'officer'}, your ECADEMY access is updated.\n\nPackage: ${NAMES[pkg]}\n${until}\n\nLog in at ${HUB} with your email and password. Forgot it? Press "Forgot password" on the login.\n\nThe ECADEMY Team`;
   }
 
   /* ---------- auth ---------- */
