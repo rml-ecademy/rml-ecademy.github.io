@@ -162,11 +162,6 @@
       font-weight:550;
     }
     .tagline span{color:var(--cyan)}
-    .hero-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-    .hero-cta a{display:inline-flex;align-items:center;min-height:46px;padding:0 20px;border-radius:12px;font-weight:700;text-decoration:none;letter-spacing:.02em}
-    .hc-main{background:linear-gradient(135deg,var(--cyan),var(--cyan-2));color:var(--navy);box-shadow:0 10px 30px rgba(100,221,255,.25)}
-    .hc-main:hover{filter:brightness(1.08)}
-    .hc-ghost{border:1px solid rgba(100,221,255,.45);color:var(--white);background:rgba(10,34,53,.5)}
     .hero-copy{
       color:#b9cfdb;
       font-size:1.02rem;
@@ -913,10 +908,6 @@
 <div class="stat"><b>Shipboard practical</b><small>Real operational topics</small></div>
 <div class="stat"><b>Built to grow</b><small>Courses • Tools • Simulators</small></div>
 </div>
-<div class="hero-cta">
-<a class="hc-main" href="radar-demo.html">Try the free Radar / ARPA demo</a>
-<a class="hc-ghost" href="#plans">See packages</a>
-</div>
 </div>
 <div aria-label="Animated maritime trade globe" class="blueprint-wrap">
 <div class="blueprint-card globe-stage">
@@ -1562,7 +1553,7 @@
       });
     });
 
-    const APPS = { radar: { title: 'Radar / ARPA Simulator', src: 'app-radar' }, bridge: { title: 'Full Bridge Simulation', src: 'app-bridge', file: 'ECADEMY_FULL_BRIDGE.html', crumb: 'Master · Command ·' }, plotting: { title: 'Radar Plotting Sheet Trainer', src: 'app-plotting', file: 'ECADEMY_RADAR_PLOTTING_SHEET.html' }, ecdis: { title: 'ECDIS · Manila – Cebu Passage', src: 'app-ecdis', file: 'ECADEMY_ECDIS_MANILA_CEBU.html', crumb: 'Second Officer · Navigational Equipment ·' }, sextant: { title: 'Sextant Trainer', src: 'app-sextant', file: 'ECADEMY_SEXTANT.html', crumb: 'Second Officer · Navigational Equipment ·' }, vhf: { title: 'VHF DSC Radiotelephone', src: 'app-vhf', file: 'ECADEMY_VHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
+    const APPS = { radar: { title: 'Radar / ARPA Simulator', src: 'app-radar' }, radardemo: { title: 'Radar / ARPA · Free Demo (1 hour)', src: 'app-radardemo', crumb: 'Second Officer · Navigational Equipment ·' }, bridge: { title: 'Full Bridge Simulation', src: 'app-bridge', file: 'ECADEMY_FULL_BRIDGE.html', crumb: 'Master · Command ·' }, plotting: { title: 'Radar Plotting Sheet Trainer', src: 'app-plotting', file: 'ECADEMY_RADAR_PLOTTING_SHEET.html' }, ecdis: { title: 'ECDIS · Manila – Cebu Passage', src: 'app-ecdis', file: 'ECADEMY_ECDIS_MANILA_CEBU.html', crumb: 'Second Officer · Navigational Equipment ·' }, sextant: { title: 'Sextant Trainer', src: 'app-sextant', file: 'ECADEMY_SEXTANT.html', crumb: 'Second Officer · Navigational Equipment ·' }, vhf: { title: 'VHF DSC Radiotelephone', src: 'app-vhf', file: 'ECADEMY_VHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
   mfhf: { title: 'MF/HF DSC Radio', src: 'app-mfhf', file: 'ECADEMY_MFHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
   satc: { title: 'SAT-C Terminal (Inmarsat-C)', src: 'app-satc', file: 'ECADEMY_SATC.html', crumb: 'Second Officer · GMDSS ·' },
   gvm: { title: 'Gyro vs Magnetic Compass', src: 'app-gvm', file: 'ECADEMY_GYRO_VS_MAGNETIC.html', crumb: 'Second Officer · Navigational Equipment ·' },
@@ -1601,6 +1592,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       }
       return true;
     }
+    window.ecademyOpenApp = openApp;
     function closeApp(){
       if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
       overlay.classList.remove('open'); document.body.style.overflow = ''; frame.removeAttribute('srcdoc'); if(frame.src.startsWith('blob:')) URL.revokeObjectURL(frame.src.split('#')[0]); frame.src = 'about:blank'; currentApp = null;
@@ -1755,6 +1747,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .lock-badge{position:absolute;top:14px;right:14px;z-index:3;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font:600 .68rem/1 "Courier New",monospace;letter-spacing:.12em;text-transform:uppercase;background:rgba(5,25,39,.85);border:1px solid rgba(255,200,87,.45);color:var(--amber)}
 .lock-badge.ok{border-color:rgba(94,230,168,.45);color:var(--green)}
 .lock-badge svg{width:11px;height:11px;fill:currentColor}
+.topic-btn.demo-btn{border-style:dashed;border-color:rgba(100,221,255,.5)}
+.topic-btn.demo-btn .sim-tag{background:rgba(100,221,255,.14);color:var(--cyan);border-color:rgba(100,221,255,.45)}
+.topic-btn.demo-btn.ended{opacity:.62}.topic-btn.demo-btn.ended .sim-tag{background:rgba(255,200,87,.12);color:var(--amber);border-color:rgba(255,200,87,.35)}
 .topic-btn.locked{opacity:.62}
 .topic-btn.locked .sim-tag{background:rgba(255,200,87,.12);color:var(--amber);border-color:rgba(255,200,87,.35)}
 .plans{padding:10px 0 70px}
@@ -1900,7 +1895,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
              ['Full Bridge','Full bridge simulation with all equipment, including heavy-weather navigation.']],
          feats:['Everything in Chief Mate','Command Deck · Master','All future modules while enrolled'] }
   };
-  window.ECADEMY_FREE = ['flare'];
+  window.ECADEMY_FREE = ['flare', 'radardemo'];
   /* ================== */
   const $ = id => document.getElementById(id);
   const hp = new URLSearchParams(location.hash.slice(1));
@@ -1989,6 +1984,17 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const pkg = valid ? PACKAGES[member.package] : null;
     const allowed = new Set(pkg ? pkg.ranks : []);
 
+    const DEMO_KEY = 'ecademy.radarDemo.start', DEMO_MS = 60 * 60 * 1000;
+    function demoLeft(){ try{ const t0 = +localStorage.getItem(DEMO_KEY); return t0 ? DEMO_MS - (Date.now() - t0) : DEMO_MS; }catch(_){ return DEMO_MS; } }
+    function demoButton(){
+      const d = document.createElement('button'); d.type = 'button'; d.className = 'topic-btn has-sim demo-btn';
+      const paint = () => { const left = demoLeft(); d.innerHTML = 'Radar / ARPA — free demo for visitors <span class="sim-tag">' + (left <= 0 ? 'DEMO ENDED' : left >= DEMO_MS ? '▶ TRY 1 HOUR FREE' : '▶ ' + Math.ceil(left / 60000) + ' MIN LEFT') + '</span>'; d.classList.toggle('ended', left <= 0); };
+      paint(); setInterval(paint, 30000);
+      d.addEventListener('click', e => { e.stopPropagation(); if(demoLeft() <= 0){ showEnroll('Second Officer'); return; } window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); setTimeout(paint, 1500); });
+      return d;
+    }
+    if(location.hash === '#radar-demo' && !pkg){ history.replaceState(null, '', location.pathname); setTimeout(() => { if(demoLeft() > 0) window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); else showEnroll('Second Officer'); }, 300); }
+
     document.querySelectorAll('.rank-card').forEach(card => {
       const r = card.dataset.rank, open = allowed.has(r);
       card.classList.toggle('locked', !open);
@@ -1996,6 +2002,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       if(!open) card.querySelectorAll('.topic-btn.has-sim').forEach(t => {
         if(ECADEMY_FREE.includes(t.dataset.app)){ const s = t.querySelector('.sim-tag'); if(s) s.textContent = '▶ FREE DEMO'; return; }
         t.classList.add('locked'); const s = t.querySelector('.sim-tag'); if(s) s.textContent = 'LOCKED';
+        if(t.dataset.app === 'radar' && r === 'Second Officer' && !t.nextElementSibling?.classList.contains('demo-btn')) t.after(demoButton());
       });
     });
 
