@@ -1858,7 +1858,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';   // publishable key: safe in the browser, data protected by RLS
   const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
-  const CONTACT = 'https://m.me/';            // Messenger / email link para sa "Enroll" (palitan)
+  const MESSENGER = 'https://m.me/__PAGE__';   // ECADEMY Maritime Facebook page (Messenger)
+  const CONTACT = MESSENGER;
+  const enrollLink = (p, upgrade) => MESSENGER + '?text=' + encodeURIComponent(
+    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'enroll in'} the ${p.name} package (${p.who}). My email: `);
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
          img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
@@ -2017,7 +2020,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
-              <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Message us to enroll')}</a>
+              <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Message us to enroll')}</a>
               <span class="fine">Ask for the current price and promo. GCash, Maya, bank transfer or card.</span>
             </div>
           </div>
