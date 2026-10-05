@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ECADEMY Admin</title>
+<style>
+:root{--navy:#061622;--navy2:#0a2235;--panel:#0b2638;--line:rgba(113,216,255,.18);--cyan:#64ddff;--white:#f4fbff;--muted:#9fb8c7;--amber:#ffc857;--green:#5ee6a8;--red:#ff8a7a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#0d3049,var(--navy));color:var(--white);font:15px/1.5 system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh}
+a{color:var(--cyan)}
+.wrap{width:min(1200px,100% - 32px);margin:0 auto;padding:24px 0 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.brand{font-weight:800;letter-spacing:.12em;font-size:1.2rem}.brand b{color:var(--cyan)}
+.who{color:var(--muted);font-size:.9rem}
+.card{background:linear-gradient(155deg,rgba(17,54,77,.72),rgba(5,25,39,.92));border:1px solid var(--line);border-radius:14px;padding:22px}
+.grid{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:18px;align-items:start}
+h2{margin:0 0 12px;font-size:1.15rem}
+label{display:block;margin:12px 0 5px;font-size:.82rem;color:var(--muted)}
+input,select{width:100%;min-height:42px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.16);background:#07192a;color:#fff;font:inherit}
+input:focus,select:focus{outline:2px solid var(--cyan);outline-offset:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;gap:8px;align-items:center;margin-top:12px;color:var(--muted);font-size:.88rem}.check input{width:auto;min-height:0}
+button{min-height:42px;padding:0 16px;border-radius:9px;border:0;background:var(--cyan);color:#061622;font:700 .92rem system-ui,Arial;cursor:pointer}
+button.ghost{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.2)}
+button.small{min-height:30px;padding:0 10px;font-size:.78rem}
+button:disabled{opacity:.55;cursor:default}
+.full{width:100%;margin-top:16px}
+.err{min-height:20px;margin-top:10px;color:var(--amber);font-size:.9rem}
+.out{display:none;margin-top:16px;padding:14px;border-radius:10px;background:#07192a;border:1px solid rgba(94,230,168,.35)}
+.out.show{display:block}
+.out pre{white-space:pre-wrap;word-break:break-all;margin:6px 0 10px;font:13px/1.5 ui-monospace,Consolas,monospace;color:#dff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.tools{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.tools input{flex:1;min-width:200px}
+.count{color:var(--muted);font-size:.86rem;margin-bottom:10px}
+.tablewrap{overflow:auto;max-height:70vh}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;color:var(--muted);font-weight:500;padding:8px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0b2638}
+td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+td small{display:block;color:var(--muted)}
+.pk{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:700;background:rgba(100,221,255,.12);color:var(--cyan)}
+.st-ok{color:var(--green)}.st-soon{color:var(--amber)}.st-bad{color:var(--red)}
+.acts{display:flex;gap:5px;flex-wrap:wrap}
+.login{max-width:440px;margin:8vh auto 0}
+.note{color:var(--muted);font-size:.86rem;margin-top:14px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="brand"><b>E</b>CADEMY · ADMIN</div><div class="who" id="who"></div></header>
+
+  <!-- not logged in -->
+  <section class="card login" id="loginView" hidden>
+    <h2 id="lvTitle">Admin login</h2>
+    <form id="lf">
+      <label for="le">Email</label><input id="le" type="email" required autocomplete="email">
+      <label for="lp">Password</label><input id="lp" type="password" required minlength="8" autocomplete="current-password">
+      <button class="full" id="lb" type="submit">Log in</button>
+    </form>
+    <div class="err" id="lerr" role="alert"></div>
+    <p class="note">First time? <a href="#" id="signup">Create the admin account</a> with your admin email, then confirm it from the email Supabase sends you. &nbsp;·&nbsp; <a href="#" id="forgot">Forgot password</a></p>
+  </section>
+
+  <section class="card login" id="denied" hidden>
+    <h2>Not an admin account</h2>
+    <p>You are logged in as <b id="deniedEmail"></b>, which is not on the ECADEMY admin list.</p>
+    <button class="ghost" id="out2">Log out</button>
+  </section>
+
+  <!-- admin -->
+  <div class="grid" id="adminView" hidden>
+    <section class="card">
+      <h2>Enroll or renew a student</h2>
+      <form id="ef">
+        <label for="email">Student email</label><input id="email" type="email" required placeholder="juan.delacruz@gmail.com" autocomplete="off">
+        <label for="name">Name (shown in the hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
+        <label for="pkg">Package</label>
+        <select id="pkg"><option value="J">A · Junior Officers (3rd & 2nd Mate)</option><option value="C" selected>B · Chief Mate</option><option value="A">C · All Access / Master</option></select>
+        <label for="val">Validity</label>
+        <select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1" selected>1 month</option><option value="m3">3 months</option><option value="m6">6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option></select>
+        <div class="two"><div><label for="amt">Amount paid</label><input id="amt" placeholder="2499"></div><div><label for="ref">GCash / Maya ref no.</label><input id="ref" placeholder="1234 5678 9012"></div></div>
+        <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
+        <label class="check"><input type="checkbox" id="newLink"> Also make a new set-password link for an existing student</label>
+        <button class="full" id="eb" type="submit">Enroll and get the link</button>
+      </form>
+      <div class="err" id="eerr" role="alert"></div>
+      <div class="out" id="out">
+        <div id="outTitle" style="font-weight:700"></div>
+        <pre id="msg"></pre>
+        <div class="row"><button class="small" id="copyMsg" type="button">Copy message</button><button class="small ghost" id="copyLink" type="button">Copy link only</button></div>
+        <p class="note">Send this by Messenger or email. The link works once and expires; if the student is late, press <b>New link</b> in the list.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Students</h2>
+      <div class="count" id="count">Loading…</div>
+      <div class="tools"><input id="q" placeholder="Search name, email or package"><button class="ghost small" id="refresh" type="button">Refresh</button><button class="ghost small" id="csv" type="button">Export CSV</button><button class="ghost small" id="out1" type="button">Log out</button></div>
+      <div class="tablewrap"><table><thead><tr><th>Student</th><th>Package</th><th>Access</th><th>Devices</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    </section>
+  </div>
+</div>
+
+<script src="assets/supabase-2.117.2.js"></script>
+<script>
+(function(){
+  const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
+  const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
+  const HUB = 'https://rml-ecademy.github.io/';
+  const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
+  const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit' } });
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmt = d => d ? new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : 'Lifetime';
+  let members = [], lastLink = '';
+
+  async function call(body){
+    const { data, error } = await sb.functions.invoke('admin', { body });
+    if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} throw new Error(m); }
+    return data;
+  }
+  function show(id){ ['loginView','denied','adminView'].forEach(v => $(v).hidden = v !== id); }
+  function message(name, pkg, exp, link){
+    const until = exp ? 'Valid until ' + fmt(exp) : 'Lifetime access';
+    return link
+      ? `Welcome aboard ECADEMY, ${name || 'officer'}!\n\nPackage: ${NAMES[pkg]}\n${until}\n\n1. Open this link to set your password:\n${link}\n\n2. After that, log in anytime at ${HUB} with your email and password.\n\nFair winds,\nCaptain Rey`
+      : `Hi ${name || 'officer'}, your ECADEMY access is updated.\n\nPackage: ${NAMES[pkg]}\n${until}\n\nLog in at ${HUB} with your email and password. Forgot it? Press "Forgot password" on the login.\n\nCaptain Rey`;
+  }
+
+  /* ---------- auth ---------- */
+  let signupMode = false;
+  $('signup').onclick = e => { e.preventDefault(); signupMode = !signupMode; $('lvTitle').textContent = signupMode ? 'Create the admin account' : 'Admin login'; $('lb').textContent = signupMode ? 'Create account' : 'Log in'; $('lp').autocomplete = signupMode ? 'new-password' : 'current-password'; $('lerr').textContent = ''; };
+  $('forgot').onclick = async e => { e.preventDefault(); const em = $('le').value.trim().toLowerCase(); if(!em){ $('lerr').textContent = 'Type your email first.'; return; }
+    const { error } = await sb.auth.resetPasswordForEmail(em, { redirectTo: HUB + 'admin.html' }); $('lerr').textContent = error ? error.message : 'Check your email for the reset link.'; };
+  $('lf').addEventListener('submit', async e => {
+    e.preventDefault(); const email = $('le').value.trim().toLowerCase(), password = $('lp').value; $('lb').disabled = true; $('lerr').textContent = '';
+    const r = signupMode ? await sb.auth.signUp({ email, password, options:{ emailRedirectTo: HUB + 'admin.html' } }) : await sb.auth.signInWithPassword({ email, password });
+    $('lb').disabled = false;
+    if(r.error){ $('lerr').textContent = r.error.message; return; }
+    if(signupMode && !r.data.session){ $('lerr').style.color = 'var(--green)'; $('lerr').textContent = 'Account created. Open the confirmation email from Supabase, then come back and log in.'; return; }
+    boot();
+  });
+  async function logout(){ await sb.auth.signOut(); location.reload(); }
+  $('out1').onclick = logout; $('out2').onclick = logout;
+
+  /* ---------- recovery link lands here: set a new password ---------- */
+  sb.auth.onAuthStateChange(async ev => {
+    if(ev === 'PASSWORD_RECOVERY'){ const p = prompt('Type your new admin password (at least 8 characters):'); if(p && p.length >= 8){ const { error } = await sb.auth.updateUser({ password:p }); alert(error ? error.message : 'Password saved.'); } }
+  });
+
+  /* ---------- students ---------- */
+  function status(m){
+    if(m.revoked) return '<span class="st-bad">Paused</span>';
+    if(!m.expires_at) return '<span class="st-ok">Lifetime</span>';
+    const left = new Date(m.expires_at) - Date.now();
+    if(left < 0) return '<span class="st-bad">Expired ' + fmt(m.expires_at) + '</span>';
+    return '<span class="' + (left < 7*864e5 ? 'st-soon' : 'st-ok') + '">Until ' + fmt(m.expires_at) + '</span>';
+  }
+  function render(){
+    const q = $('q').value.trim().toLowerCase();
+    const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + NAMES[m.package]).toLowerCase().includes(q));
+    const active = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date())).length;
+    $('count').textContent = members.length + ' students · ' + active + ' active · ' + members.filter(m=>m.package==='J').length + ' Junior · ' + members.filter(m=>m.package==='C').length + ' Chief Mate · ' + members.filter(m=>m.package==='A').length + ' All Access';
+    $('rows').innerHTML = list.map(m => `<tr>
+      <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}</td>
+      <td><span class="pk">${esc(NAMES[m.package])}</span></td>
+      <td>${status(m)}</td>
+      <td>${m.devices}/2${m.last_seen ? '<small>last ' + fmt(m.last_seen) + '</small>' : ''}</td>
+      <td><div class="acts">
+        <button class="small" data-a="renew" data-id="${m.user_id}">Renew</button>
+        <button class="small ghost" data-a="link" data-id="${m.user_id}">New link</button>
+        <button class="small ghost" data-a="dev" data-id="${m.user_id}">Reset devices</button>
+        <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button>
+      </div></td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--muted)">No students yet. Enroll the first one on the left.</td></tr>';
+  }
+  async function load(){ try { members = (await call({ action:'list' })).members; render(); } catch(e){ $('count').textContent = 'Could not load students: ' + e.message; } }
+  $('q').addEventListener('input', render); $('refresh').onclick = load;
+  $('rows').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-a]'); if(!b) return; const m = members.find(x => x.user_id === b.dataset.id); if(!m) return;
+    if(b.dataset.a === 'renew'){ $('email').value = m.email; $('name').value = m.name || ''; $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; $('email').scrollIntoView({ behavior:'smooth', block:'center' }); $('val').focus(); return; }
+    b.disabled = true;
+    try {
+      if(b.dataset.a === 'link'){ const r = await call({ action:'link', email:m.email }); showOut('New set-password link for ' + (m.name || m.email), message(m.name, m.package, m.expires_at, r.link), r.link); }
+      if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? They can then log in on 2 new devices.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
+      if(b.dataset.a === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + (m.name || m.email) + '?')){ await call({ action:'revoke', user_id:m.user_id, revoked:!m.revoked }); await load(); } }
+    } catch(err){ alert(err.message); }
+    b.disabled = false;
+  });
+  $('csv').onclick = () => {
+    const c = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+    const csv = ['name,email,package,expires,status,amount,ref,devices,enrolled'].concat(members.map(m => [m.name, m.email, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.devices, m.created_at].map(c).join(','))).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+  };
+
+  /* ---------- enroll ---------- */
+  function showOut(title, msg, link){ lastLink = link || ''; $('outTitle').textContent = title; $('msg').textContent = msg; $('copyLink').hidden = !link; $('out').classList.add('show'); $('out').scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  $('copyMsg').onclick = () => navigator.clipboard.writeText($('msg').textContent).then(() => { $('copyMsg').textContent = 'Copied'; setTimeout(() => $('copyMsg').textContent = 'Copy message', 1200); });
+  $('copyLink').onclick = () => navigator.clipboard.writeText(lastLink);
+  $('ef').addEventListener('submit', async e => {
+    e.preventDefault(); $('eb').disabled = true; $('eerr').textContent = '';
+    const body = { action:'enroll', email:$('email').value.trim().toLowerCase(), name:$('name').value.trim(), package:$('pkg').value, validity:$('val').value, amount:$('amt').value.trim(), ref:$('ref').value.trim(), extend:$('extend').checked, newLink:$('newLink').checked };
+    try {
+      const r = await call(body);
+      showOut(r.link ? 'Enrolled: send this to ' + (body.name || body.email) : 'Updated: ' + (body.name || body.email) + ' (already has an account)', message(body.name, body.package, r.member.expires_at, r.link), r.link);
+      $('amt').value = ''; $('ref').value = ''; await load();
+    } catch(err){ $('eerr').textContent = err.message; }
+    $('eb').disabled = false;
+  });
+
+  /* ---------- start ---------- */
+  async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ show('loginView'); $('who').textContent = ''; return; }
+    $('who').textContent = session.user.email;
+    try { members = (await call({ action:'list' })).members; show('adminView'); render(); }
+    catch(e){ if(/admin/i.test(e.message) || /forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; show('denied'); } else { show('adminView'); $('count').textContent = 'Could not load students: ' + e.message; } }
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

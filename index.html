@@ -1556,7 +1556,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
-      if(!currentApp) return; window.open(frame.src || ('apps/' + currentApp + '.html'), '_blank');
+      if(!currentApp || !frame.src || frame.src === 'about:blank') return; window.open(frame.src, '_blank');
     });
     function openApp(key, start){
       const app = APPS[key]; if(!app) return false;
@@ -1569,7 +1569,13 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         currentApp = key;
         frame.onload = () => { loading.style.display = 'none'; try{ frame.contentWindow.focus(); }catch(_){} };
         frame.removeAttribute('srcdoc');
-        frame.src = 'apps/' + key + '.html' + (start ? '#' + encodeURIComponent(start) : '');
+        const hash = start ? '#' + encodeURIComponent(start) : '';
+        if((window.ECADEMY_FREE || []).includes(key)) frame.src = 'apps/' + key + '.html' + hash;
+        else {
+          loading.textContent = 'Unlocking simulator…';
+          window.ecademyOpenProtected(key).then(url => { if(currentApp === key) frame.src = url + hash; })
+            .catch(err => { loading.textContent = err.message; });
+        }
       }catch(err){
         loading.textContent = 'The simulator could not start here (' + err.message + '). Press "Open in new tab".';
       }
@@ -1577,7 +1583,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     }
     function closeApp(){
       if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-      overlay.classList.remove('open'); document.body.style.overflow = ''; frame.removeAttribute('srcdoc'); frame.src = 'about:blank';
+      overlay.classList.remove('open'); document.body.style.overflow = ''; frame.removeAttribute('srcdoc'); if(frame.src.startsWith('blob:')) URL.revokeObjectURL(frame.src.split('#')[0]); frame.src = 'about:blank'; currentApp = null;
     }
     document.getElementById('appClose').addEventListener('click', closeApp);
     document.getElementById('appFull').addEventListener('click', () => {
@@ -1646,29 +1652,28 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 </style>
 
 <div class="member-bar" id="memberBar"></div>
-<div class="enroll-modal" id="loginModal" role="dialog" aria-modal="true">
+<div class="enroll-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginH">
   <form class="enroll-box login-box" id="loginForm" autocomplete="on">
     <button class="x" id="loginClose" type="button" aria-label="Close">×</button>
     <div class="tier" style="color:var(--cyan)">MEMBER LOGIN</div>
-    <h3 id="loginH">Unlock your decks</h3>
-    <p id="loginP">Enter the email you enrolled with and the access key you received. This browser will remember you.</p>
-    <label>Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
-    <div id="keyRow"><label>Access key</label><input id="loginKey" type="text" placeholder="ECD-C…" autocomplete="off" spellcheck="false"></div>
-    <div id="pwRow" style="display:none"><label>Password</label><input id="loginPw" type="password" placeholder="Your password" autocomplete="current-password"></div>
-    <div class="err" id="loginErr"></div>
-    <div class="row"><button class="cta" id="loginBtn" type="submit">Unlock my decks</button><a class="ghost" href="#plans" id="loginEnroll">Not enrolled yet</a></div>
-    <div class="alt" id="loginAlt" style="display:none"><a href="#" id="useKey">Forgot password? Use your access key instead</a></div>
+    <h3 id="loginH">Log in to ECADEMY</h3>
+    <p id="loginP">Use the email you enrolled with and your password.</p>
+    <label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
+    <label for="loginPw">Password</label><input id="loginPw" type="password" required placeholder="Your password" autocomplete="current-password">
+    <div class="err" id="loginErr" role="alert"></div>
+    <div class="row"><button class="cta" id="loginBtn" type="submit">Log in</button><a class="ghost" href="#plans" id="loginEnroll">Not enrolled yet</a></div>
+    <div class="alt"><a href="#" id="forgotPw">Forgot password? Send me a reset link</a></div>
   </form>
 </div>
-<div class="enroll-modal" id="pwModal" role="dialog" aria-modal="true">
+<div class="enroll-modal" id="pwModal" role="dialog" aria-modal="true" aria-labelledby="pwH">
   <form class="enroll-box login-box" id="pwForm">
     <div class="tier" style="color:var(--green)">WELCOME ABOARD</div>
-    <h3 id="pwH">Create a password for this device</h3>
-    <p>Next time, log in with your email and this password instead of the long access key. Use at least 6 characters.</p>
-    <label>Password</label><input id="pw1" type="password" minlength="6" required autocomplete="new-password">
-    <label>Repeat password</label><input id="pw2" type="password" minlength="6" required autocomplete="new-password">
-    <div class="err" id="pwErr"></div>
-    <div class="row"><button class="cta" id="pwBtn" type="submit">Save password</button><a class="ghost" href="#" id="pwSkip">Skip for now</a></div>
+    <h3 id="pwH">Set your password</h3>
+    <p id="pwP">Choose a password for your ECADEMY account. You will log in with your email and this password from now on. Use at least 8 characters.</p>
+    <label for="pw1">New password</label><input id="pw1" type="password" minlength="8" required autocomplete="new-password">
+    <label for="pw2">Repeat password</label><input id="pw2" type="password" minlength="8" required autocomplete="new-password">
+    <div class="err" id="pwErr" role="alert"></div>
+    <div class="row"><button class="cta" id="pwBtn" type="submit">Save password</button></div>
   </form>
 </div>
 <div class="enroll-modal" id="enrollModal" role="dialog" aria-modal="true">
@@ -1677,13 +1682,16 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="tier" id="enrollTier">LOCKED DECK</div>
     <h3 id="enrollTitle">This deck is part of a higher package</h3>
     <p id="enrollText"></p>
-    <div class="row"><a class="cta" id="enrollGo" href="#plans">Enroll now</a><a class="ghost" id="enrollLogin" href="#" target="_blank" rel="noopener">Already enrolled? Log in</a></div>
+    <div class="row"><a class="cta" id="enrollGo" href="#plans">Enroll now</a><a class="ghost" id="enrollLogin" href="#">Already enrolled? Log in</a></div>
   </div>
 </div>
+<script src="assets/supabase-2.117.2.js"></script>
 <script id="ecademy-access">
 (function(){
   /* ===== CONFIG ===== */
-  const PUBLIC_JWK = {"kty": "EC", "crv": "P-256", "x": "mxQpehfJ83nuslRZ0l0MsT-M9_WoLLNEFunCZ6P0iPw", "y": "GzhS2Uohh20KmMd9WtppE0OsWlT40AgzqwtpgbWA7pM"};
+  const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
+  const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';   // publishable key: safe in the browser, data protected by RLS
+  const HUB = 'https://rml-ecademy.github.io/';
   const CONTACT = 'https://m.me/';            // Messenger / email link para sa "Enroll" (palitan)
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', price:'₱1,499', per:'one-time', ranks:['Third Officer','Second Officer'], url:'',
@@ -1693,124 +1701,147 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     A: { code:'A', name:'All Access · Master', tier:'Package C', price:'₱3,999', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
          feats:['Everything in Chief Mate','Command Deck · Master — Full Bridge Simulation with all equipment, heavy weather navigation','All future modules while enrolled'], no:[] }
   };
-  const FREE_DEMOS = ['flare'];
+  window.ECADEMY_FREE = ['flare'];
   /* ================== */
-  const LS = 'ecademy.access';
-  let session = null; try { session = JSON.parse(localStorage.getItem(LS) || 'null'); } catch(e) {}
-  const b64d = s => { s = s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length % 4) s += '='; const bin = atob(s); const u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; };
-  async function verify(email, key){
-    email = (email || '').trim().toLowerCase(); key = (key || '').trim();
-    const m = key.match(/^ECD-([JCA])(\d{6}|\d{10})-([A-Za-z0-9.~]+)-([A-Za-z0-9_-]+)$/); if(!m) return { ok:false, why:'That does not look like an ECADEMY access key.' };
-    const [, pkg, exp, nameB, sigB] = m; const name = new TextDecoder().decode(b64d(nameB.replace(/\./g,'-').replace(/~/g,'_')));
-    if(isExpired(exp)) return { ok:false, why:'This access key expired on ' + fmtExp(exp) + '. Please renew.' };
-    try {
-      const k = await crypto.subtle.importKey('jwk', PUBLIC_JWK, {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']);
-      const chk = em => crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, b64d(sigB), new TextEncoder().encode(`${pkg}|${exp}|${em}|${name}`));
-      if(!email.includes('@')) return { ok:false, why:'Please enter your email address.' };
-      let ok = await chk(email); let general = false;
-      if(!ok){ ok = await chk('*'); general = ok; }
-      if(!ok) return { ok:false, why:'Email and access key do not match. Check the email you enrolled with.' };
-      if(general) return { ok:true, pkg, exp, email, name: email.split('@')[0], general:true, group:name };
-    } catch(e) { return { ok:false, why:'Your browser could not verify the key (' + e.message + ').' }; }
-    return { ok:true, pkg, exp, email, name };
-  }
-  function expMs(exp){ if(exp==='9999999999' || exp==='999912') return Infinity; if(/^\d{6}$/.test(exp)) return new Date(parseInt(exp.slice(0,4)), parseInt(exp.slice(4)), 1).getTime(); return parseInt(exp) * 1000; }
-  function isExpired(exp){ return Date.now() > expMs(exp); }
-  function fmtExp(exp){ const t = expMs(exp); return t === Infinity ? 'lifetime' : new Date(t).toLocaleString('en-PH', {dateStyle:'medium', timeStyle:'short'}); }
-  function expired(s){ return !s || isExpired(s.exp); }
-  if(session && (expired(session) || !PACKAGES[session.pkg])) { session = null; localStorage.removeItem(LS); }
-  const pkg = session ? PACKAGES[session.pkg] : null;
-  const allowed = new Set(pkg ? pkg.ranks : []);
-  const neededFor = r => Object.values(PACKAGES).find(p => p.ranks.includes(r));
+  const $ = id => document.getElementById(id);
+  const hp = new URLSearchParams(location.hash.slice(1));
+  const linkType = hp.get('type');                          // 'invite' | 'recovery' from an emailed / admin link
+  const linkError = hp.get('error_description');
+  const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' } });
+  window.ECADEMY_SB = sb;
+
   const lockSvg = '<svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-7-2a2 2 0 0 1 4 0v2h-4V7z"/></svg>';
   const okSvg = '<svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
-  document.querySelectorAll('.rank-card').forEach(card => {
-    const r = card.dataset.rank, open = allowed.has(r);
-    card.classList.toggle('locked', !open);
-    const b = document.createElement('span'); b.className = 'lock-badge' + (open ? ' ok' : ''); b.innerHTML = (open ? okSvg + 'Unlocked' : lockSvg + 'Locked'); card.appendChild(b);
-    if(!open) card.querySelectorAll('.topic-btn.has-sim').forEach(t => { if(FREE_DEMOS.includes(t.dataset.app) && !pkg) { const s=t.querySelector('.sim-tag'); if(s) s.textContent='▶ FREE DEMO'; return; } t.classList.add('locked'); const s = t.querySelector('.sim-tag'); if(s) s.textContent = 'LOCKED'; });
-  });
-  /* enroll modal */
-  const modal = document.getElementById('enrollModal');
-  function showEnroll(rank){
-    const need = neededFor(rank) || PACKAGES.A;
-    document.getElementById('enrollTier').textContent = need.tier + ' · ' + need.name;
-    document.getElementById('enrollTitle').textContent = rank + ' deck is locked';
-    document.getElementById('enrollText').textContent = pkg
-      ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
-      : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll, receive your access key by message, then log in here — every simulator in the deck unlocks on this device.';
-    const go = document.getElementById('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll · ' + need.price; go.target = need.url ? '_blank' : '';
-    go.onclick = () => { modal.classList.remove('open'); };
-    const lg = document.getElementById('enrollLogin'); lg.href = '#'; lg.removeAttribute('target'); lg.textContent = pkg ? 'Log out' : 'Already enrolled? Log in';
-    lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(pkg) logout(); else openLogin(); };
-    modal.classList.add('open');
-  }
-  document.getElementById('enrollClose').onclick = () => modal.classList.remove('open');
-  modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
-  document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card').dataset.rank); }, true);
-  /* login modal — access key, or email + password (key kept encrypted on this device) */
-  const VK = 'ecademy.vault';
-  let vault = null; try { vault = JSON.parse(localStorage.getItem(VK) || 'null'); } catch(e) {}
-  const enc = s => new TextEncoder().encode(s);
-  async function kdf(pw, salt){ const km = await crypto.subtle.importKey('raw', enc(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']); }
-  const b64e = u8 => btoa(String.fromCharCode(...u8));
-  async function vaultSave(email, key, pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)); const k = await kdf(pw, salt); const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, k, enc(key))); localStorage.setItem(VK, JSON.stringify({ email, salt:b64e(salt), iv:b64e(iv), ct:b64e(ct) })); }
-  async function vaultOpen(email, pw){ if(!vault || vault.email !== email) return null; try { const k = await kdf(pw, b64d(vault.salt)); const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64d(vault.iv)}, k, b64d(vault.ct)); return new TextDecoder().decode(pt); } catch(e) { return null; } }
-  const lm = document.getElementById('loginModal'); let pwMode = false;
-  function setMode(pw){ pwMode = pw; document.getElementById('keyRow').style.display = pw ? 'none' : ''; document.getElementById('pwRow').style.display = pw ? '' : 'none'; document.getElementById('loginAlt').style.display = pw ? '' : 'none';
-    document.getElementById('loginKey').required = !pw; document.getElementById('loginPw').required = pw;
-    document.getElementById('loginH').textContent = pw ? 'Welcome back' : 'Unlock your decks';
-    document.getElementById('loginP').textContent = pw ? 'Log in with your email and the password you created on this device.' : 'Enter the email you enrolled with and the access key you received. This browser will remember you.'; }
-  function openLogin(){ document.getElementById('loginErr').textContent = ''; document.getElementById('loginErr').style.color = '';
-    if(vault && vault.email){ document.getElementById('loginEmail').value = vault.email; setMode(true); } else setMode(false);
-    lm.classList.add('open'); setTimeout(() => (pwMode ? document.getElementById('loginPw') : document.getElementById('loginEmail')).focus(), 50); }
-  document.getElementById('useKey').onclick = e => { e.preventDefault(); setMode(false); document.getElementById('loginKey').focus(); };
-  document.getElementById('loginClose').onclick = () => lm.classList.remove('open');
+  const fmt = d => new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' });
+  const neededFor = r => Object.values(PACKAGES).find(p => p.ranks.includes(r));
+
+  /* ---------- protected simulators: key from the server, file decrypted in the browser ---------- */
+  function deviceId(){ let d = null; try { d = localStorage.getItem('ecademy.device'); } catch(_){}
+    if(!d){ d = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)); try { localStorage.setItem('ecademy.device', d); } catch(_){} } return d; }
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  window.ecademyOpenProtected = async function(app){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session) throw new Error('Please log in to open this simulator.');
+    const [bin, res] = await Promise.all([
+      fetch('apps/' + app + '.bin', { cache:'no-cache' }),
+      sb.functions.invoke('sim', { body:{ app, device: deviceId(), label: navigator.userAgent.slice(0,120) } })
+    ]);
+    if(res.error){ let msg = 'This simulator could not be opened. Please try again.'; try { const j = await res.error.context.json(); if(j.message) msg = j.message; } catch(_){} throw new Error(msg); }
+    if(!bin.ok) throw new Error('The simulator file could not be downloaded. Check your connection.');
+    const buf = new Uint8Array(await bin.arrayBuffer());
+    const key = await crypto.subtle.importKey('raw', b64(res.data.key), 'AES-GCM', false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv: buf.slice(0,12) }, key, buf.slice(12));
+    let html = new TextDecoder().decode(plain);
+    const base = '<base href="' + new URL('apps/', location.href).href + '">';
+    html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + base) : base + html;
+    return URL.createObjectURL(new Blob([html], { type:'text/html' }));
+  };
+
+  /* ---------- modals ---------- */
+  const lm = $('loginModal'), pm = $('pwModal'), modal = $('enrollModal');
+  function openLogin(msg){ $('loginErr').textContent = msg || ''; $('loginErr').style.color = ''; lm.classList.add('open'); setTimeout(() => $('loginEmail').focus(), 50); }
+  window.ecademyLogin = openLogin;
+  $('loginClose').onclick = () => lm.classList.remove('open');
   lm.addEventListener('click', e => { if(e.target === lm) lm.classList.remove('open'); });
-  function finish(r, key){
-    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, general:!!r.general, group:r.group||'', at:Date.now() }));
-    const el = document.getElementById('loginErr'); el.style.color = 'var(--green)'; el.textContent = 'Welcome aboard, ' + r.name + '. Unlocking ' + PACKAGES[r.pkg].name + '…';
-    if(!pwMode && !(vault && vault.email === r.email)){ pendingKey = key; pendingEmail = r.email; setTimeout(() => { lm.classList.remove('open'); document.getElementById('pwModal').classList.add('open'); document.getElementById('pw1').focus(); }, 700); }
-    else setTimeout(() => location.reload(), 900);
+  $('loginEnroll').onclick = () => lm.classList.remove('open');
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault(); const btn = $('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
+    const { error } = await sb.auth.signInWithPassword({ email: $('loginEmail').value.trim().toLowerCase(), password: $('loginPw').value });
+    btn.disabled = false; btn.textContent = 'Log in';
+    if(error){ $('loginErr').textContent = /invalid/i.test(error.message) ? 'Wrong email or password. Use "Forgot password" if you need a new one.' : error.message; return; }
+    $('loginErr').style.color = 'var(--green)'; $('loginErr').textContent = 'Welcome aboard. Opening your decks…';
+    setTimeout(() => location.reload(), 600);
+  });
+  $('forgotPw').onclick = async e => {
+    e.preventDefault(); const email = $('loginEmail').value.trim().toLowerCase();
+    if(!email.includes('@')){ $('loginErr').textContent = 'Type your email above first, then press "Forgot password".'; return; }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HUB });
+    $('loginErr').style.color = error ? '' : 'var(--green)';
+    $('loginErr').textContent = error ? ('Could not send the email: ' + error.message + '. Message ECADEMY for a reset link.') : 'Check your email for a link to set a new password.';
+  };
+  function openSetPw(kind){
+    $('pwH').textContent = kind === 'recovery' ? 'Set a new password' : 'Welcome aboard. Set your password';
+    pm.classList.add('open'); setTimeout(() => $('pw1').focus(), 50);
   }
-  let pendingKey = null, pendingEmail = null;
-  document.getElementById('loginForm').addEventListener('submit', async e => {
-    e.preventDefault(); const btn = document.getElementById('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase(); let key = document.getElementById('loginKey').value; let r;
-    try {
-      if(pwMode){ key = await vaultOpen(email, document.getElementById('loginPw').value); if(!key){ r = { ok:false, why:'Wrong password for this email on this device. You can use your access key instead.' }; } }
-      if(!r) r = await verify(email, key);
-    } catch(err) { r = { ok:false, why:'Could not check the key: ' + err.message }; }
-    btn.disabled = false; btn.textContent = 'Unlock my decks';
-    if(!r.ok){ document.getElementById('loginErr').style.color = ''; document.getElementById('loginErr').textContent = r.why; return; }
-    finish(r, key.trim());
+  $('pwForm').addEventListener('submit', async e => {
+    e.preventDefault(); const a = $('pw1').value, b = $('pw2').value, err = $('pwErr');
+    if(a.length < 8){ err.textContent = 'Use at least 8 characters.'; return; }
+    if(a !== b){ err.textContent = 'The two passwords do not match.'; return; }
+    $('pwBtn').disabled = true;
+    const { error } = await sb.auth.updateUser({ password: a });
+    $('pwBtn').disabled = false;
+    if(error){ err.textContent = error.message; return; }
+    err.style.color = 'var(--green)'; err.textContent = 'Password saved. Next time, log in with your email and this password.';
+    history.replaceState(null, '', location.pathname); setTimeout(() => location.reload(), 900);
   });
-  document.getElementById('pwForm').addEventListener('submit', async e => {
-    e.preventDefault(); const a = document.getElementById('pw1').value, b = document.getElementById('pw2').value, err = document.getElementById('pwErr');
-    if(a.length < 6) { err.textContent = 'Use at least 6 characters.'; return; } if(a !== b) { err.textContent = 'Passwords do not match.'; return; }
-    try { await vaultSave(pendingEmail, pendingKey, a); } catch(ex) { err.textContent = 'Could not save: ' + ex.message; return; }
-    err.style.color = 'var(--green)'; err.textContent = 'Password saved. Next time: email + password.'; setTimeout(() => location.reload(), 900);
-  });
-  document.getElementById('pwSkip').onclick = e => { e.preventDefault(); location.reload(); };
-  function logout(){ localStorage.removeItem(LS); location.reload(); }
-  if(session && expMs(session.exp) !== Infinity){ const ms = expMs(session.exp) - Date.now(); if(ms < 36e5) setTimeout(() => { localStorage.removeItem(LS); alert('Your ECADEMY access has expired. Enroll to continue.'); location.reload(); }, Math.max(1000, ms)); }
-  /* top-right pill */
-  const pill = document.getElementById('loginPill');
-  if(pkg){ pill.innerHTML = okSvg + '<span>' + session.name.split(' ')[0] + ' · ' + pkg.name + '</span><a href="#" id="pillOut">Log out</a>'; pill.classList.add('ok'); document.getElementById('pillOut').onclick = e => { e.preventDefault(); logout(); }; }
-  else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.onclick = openLogin; }
-  /* plans */
-  const grid = document.getElementById('planGrid');
-  grid.innerHTML = Object.values(PACKAGES).map(p => `
-    <article class="plan${p.featured ? ' featured' : ''}">
-      <div class="tier">${p.tier}${p.featured ? ' · Most popular' : ''}</div>
-      <h3>${p.name}</h3>
-      <div class="price">${p.price}<small>${p.per}</small></div>
-      <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}${p.no.map(f => '<li class="no">' + f + '</li>').join('')}</ul>
-      <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included') : (pkg ? 'Upgrade' : 'Enroll now')}</a>
-      <div class="fine">${p.url ? 'Secure checkout · access key by email' : 'GCash · Maya · bank transfer · card — access key sent within the day'}</div>
-    </article>`).join('');
-  /* member bar */
-  if(pkg){ const bar = document.getElementById('memberBar'); const until = expMs(session.exp) === Infinity ? 'lifetime' : 'until ' + fmtExp(session.exp); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + (session.general ? ' TEST ACCESS · ' + (session.group||'').toUpperCase() + ' · ' : ' ENROLLED · ' + session.name.toUpperCase() + ' · ') + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
+  sb.auth.onAuthStateChange(ev => { if(ev === 'PASSWORD_RECOVERY') openSetPw('recovery'); });
+
+  function logout(){ sb.auth.signOut().finally(() => location.reload()); }
+
+  /* ---------- page state ---------- */
+  (async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    let member = null;
+    if(session){ const { data } = await sb.from('members').select('*').maybeSingle(); member = data; }
+    const valid = !!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date());
+    const pkg = valid ? PACKAGES[member.package] : null;
+    const allowed = new Set(pkg ? pkg.ranks : []);
+
+    document.querySelectorAll('.rank-card').forEach(card => {
+      const r = card.dataset.rank, open = allowed.has(r);
+      card.classList.toggle('locked', !open);
+      const b = document.createElement('span'); b.className = 'lock-badge' + (open ? ' ok' : ''); b.innerHTML = open ? okSvg + 'Unlocked' : lockSvg + 'Locked'; card.appendChild(b);
+      if(!open) card.querySelectorAll('.topic-btn.has-sim').forEach(t => {
+        if(ECADEMY_FREE.includes(t.dataset.app)){ const s = t.querySelector('.sim-tag'); if(s) s.textContent = '▶ FREE DEMO'; return; }
+        t.classList.add('locked'); const s = t.querySelector('.sim-tag'); if(s) s.textContent = 'LOCKED';
+      });
+    });
+
+    function showEnroll(rank){
+      const need = neededFor(rank) || PACKAGES.A;
+      $('enrollTier').textContent = need.tier + ' · ' + need.name;
+      $('enrollTitle').textContent = rank + ' deck is locked';
+      $('enrollText').textContent = pkg
+        ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
+        : member && !valid
+          ? (member.revoked ? 'Your access is paused. Please message ECADEMY.' : 'Your package expired on ' + fmt(member.expires_at) + '. Renew to open the simulators again.')
+          : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll, set your password from the link we send you, then log in here.';
+      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll · ' + need.price; go.target = need.url ? '_blank' : '';
+      go.onclick = () => modal.classList.remove('open');
+      const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already enrolled? Log in';
+      lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(session) logout(); else openLogin(); };
+      modal.classList.add('open');
+    }
+    $('enrollClose').onclick = () => modal.classList.remove('open');
+    modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
+    document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card').dataset.rank); }, true);
+
+    const pill = $('loginPill');
+    if(session){
+      const who = (member && member.name) || session.user.email.split('@')[0];
+      pill.innerHTML = (pkg ? okSvg : lockSvg) + '<span>' + who.split(' ')[0] + ' · ' + (pkg ? pkg.name : 'No active package') + '</span><a href="#" id="pillOut">Log out</a>';
+      pill.classList.toggle('ok', !!pkg); $('pillOut').onclick = e => { e.preventDefault(); logout(); };
+    } else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.onclick = () => openLogin(); }
+
+    $('planGrid').innerHTML = Object.values(PACKAGES).map(p => `
+      <article class="plan${p.featured ? ' featured' : ''}">
+        <div class="tier">${p.tier}${p.featured ? ' · Most popular' : ''}</div>
+        <h3>${p.name}</h3>
+        <div class="price">${p.price}<small>${p.per}</small></div>
+        <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}${p.no.map(f => '<li class="no">' + f + '</li>').join('')}</ul>
+        <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included') : (pkg ? 'Upgrade' : 'Enroll now')}</a>
+        <div class="fine">${p.url ? 'Secure checkout · login link by email' : 'GCash · Maya · bank transfer · card — login link sent within the day'}</div>
+      </article>`).join('');
+
+    if(pkg){ const bar = $('memberBar'); const until = member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + ((member.name || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>');
+      bar.classList.add('show');
+      if(member.expires_at){ const ms = new Date(member.expires_at) - Date.now(); if(ms < 36e5) setTimeout(() => { alert('Your ECADEMY access has expired. Renew to continue.'); location.reload(); }, Math.max(1000, ms)); }
+    }
+
+    if(linkError){ openLogin('That link is no longer valid (' + linkError + '). Ask ECADEMY for a new one.'); history.replaceState(null, '', location.pathname); }
+    else if(session && (linkType === 'invite' || linkType === 'recovery')) openSetPw(linkType);
+  })();
 })();
 </script>
 </body>
