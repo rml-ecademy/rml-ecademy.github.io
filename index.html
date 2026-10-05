@@ -1469,9 +1469,9 @@
   <div class="section-kicker">Enroll</div>
   <div class="section-title">
     <h2>Choose your package.</h2>
-    <p>Each package unlocks the decks for your rank and every rank below it. Pay once in the ECADEMY school, log in, and the simulators open here.</p>
+    <p>Each package unlocks the decks for your rank and every rank below it. Message us for the current price and promo, then log in and the simulators open here.</p>
   </div>
-  <div class="plan-grid" id="planGrid"></div>
+  <div class="pkg-carousel" id="planGrid" aria-roledescription="carousel" aria-label="ECADEMY packages"></div>
 </section>
 <section class="coming" id="courses">
 <div class="coming-card">
@@ -1777,6 +1777,42 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .login-box .alt{margin-top:14px;font-size:.85rem;text-align:center}.login-box .alt a{color:var(--cyan);text-decoration:none}
 @media (max-width:640px){.login-pill{padding:9px 11px}}
 
+
+/* ===== package carousel ===== */
+.plans{min-width:0;max-width:100%}
+.pkg-carousel{position:relative;width:100%;min-width:0;max-width:100%;overflow:hidden}
+.pkg-track{display:flex;width:100%;transition:transform .45s ease;outline:none;border-radius:20px}
+.pkg-track:focus-visible{box-shadow:0 0 0 2px var(--cyan)}
+.pkg-slide{flex:0 0 100%;min-width:0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;padding:26px;border:1px solid rgba(100,221,255,.18);border-radius:20px;background:linear-gradient(155deg,rgba(17,54,77,.72),rgba(5,25,39,.92))}
+.pkg-slide.featured{border-color:rgba(255,200,87,.5)}
+.pkg-media{display:grid;gap:10px;align-content:start}
+.pkg-media img{width:100%;border-radius:12px;border:1px solid rgba(100,221,255,.16);object-fit:cover;background:#04111b}
+.pkg-main{aspect-ratio:16/10;object-position:left top}
+.pkg-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px}
+.pkg-thumbs img{aspect-ratio:16/9;object-position:center}
+.pkg-body{display:flex;flex-direction:column;min-width:0}
+.pkg-body .tier{font:600 .7rem/1.4 "Courier New",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.pkg-slide.featured .pkg-body .tier{color:var(--amber)}
+.pkg-body h3{margin:8px 0 16px;font-size:1.7rem;letter-spacing:-.02em}
+.pkg-hl{display:grid;gap:10px}
+.pkg-hl div{padding:12px 14px;border-radius:12px;background:rgba(100,221,255,.06);border-left:3px solid var(--cyan)}
+.pkg-slide.featured .pkg-hl div{border-left-color:var(--amber);background:rgba(255,200,87,.06)}
+.pkg-hl b{display:block;font-size:1.02rem;letter-spacing:.01em}
+.pkg-hl span{display:block;margin-top:3px;color:var(--muted);font-size:.88rem;line-height:1.5}
+.pkg-body ul{list-style:none;margin:16px 0 18px;padding:0;display:grid;gap:6px;color:var(--muted);font-size:.88rem}
+.pkg-body li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:10px;vertical-align:middle}
+.pkg-cta{margin-top:auto;display:grid;gap:8px}
+.pkg-cta .cta{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:0 18px;border-radius:12px;font-weight:700;text-decoration:none;color:#061622;background:linear-gradient(135deg,var(--cyan),var(--cyan-2))}
+.pkg-slide.featured .pkg-cta .cta{background:linear-gradient(135deg,#ffd77a,var(--amber))}
+.pkg-cta .fine{font-size:.78rem;color:var(--muted);text-align:center}
+.pkg-nav{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px}
+.pkg-arrow{width:42px;height:42px;border-radius:50%;border:1px solid rgba(100,221,255,.35);background:rgba(5,25,39,.85);color:var(--white);font-size:1.5rem;line-height:1;cursor:pointer}
+.pkg-arrow:hover{border-color:var(--cyan)}
+.pkg-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.pkg-dots button{padding:8px 14px;border-radius:999px;border:1px solid rgba(100,221,255,.2);background:transparent;color:var(--muted);font:600 .82rem system-ui,Arial;cursor:pointer}
+.pkg-dots button.on{background:rgba(100,221,255,.14);border-color:var(--cyan);color:var(--white)}
+@media (max-width:900px){.pkg-slide{grid-template-columns:1fr;padding:18px;gap:18px}.pkg-body h3{font-size:1.45rem}}
+@media (prefers-reduced-motion:reduce){.pkg-track{transition:none}}
 </style>
 
 <div class="member-bar" id="memberBar"></div>
@@ -1822,12 +1858,23 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const HUB = 'https://rml-ecademy.github.io/';
   const CONTACT = 'https://m.me/';            // Messenger / email link para sa "Enroll" (palitan)
   const PACKAGES = {
-    J: { code:'J', name:'Junior Officers', tier:'Package A', price:'₱1,499', per:'one-time', ranks:['Third Officer','Second Officer'], url:'',
-         feats:['Deck 01 · Third Officer — LSA / FFE / PSC readiness (22 simulators)','Deck 02 · Second Officer — Navigation equipment & GMDSS (19 simulators)'], no:['Deck 03 · Chief Officer — Draft Survey','Command Deck · Master — Full Bridge'] },
-    C: { code:'C', name:'Chief Mate', tier:'Package B', price:'₱2,499', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
-         feats:['Everything in Junior Officers','Deck 03 · Chief Officer — Manual Draft Survey trainer, 7 narrated video lessons, tank soundings & hydrometer'], no:['Command Deck · Master — Full Bridge'] },
-    A: { code:'A', name:'All Access · Master', tier:'Package C', price:'₱3,999', per:'one-time', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
-         feats:['Everything in Chief Mate','Command Deck · Master — Full Bridge Simulation with all equipment, heavy weather navigation','All future modules while enrolled'], no:[] }
+    J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
+         img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
+         hl:[['LSA / FFE','Lifeboats, liferafts, flares, EPIRB, SART and fire-fighting equipment, inspected the way PSC checks them.'],
+             ['Radar / ARPA','Target tracking, CPA and TCPA, plotting and COLREG crossing, head-on and overtaking situations.'],
+             ['ECDIS','Passage planning with APEM and route monitoring on a realistic Manila to Cebu passage.']],
+         feats:['Deck 01 · Third Officer','Deck 02 · Second Officer, navigation equipment and GMDSS'] },
+    C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
+         img:['sales/img/draft.jpg','assets/img3.webp'],
+         hl:[['Draft Survey','Manual draft survey step by step, with 7 narrated video lessons, tank soundings and the hydrometer.'],
+             ['Deck Maintenance','Planned maintenance, defect control, permits and inspections run by the Chief Officer.']],
+         feats:['Everything in Junior Officers','Deck 03 · Chief Officer, cargo, stability and ballast'] },
+    A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
+         img:['sales/img/bridge.jpg','assets/img4.webp'],
+         hl:[['Ship Manoeuvring','Ship handling, pilotage and emergency manoeuvres from the Master\'s position.'],
+             ['PSC','Port State, Flag and Class preparation and the Master\'s compliance strategy.'],
+             ['Full Bridge','Full bridge simulation with all equipment, including heavy-weather navigation.']],
+         feats:['Everything in Chief Mate','Command Deck · Master','All future modules while enrolled'] }
   };
   window.ECADEMY_FREE = ['flare'];
   /* ================== */
@@ -1934,7 +1981,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         : member && !valid
           ? (member.revoked ? 'Your access is paused. Please message ECADEMY.' : 'Your package expired on ' + fmt(member.expires_at) + '. Renew to open the simulators again.')
           : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll, set your password from the link we send you, then log in here.';
-      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll · ' + need.price; go.target = need.url ? '_blank' : '';
+      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll in ' + need.name; go.target = need.url ? '_blank' : '';
       go.onclick = () => modal.classList.remove('open');
       const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already enrolled? Log in';
       lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(session) logout(); else openLogin(); };
@@ -1951,15 +1998,49 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       pill.classList.toggle('ok', !!pkg); $('pillOut').onclick = e => { e.preventDefault(); logout(); };
     } else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.onclick = () => openLogin(); }
 
-    $('planGrid').innerHTML = Object.values(PACKAGES).map(p => `
-      <article class="plan${p.featured ? ' featured' : ''}">
-        <div class="tier">${p.tier}${p.featured ? ' · Most popular' : ''}</div>
-        <h3>${p.name}</h3>
-        <div class="price">${p.price}<small>${p.per}</small></div>
-        <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}${p.no.map(f => '<li class="no">' + f + '</li>').join('')}</ul>
-        <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included') : (pkg ? 'Upgrade' : 'Enroll now')}</a>
-        <div class="fine">${p.url ? 'Secure checkout · login link by email' : 'GCash · Maya · bank transfer · card — login link sent within the day'}</div>
-      </article>`).join('');
+    const P = Object.values(PACKAGES);
+    $('planGrid').innerHTML = `
+      <div class="pkg-track" id="pkgTrack" tabindex="0">${P.map((p, i) => `
+        <article class="pkg-slide${p.featured ? ' featured' : ''}" aria-roledescription="slide" aria-label="${i + 1} of ${P.length}: ${p.name}">
+          <div class="pkg-media">
+            <img class="pkg-main" src="${p.img[0]}" alt="${p.hl[0][0]} trainer" loading="lazy">
+            <div class="pkg-thumbs">${p.img.slice(1).map((src, k) => `<img src="${src}" alt="${(p.hl[k + 1] || p.hl[0])[0]}" loading="lazy">`).join('')}</div>
+          </div>
+          <div class="pkg-body">
+            <div class="tier">${p.tier} · ${p.who}${p.featured ? ' · Most popular' : ''}</div>
+            <h3>${p.name}</h3>
+            <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
+            <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
+            <div class="pkg-cta">
+              <a class="cta" href="${p.url || CONTACT}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Message us to enroll')}</a>
+              <span class="fine">Ask for the current price and promo. GCash, Maya, bank transfer or card.</span>
+            </div>
+          </div>
+        </article>`).join('')}
+      </div>
+      <div class="pkg-nav">
+        <button type="button" class="pkg-arrow" id="pkgPrev" aria-label="Previous package">‹</button>
+        <div class="pkg-dots">${P.map((p, i) => `<button type="button" data-i="${i}" aria-label="${p.name}">${p.name.split(' ·')[0]}</button>`).join('')}</div>
+        <button type="button" class="pkg-arrow" id="pkgNext" aria-label="Next package">›</button>
+      </div>`;
+    (function carousel(){
+      const track = $('pkgTrack'), slides = [...track.children], dots = [...document.querySelectorAll('.pkg-dots button')];
+      let cur = 0;
+      const go = (i, instant) => {
+        cur = (i + slides.length) % slides.length;
+        track.style.transition = instant ? 'none' : '';
+        track.style.transform = 'translateX(' + (-100 * cur) + '%)';
+        slides.forEach((sl, k) => { sl.setAttribute('aria-hidden', String(k !== cur)); sl.querySelectorAll('a,button').forEach(x => x.tabIndex = k === cur ? 0 : -1); });
+        dots.forEach((d, k) => { d.classList.toggle('on', k === cur); d.setAttribute('aria-pressed', String(k === cur)); });
+      };
+      $('pkgPrev').onclick = () => go(cur - 1); $('pkgNext').onclick = () => go(cur + 1);
+      dots.forEach(d => d.onclick = () => go(+d.dataset.i));
+      track.addEventListener('keydown', e => { if(e.key === 'ArrowRight'){ e.preventDefault(); go(cur + 1); } if(e.key === 'ArrowLeft'){ e.preventDefault(); go(cur - 1); } });
+      let x0 = null, y0 = null;
+      track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+      track.addEventListener('touchend', e => { if(x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1)); x0 = null; }, { passive: true });
+      go(pkg ? Math.max(0, P.indexOf(pkg)) : Math.max(0, P.findIndex(p => p.featured)), true);
+    })();
 
     if(pkg){ const bar = $('memberBar'); const until = member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
       bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + ((member.name || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>');
