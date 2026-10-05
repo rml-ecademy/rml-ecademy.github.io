@@ -1766,6 +1766,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .login-box .err{min-height:22px;margin:10px 0 4px;color:var(--amber);font-size:.88rem}
 .login-box .cta{background:linear-gradient(135deg,var(--cyan),var(--cyan-2));border:0;cursor:pointer;font-size:.95rem}
 .login-box .ghost{line-height:1.2;align-items:center}
+.login-box .alt{margin-top:14px;font-size:.85rem;text-align:center}.login-box .alt a{color:var(--cyan);text-decoration:none}
 @media (max-width:640px){.login-pill{padding:9px 11px}}
 
 </style>
@@ -1775,12 +1776,25 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   <form class="enroll-box login-box" id="loginForm" autocomplete="on">
     <button class="x" id="loginClose" type="button" aria-label="Close">×</button>
     <div class="tier" style="color:var(--cyan)">MEMBER LOGIN</div>
-    <h3>Unlock your decks</h3>
-    <p>Enter the email you enrolled with and the access key you received. This browser will remember you.</p>
+    <h3 id="loginH">Unlock your decks</h3>
+    <p id="loginP">Enter the email you enrolled with and the access key you received. This browser will remember you.</p>
     <label>Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
-    <label>Access key</label><input id="loginKey" type="text" required placeholder="ECD-C202710-…" autocomplete="off" spellcheck="false">
+    <div id="keyRow"><label>Access key</label><input id="loginKey" type="text" placeholder="ECD-C…" autocomplete="off" spellcheck="false"></div>
+    <div id="pwRow" style="display:none"><label>Password</label><input id="loginPw" type="password" placeholder="Your password" autocomplete="current-password"></div>
     <div class="err" id="loginErr"></div>
     <div class="row"><button class="cta" id="loginBtn" type="submit">Unlock my decks</button><a class="ghost" href="#plans" id="loginEnroll">Not enrolled yet</a></div>
+    <div class="alt" id="loginAlt" style="display:none"><a href="#" id="useKey">Forgot password? Use your access key instead</a></div>
+  </form>
+</div>
+<div class="enroll-modal" id="pwModal" role="dialog" aria-modal="true">
+  <form class="enroll-box login-box" id="pwForm">
+    <div class="tier" style="color:var(--green)">WELCOME ABOARD</div>
+    <h3 id="pwH">Create a password for this device</h3>
+    <p>Next time, log in with your email and this password instead of the long access key. Use at least 6 characters.</p>
+    <label>Password</label><input id="pw1" type="password" minlength="6" required autocomplete="new-password">
+    <label>Repeat password</label><input id="pw2" type="password" minlength="6" required autocomplete="new-password">
+    <div class="err" id="pwErr"></div>
+    <div class="row"><button class="cta" id="pwBtn" type="submit">Save password</button><a class="ghost" href="#" id="pwSkip">Skip for now</a></div>
   </form>
 </div>
 <div class="enroll-modal" id="enrollModal" role="dialog" aria-modal="true">
@@ -1860,20 +1874,50 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   document.getElementById('enrollClose').onclick = () => modal.classList.remove('open');
   modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
   document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card').dataset.rank); }, true);
-  /* login modal */
-  const lm = document.getElementById('loginModal');
-  function openLogin(){ lm.classList.add('open'); document.getElementById('loginErr').textContent=''; setTimeout(() => document.getElementById('loginEmail').focus(), 50); }
+  /* login modal — access key, or email + password (key kept encrypted on this device) */
+  const VK = 'ecademy.vault';
+  let vault = null; try { vault = JSON.parse(localStorage.getItem(VK) || 'null'); } catch(e) {}
+  const enc = s => new TextEncoder().encode(s);
+  async function kdf(pw, salt){ const km = await crypto.subtle.importKey('raw', enc(pw), 'PBKDF2', false, ['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']); }
+  const b64e = u8 => btoa(String.fromCharCode(...u8));
+  async function vaultSave(email, key, pw){ const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)); const k = await kdf(pw, salt); const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, k, enc(key))); localStorage.setItem(VK, JSON.stringify({ email, salt:b64e(salt), iv:b64e(iv), ct:b64e(ct) })); }
+  async function vaultOpen(email, pw){ if(!vault || vault.email !== email) return null; try { const k = await kdf(pw, b64d(vault.salt)); const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64d(vault.iv)}, k, b64d(vault.ct)); return new TextDecoder().decode(pt); } catch(e) { return null; } }
+  const lm = document.getElementById('loginModal'); let pwMode = false;
+  function setMode(pw){ pwMode = pw; document.getElementById('keyRow').style.display = pw ? 'none' : ''; document.getElementById('pwRow').style.display = pw ? '' : 'none'; document.getElementById('loginAlt').style.display = pw ? '' : 'none';
+    document.getElementById('loginKey').required = !pw; document.getElementById('loginPw').required = pw;
+    document.getElementById('loginH').textContent = pw ? 'Welcome back' : 'Unlock your decks';
+    document.getElementById('loginP').textContent = pw ? 'Log in with your email and the password you created on this device.' : 'Enter the email you enrolled with and the access key you received. This browser will remember you.'; }
+  function openLogin(){ document.getElementById('loginErr').textContent = ''; document.getElementById('loginErr').style.color = '';
+    if(vault && vault.email){ document.getElementById('loginEmail').value = vault.email; setMode(true); } else setMode(false);
+    lm.classList.add('open'); setTimeout(() => (pwMode ? document.getElementById('loginPw') : document.getElementById('loginEmail')).focus(), 50); }
+  document.getElementById('useKey').onclick = e => { e.preventDefault(); setMode(false); document.getElementById('loginKey').focus(); };
   document.getElementById('loginClose').onclick = () => lm.classList.remove('open');
   lm.addEventListener('click', e => { if(e.target === lm) lm.classList.remove('open'); });
+  function finish(r, key){
+    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, general:!!r.general, group:r.group||'', at:Date.now() }));
+    const el = document.getElementById('loginErr'); el.style.color = 'var(--green)'; el.textContent = 'Welcome aboard, ' + r.name + '. Unlocking ' + PACKAGES[r.pkg].name + '…';
+    if(!pwMode && !(vault && vault.email === r.email)){ pendingKey = key; pendingEmail = r.email; setTimeout(() => { lm.classList.remove('open'); document.getElementById('pwModal').classList.add('open'); document.getElementById('pw1').focus(); }, 700); }
+    else setTimeout(() => location.reload(), 900);
+  }
+  let pendingKey = null, pendingEmail = null;
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault(); const btn = document.getElementById('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
-    let r; try { r = await verify(document.getElementById('loginEmail').value, document.getElementById('loginKey').value); } catch(err) { r = { ok:false, why:'Could not check the key: ' + err.message }; }
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase(); let key = document.getElementById('loginKey').value; let r;
+    try {
+      if(pwMode){ key = await vaultOpen(email, document.getElementById('loginPw').value); if(!key){ r = { ok:false, why:'Wrong password for this email on this device. You can use your access key instead.' }; } }
+      if(!r) r = await verify(email, key);
+    } catch(err) { r = { ok:false, why:'Could not check the key: ' + err.message }; }
     btn.disabled = false; btn.textContent = 'Unlock my decks';
-    if(!r.ok){ document.getElementById('loginErr').textContent = r.why; return; }
-    localStorage.setItem(LS, JSON.stringify({ pkg:r.pkg, exp:r.exp, email:r.email, name:r.name, general:!!r.general, group:r.group||'', at:Date.now() }));
-    document.getElementById('loginErr').style.color = 'var(--green)'; document.getElementById('loginErr').textContent = 'Welcome aboard, ' + r.name + '. Unlocking ' + PACKAGES[r.pkg].name + '…';
-    setTimeout(() => location.reload(), 900);
+    if(!r.ok){ document.getElementById('loginErr').style.color = ''; document.getElementById('loginErr').textContent = r.why; return; }
+    finish(r, key.trim());
   });
+  document.getElementById('pwForm').addEventListener('submit', async e => {
+    e.preventDefault(); const a = document.getElementById('pw1').value, b = document.getElementById('pw2').value, err = document.getElementById('pwErr');
+    if(a.length < 6) { err.textContent = 'Use at least 6 characters.'; return; } if(a !== b) { err.textContent = 'Passwords do not match.'; return; }
+    try { await vaultSave(pendingEmail, pendingKey, a); } catch(ex) { err.textContent = 'Could not save: ' + ex.message; return; }
+    err.style.color = 'var(--green)'; err.textContent = 'Password saved. Next time: email + password.'; setTimeout(() => location.reload(), 900);
+  });
+  document.getElementById('pwSkip').onclick = e => { e.preventDefault(); location.reload(); };
   function logout(){ localStorage.removeItem(LS); location.reload(); }
   if(session && expMs(session.exp) !== Infinity){ const ms = expMs(session.exp) - Date.now(); if(ms < 36e5) setTimeout(() => { localStorage.removeItem(LS); alert('Your ECADEMY access has expired. Enroll to continue.'); location.reload(); }, Math.max(1000, ms)); }
   /* top-right pill */
