@@ -2031,7 +2031,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
               <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Enroll now')}</a>
-              <span class="fine">Opens Messenger to enroll with our team. Ask for the current price and promo. Pay via GCash or BPI.</span>
+              <span class="fine">Opens Messenger to enroll with our team. Ask for the current price and promo. Pay via GCash.</span>
             </div>
           </div>
         </article>`).join('')}
