@@ -710,6 +710,7 @@
         radial-gradient(circle at 73% 55%, rgba(255,159,90,.18), transparent 40%);
       box-shadow:inset 0 0 20px rgba(5,25,39,.2);
     }
+    .rank-watermark.master-photo img{object-position:50% 92%}
     .rank-watermark.master-photo{
       opacity:.33;
       filter:saturate(1.18) contrast(1.12) brightness(.88) drop-shadow(0 0 24px rgba(255,200,87,.2));
@@ -1790,6 +1791,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .pkg-main{aspect-ratio:16/10;object-position:left top}
 .pkg-thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px}
 .pkg-thumbs img{aspect-ratio:16/9;object-position:center}
+.pkg-thumbs img[src$="img4.webp"]{object-position:50% 100%}
 .pkg-body{display:flex;flex-direction:column;min-width:0}
 .pkg-body .tier{font:600 .7rem/1.4 "Courier New",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
 .pkg-slide.featured .pkg-body .tier{color:var(--amber)}
