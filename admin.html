@@ -167,11 +167,11 @@ td small{display:block;color:var(--muted)}
       <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}</td>
       <td><span class="pk">${esc(NAMES[m.package])}</span></td>
       <td>${status(m)}</td>
-      <td>${m.devices}/1${m.last_seen ? '<small>last ' + fmt(m.last_seen) + '</small>' : ''}</td>
+      <td>Phone: ${m.phone ? '<span class="st-ok">registered</span>' : 'free'}<br>Laptop: ${m.computer ? '<span class="st-ok">registered</span>' : 'free'}${m.last_seen ? '<small>last used ' + fmt(m.last_seen) + '</small>' : ''}</td>
       <td><div class="acts">
         <button class="small" data-a="renew" data-id="${m.user_id}">Renew</button>
         <button class="small ghost" data-a="link" data-id="${m.user_id}">New link</button>
-        <button class="small ghost" data-a="dev" data-id="${m.user_id}">Reset device</button>
+        <button class="small ghost" data-a="dev" data-id="${m.user_id}">Reset devices</button>
         <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button>
       </div></td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--muted)">No students yet. Enroll the first one on the left.</td></tr>';
   }
@@ -183,7 +183,7 @@ td small{display:block;color:var(--muted)}
     b.disabled = true;
     try {
       if(b.dataset.a === 'link'){ const r = await call({ action:'link', email:m.email }); showOut('New set-password link for ' + (m.name || m.email), message(m.name, m.package, m.expires_at, r.link), r.link); }
-      if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? They can then use ECADEMY on 1 new device.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
+      if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? Their phone and laptop are cleared; the next phone and the next laptop they use will be registered.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
       if(b.dataset.a === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + (m.name || m.email) + '?')){ await call({ action:'revoke', user_id:m.user_id, revoked:!m.revoked }); await load(); } }
     } catch(err){ alert(err.message); }
     b.disabled = false;
