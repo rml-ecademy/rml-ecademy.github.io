@@ -1812,10 +1812,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const b64d = s => { s = s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length % 4) s += '='; const bin = atob(s); const u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; };
   async function verify(email, key){
     email = (email || '').trim().toLowerCase(); key = (key || '').trim();
-    const m = key.match(/^ECD-([JCA])(\d{6})-([A-Za-z0-9.~]+)-([A-Za-z0-9_-]+)$/); if(!m) return { ok:false, why:'That does not look like an ECADEMY access key.' };
+    const m = key.match(/^ECD-([JCA])(\d{6}|\d{10})-([A-Za-z0-9.~]+)-([A-Za-z0-9_-]+)$/); if(!m) return { ok:false, why:'That does not look like an ECADEMY access key.' };
     const [, pkg, exp, nameB, sigB] = m; const name = new TextDecoder().decode(b64d(nameB.replace(/\./g,'-').replace(/~/g,'_')));
-    const now = new Date(); const nowYM = String(now.getFullYear()) + String(now.getMonth()+1).padStart(2,'0');
-    if(exp !== '999912' && exp < nowYM) return { ok:false, why:'This access key expired in ' + exp.slice(0,4) + '-' + exp.slice(4) + '. Please renew.' };
+    if(isExpired(exp)) return { ok:false, why:'This access key expired on ' + fmtExp(exp) + '. Please renew.' };
     try {
       const k = await crypto.subtle.importKey('jwk', PUBLIC_JWK, {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']);
       const ok = await crypto.subtle.verify({name:'ECDSA', hash:'SHA-256'}, k, b64d(sigB), new TextEncoder().encode(`${pkg}|${exp}|${email}|${name}`));
@@ -1823,7 +1822,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     } catch(e) { return { ok:false, why:'Your browser could not verify the key (' + e.message + ').' }; }
     return { ok:true, pkg, exp, email, name };
   }
-  function expired(s){ if(!s) return true; const now = new Date(); const nowYM = String(now.getFullYear()) + String(now.getMonth()+1).padStart(2,'0'); return s.exp !== '999912' && s.exp < nowYM; }
+  function expMs(exp){ if(exp==='9999999999' || exp==='999912') return Infinity; if(/^\d{6}$/.test(exp)) return new Date(parseInt(exp.slice(0,4)), parseInt(exp.slice(4)), 1).getTime(); return parseInt(exp) * 1000; }
+  function isExpired(exp){ return Date.now() > expMs(exp); }
+  function fmtExp(exp){ const t = expMs(exp); return t === Infinity ? 'lifetime' : new Date(t).toLocaleString('en-PH', {dateStyle:'medium', timeStyle:'short'}); }
+  function expired(s){ return !s || isExpired(s.exp); }
   if(session && (expired(session) || !PACKAGES[session.pkg])) { session = null; localStorage.removeItem(LS); }
   const pkg = session ? PACKAGES[session.pkg] : null;
   const allowed = new Set(pkg ? pkg.ranks : []);
@@ -1869,6 +1871,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     setTimeout(() => location.reload(), 900);
   });
   function logout(){ localStorage.removeItem(LS); location.reload(); }
+  if(session && expMs(session.exp) !== Infinity){ const ms = expMs(session.exp) - Date.now(); if(ms < 36e5) setTimeout(() => { localStorage.removeItem(LS); alert('Your ECADEMY access has expired. Enroll to continue.'); location.reload(); }, Math.max(1000, ms)); }
   /* top-right pill */
   const pill = document.getElementById('loginPill');
   if(pkg){ pill.innerHTML = okSvg + '<span>' + session.name.split(' ')[0] + ' · ' + pkg.name + '</span><a href="#" id="pillOut">Log out</a>'; pill.classList.add('ok'); document.getElementById('pillOut').onclick = e => { e.preventDefault(); logout(); }; }
@@ -1885,7 +1888,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       <div class="fine">${p.url ? 'Secure checkout · access key by email' : 'GCash · Maya · bank transfer · card — access key sent within the day'}</div>
     </article>`).join('');
   /* member bar */
-  if(pkg){ const bar = document.getElementById('memberBar'); const until = session.exp === '999912' ? 'lifetime' : 'until ' + session.exp.slice(0,4) + '-' + session.exp.slice(4); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + session.name.toUpperCase() + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
+  if(pkg){ const bar = document.getElementById('memberBar'); const until = expMs(session.exp) === Infinity ? 'lifetime' : 'until ' + fmtExp(session.exp); bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + session.name.toUpperCase() + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>'); bar.classList.add('show'); }
 })();
 </script>
 </body>
