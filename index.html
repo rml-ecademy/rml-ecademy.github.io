@@ -2030,8 +2030,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
-              <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Message us to enroll')}</a>
-              <span class="fine">Ask for the current price and promo. GCash, Maya, bank transfer or card.</span>
+              <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Enroll now')}</a>
+              <span class="fine">Opens Messenger to enroll with our team. Ask for the current price and promo. GCash, Maya, bank transfer or card.</span>
             </div>
           </div>
         </article>`).join('')}
