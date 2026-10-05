@@ -1894,7 +1894,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   function deviceId(){ let d = null; try { d = localStorage.getItem('ecademy.device'); } catch(_){}
     if(!d){ d = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)); try { localStorage.setItem('ecademy.device', d); } catch(_){} } return d; }
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  window.ecademyOpenProtected = async function(app){
+  window.ecademyGetHtml = async function(app){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session) throw new Error('Please log in to open this simulator.');
     const [bin, res] = await Promise.all([
@@ -1908,7 +1908,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv: buf.slice(0,12) }, key, buf.slice(12));
     let html = new TextDecoder().decode(plain);
     const base = '<base href="' + new URL('apps/', location.href).href + '">';
-    html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + base) : base + html;
+    return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, m => m + base) : base + html;
+  };
+  window.ecademyOpenProtected = async function(app){
+    const html = await window.ecademyGetHtml(app);
     return URL.createObjectURL(new Blob([html], { type:'text/html' }));
   };
 
