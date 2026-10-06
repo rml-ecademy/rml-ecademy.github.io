@@ -97,6 +97,29 @@ function raftSprite(k) { if (!RAFT_IMG.complete || !RAFT_IMG.naturalWidth) retur
   g.globalCompositeOperation = "source-atop"; g.fillStyle = `rgba(4,10,28,${.62 - .36 * k})`; g.fillRect(0, 0, c.width, c.height);
   if (k > 0) { g.fillStyle = `rgba(255,50,25,${.12 * k})`; g.fillRect(0, 0, c.width, c.height); const gr = g.createRadialGradient(300, 150, 20, 300, 150, 700); gr.addColorStop(0, `rgba(255,120,80,${.22 * k})`); gr.addColorStop(1, "rgba(255,120,80,0)"); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); }
   RAFT_CACHE[key] = c; return c; }
+// Raft riding a real swell: surface = long swell + chop; raft bobs/rolls with it; submerged part refracted and tinted; reflection, foam, sparkle.
+// Returns {bob, roll} so callers can place things held by the survivor.
+function drawSeaRaft(g, W, H, rx, ry, X0, Y0, S, tt, k, spr) {
+  const A = 7, wy = px => ry + A * (.62 * Math.sin(tt * 1.05 + px / 140) + .28 * Math.sin(tt * 2.3 + px / 48 + 1.3) + .10 * Math.sin(tt * 5.1 + px / 17));
+  const bob = wy(rx) - ry, roll = Math.atan2(wy(rx + 70) - wy(rx - 70), 140) * .7, iw = 792 * S, ih = 704 * S;
+  const place = () => { g.translate(rx, ry + bob); g.rotate(roll); g.translate(-rx, -ry); };
+  // raft above and below the surface
+  g.save(); place(); if (spr) g.drawImage(spr, X0, Y0, iw, ih); g.restore();
+  // below the surface: reflection, refracted hull, sea tint, caustics
+  g.save(); g.beginPath(); g.moveTo(0, H); for (let px = 0; px <= W; px += 4) g.lineTo(px, wy(px)); g.lineTo(W, H); g.closePath(); g.clip();
+  if (spr) { g.save(); g.globalAlpha = .22 + .1 * k; g.translate(0, 2 * (ry + bob + 12)); g.scale(1, -1); place(); g.drawImage(spr, X0, Y0, iw, ih); g.restore(); }
+  if (spr) { g.save(); place(); for (let px = 0; px < iw; px += 8) { const dx = 2.2 * Math.sin(tt * 2.1 + px / 26) + 1.1 * Math.sin(tt * 3.7 + px / 11); g.drawImage(spr, px / S, 0, 8 / S, 704, X0 + px + dx, Y0 + 1.5 * Math.sin(tt * 1.7 + px / 40), 8, ih); } g.restore(); }
+  const wg = g.createLinearGradient(0, ry - 10, 0, H); wg.addColorStop(0, "rgba(10,26,40,.2)"); wg.addColorStop(.3, "rgba(8,24,40,.55)"); wg.addColorStop(1, "rgba(3,12,22,.9)"); g.fillStyle = wg; g.fillRect(0, ry - 10, W, H - ry + 10);
+  const rg = g.createRadialGradient(rx, ry + 10, 20, rx, ry + 10, 300); rg.addColorStop(0, `rgba(${14 + 50 * k},${44 - 10 * k},${70 - 30 * k},.6)`); rg.addColorStop(1, "rgba(8,24,40,0)"); g.fillStyle = rg; g.fillRect(0, ry - 10, W, H - ry + 10);
+  for (let i = 0; i < 5; i++) { const yy = ry + 14 + i * 16 + 4 * Math.sin(tt * 1.3 + i); const cg = g.createLinearGradient(0, yy - 5, 0, yy + 5); cg.addColorStop(0, "rgba(160,220,255,0)"); cg.addColorStop(.5, `rgba(${160 + 90 * k},${220 - 120 * k},${255 - 180 * k},${.05 + .04 * Math.sin(tt * 2 + i)})`); cg.addColorStop(1, "rgba(160,220,255,0)"); g.fillStyle = cg; g.fillRect(0, yy - 5, W, 10); }
+  g.restore();
+  // surface line, foam, sparkle around the raft (fades out sideways; dim at night, warm when lit)
+  const sc = k > .5 ? "255,190,160" : "200,230,255", fade = px => Math.max(0, 1 - Math.pow(Math.abs(px - rx) / 300, 2));
+  for (let px = 0; px < W; px += 4) { const f = fade(px); if (f <= 0) continue; g.strokeStyle = `rgba(${sc},${(.3 + .3 * k) * f})`; g.lineWidth = 1.4; g.beginPath(); g.moveTo(px, wy(px)); g.lineTo(px + 4, wy(px + 4)); g.stroke(); }
+  for (let px = 0; px < W; px += 3) { const f = .5 + .5 * Math.sin(tt * 3.3 + px / 9) * Math.sin(px / 37 + tt), fd = fade(px); if (f > .74 && fd > 0) { g.fillStyle = `rgba(${sc},${(f - .72) * (1.2 + k) * fd})`; g.fillRect(px, wy(px) - 1 - (f - .7) * 6, 2.5, 2 + (f - .7) * 7); } }
+  for (let i = 0; i < 16; i++) { const px = (i * 83 + tt * 35) % W, yy = wy(px) + 8 + (i % 4) * 11; const a = (.12 + .18 * Math.sin(tt * 6 + i * 1.7) + .15 * k) * fade(px); g.fillStyle = `rgba(${sc},${Math.max(0, a)})`; g.fillRect(px, yy, 6 + (i % 3) * 4, 1.2); }
+  return {bob, roll};
+}
 // ============ scenes ============
 function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.height, HZ = 170, lit = ST.fire >= 5, night = true;
   let gr = g.createLinearGradient(0, 0, 0, HZ); gr.addColorStop(0, "#02040a"); gr.addColorStop(1, "#141c2c"); g.fillStyle = gr; g.fillRect(0, 0, W, HZ);
@@ -107,15 +130,10 @@ function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.h
   const sx = 120 + Math.min(1, t / 40) * 60; g.fillStyle = "#fff"; g.fillRect(sx, HZ - 14, 2, 2); g.fillRect(sx + 14, HZ - 20, 2, 2); g.fillStyle = "#2f2"; g.fillRect(sx + 4, HZ - 6, 2, 2);
   if (lit && ST.fire >= 6) { g.fillStyle = "#e33"; g.fillRect(sx + 10, HZ - 6, 2, 2); g.fillStyle = "#cfe"; g.font = "11px Arial"; g.fillText("ship alters course towards you (red and green sidelights visible)", sx - 60, HZ + 18); }
   else { g.fillStyle = "#8fa6ad"; g.font = "11px Arial"; g.fillText("ship lights on the horizon", sx - 20, HZ + 18); }
-  // liferaft (photoreal sprite) bobbing on the swell; flare tip position follows the hand in the image
-  const rx = 500, ry = 360, bob = Math.sin(t * 1.3) * 3, S = 360 / 792, X0 = rx - 180, Y0 = 80; const spr = raftSprite(lit ? 1 : 0);
-  g.save(); g.translate(rx, ry + bob); g.rotate(Math.sin(t * 1.3 + .8) * .012); g.translate(-rx, -ry);
-  let sh = g.createRadialGradient(rx, ry + 20, 10, rx, ry + 20, 200); sh.addColorStop(0, "rgba(0,0,0,.6)"); sh.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = sh; g.beginPath(); g.ellipse(rx, ry + 22, 200, 30, 0, 0, 7); g.fill();
-  if (spr) g.drawImage(spr, X0, Y0, 792 * S, 704 * S);
-  g.restore();
-  // waterline wash over the lower tube
-  let ww = g.createLinearGradient(0, ry + 2, 0, ry + 40); ww.addColorStop(0, "rgba(6,14,26,0)"); ww.addColorStop(1, "rgba(6,14,26,.85)"); g.fillStyle = ww; g.fillRect(0, ry + 2, W, H - ry);
-  const hx = X0 + 315 * S, hy = Y0 + 136 * S + bob;
+  // liferaft (photoreal sprite) riding a real swell
+  const rx = 500, ry = 360, S = 360 / 792, X0 = rx - 180, Y0 = 80; const spr = raftSprite(lit ? 1 : 0);
+  const {bob, roll} = drawSeaRaft(g, W, H, rx, ry, X0, Y0, S, t, lit ? 1 : 0, spr);
+  const hx0 = X0 + 315 * S - rx, hy0 = Y0 + 136 * S - ry, hx = rx + hx0 * Math.cos(roll) - hy0 * Math.sin(roll), hy = ry + bob + hx0 * Math.sin(roll) + hy0 * Math.cos(roll);
   const fx = hx, fy = hy;
   if (lit) { emit(fx, fy, -1, 6); stepPS(dt); drawPS(g, night); flame(g, fx, fy, t); g.fillStyle = "rgba(255,40,30,.08)"; g.fillRect(0, HZ, W, H - HZ); } else { stepPS(dt); drawPS(g, night); }
   g.fillStyle = "#cfe"; g.font = "bold 12px Arial"; g.textAlign = "left"; g.fillText("WIND", 20, 30); g.strokeStyle = "#cfe"; g.lineWidth = 2; g.beginPath(); g.moveTo(80, 26); g.lineTo(30 + 70, 26); g.moveTo(110, 26); g.lineTo(70, 26); g.lineTo(78, 21); g.moveTo(70, 26); g.lineTo(78, 31); g.stroke(); g.font = "11px Arial"; g.fillText("from the right: flare held on the LEE side (left)", 120, 30); }
