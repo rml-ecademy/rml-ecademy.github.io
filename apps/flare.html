@@ -131,7 +131,7 @@ function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.h
   if (lit && ST.fire >= 6) { g.fillStyle = "#e33"; g.fillRect(sx + 10, HZ - 6, 2, 2); g.fillStyle = "#cfe"; g.font = "11px Arial"; g.fillText("ship alters course towards you (red and green sidelights visible)", sx - 60, HZ + 18); }
   else { g.fillStyle = "#8fa6ad"; g.font = "11px Arial"; g.fillText("ship lights on the horizon", sx - 20, HZ + 18); }
   // liferaft (photoreal sprite) riding a real swell
-  const rx = 500, ry = 360, S = 360 / 792, X0 = rx - 180, Y0 = 80; const spr = raftSprite(lit ? 1 : 0);
+  const rx = 500, ry = 360, S = 360 / 792, X0 = rx - 180, Y0 = 65; const spr = raftSprite(lit ? 1 : 0);
   const {bob, roll} = drawSeaRaft(g, W, H, rx, ry, X0, Y0, S, t, lit ? 1 : 0, spr);
   const hx0 = X0 + 315 * S - rx, hy0 = Y0 + 136 * S - ry, hx = rx + hx0 * Math.cos(roll) - hy0 * Math.sin(roll), hy = ry + bob + hx0 * Math.sin(roll) + hy0 * Math.cos(roll);
   const fx = hx, fy = hy;
