@@ -97,27 +97,29 @@ function raftSprite(k) { if (!RAFT_IMG.complete || !RAFT_IMG.naturalWidth) retur
   g.globalCompositeOperation = "source-atop"; g.fillStyle = `rgba(4,10,28,${.62 - .36 * k})`; g.fillRect(0, 0, c.width, c.height);
   if (k > 0) { g.fillStyle = `rgba(255,50,25,${.12 * k})`; g.fillRect(0, 0, c.width, c.height); const gr = g.createRadialGradient(300, 150, 20, 300, 150, 700); gr.addColorStop(0, `rgba(255,120,80,${.22 * k})`); gr.addColorStop(1, "rgba(255,120,80,0)"); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height); }
   RAFT_CACHE[key] = c; return c; }
-// Raft riding a real swell: surface = long swell + chop; raft bobs/rolls with it; submerged part refracted and tinted; reflection, foam, sparkle.
+// Raft riding a real swell, seen from slightly above: the water meets the lower tube along the near half of an ellipse
+// (lowest at the front, rising to the sides), so the raft sits IN the water instead of on a flat line.
 // Returns {bob, roll} so callers can place things held by the survivor.
 function drawSeaRaft(g, W, H, rx, ry, X0, Y0, S, tt, k, spr) {
-  const A = 7, wy = px => ry + A * (.62 * Math.sin(tt * 1.05 + px / 140) + .28 * Math.sin(tt * 2.3 + px / 48 + 1.3) + .10 * Math.sin(tt * 5.1 + px / 17));
-  const bob = wy(rx) - ry, roll = Math.atan2(wy(rx + 70) - wy(rx - 70), 140) * .7, iw = 792 * S, ih = 704 * S;
+  const A = 6, iw = 792 * S, ih = 704 * S, a = iw * .47, d = ih * .12;
+  const swell = px => A * (.62 * Math.sin(tt * 1.05 + px / 140) + .28 * Math.sin(tt * 2.3 + px / 48 + 1.3) + .10 * Math.sin(tt * 5.1 + px / 17));
+  const bob = swell(rx), roll = Math.atan2(swell(rx + 70) - swell(rx - 70), 140) * .6;
+  const wy = px => { const u = (px - rx) / a; return ry + swell(px) + (Math.abs(u) < 1 ? d * Math.sqrt(1 - u * u) : 0); };
   const place = () => { g.translate(rx, ry + bob); g.rotate(roll); g.translate(-rx, -ry); };
-  // raft above and below the surface
   g.save(); place(); if (spr) g.drawImage(spr, X0, Y0, iw, ih); g.restore();
-  // below the surface: reflection, refracted hull, sea tint, caustics
-  g.save(); g.beginPath(); g.moveTo(0, H); for (let px = 0; px <= W; px += 4) g.lineTo(px, wy(px)); g.lineTo(W, H); g.closePath(); g.clip();
-  if (spr) { g.save(); g.globalAlpha = .22 + .1 * k; g.translate(0, 2 * (ry + bob + 12)); g.scale(1, -1); place(); g.drawImage(spr, X0, Y0, iw, ih); g.restore(); }
+  // below the surface: reflection (mirrored per column about the local contact line), refracted hull, sea tint, caustics
+  g.save(); g.beginPath(); g.moveTo(0, H); for (let px = 0; px <= W; px += 3) g.lineTo(px, wy(px)); g.lineTo(W, H); g.closePath(); g.clip();
+  if (spr) { g.save(); g.globalAlpha = .2 + .1 * k; for (let px = 0; px < iw; px += 6) { const sx = X0 + px, m = wy(sx + 3) + 6; g.save(); g.translate(0, 2 * m); g.scale(1, -1); g.drawImage(spr, px / S, 0, 6 / S, 704, sx, m - ih + (m - Y0 - bob), 6, ih); g.restore(); } g.restore(); }
   if (spr) { g.save(); place(); for (let px = 0; px < iw; px += 8) { const dx = 2.2 * Math.sin(tt * 2.1 + px / 26) + 1.1 * Math.sin(tt * 3.7 + px / 11); g.drawImage(spr, px / S, 0, 8 / S, 704, X0 + px + dx, Y0 + 1.5 * Math.sin(tt * 1.7 + px / 40), 8, ih); } g.restore(); }
   const wg = g.createLinearGradient(0, ry - 10, 0, H); wg.addColorStop(0, "rgba(10,26,40,.15)"); wg.addColorStop(.3, "rgba(8,24,40,.4)"); wg.addColorStop(1, "rgba(3,12,22,.8)"); g.fillStyle = wg; g.fillRect(0, ry - 10, W, H - ry + 10);
-  const rg = g.createRadialGradient(rx, ry + 10, 20, rx, ry + 10, 300); rg.addColorStop(0, `rgba(${14 + 50 * k},${44 - 10 * k},${70 - 30 * k},.42)`); rg.addColorStop(1, "rgba(8,24,40,0)"); g.fillStyle = rg; g.fillRect(0, ry - 10, W, H - ry + 10);
-  for (let i = 0; i < 5; i++) { const yy = ry + 14 + i * 16 + 4 * Math.sin(tt * 1.3 + i); const cg = g.createLinearGradient(0, yy - 5, 0, yy + 5); cg.addColorStop(0, "rgba(160,220,255,0)"); cg.addColorStop(.5, `rgba(${160 + 90 * k},${220 - 120 * k},${255 - 180 * k},${.05 + .04 * Math.sin(tt * 2 + i)})`); cg.addColorStop(1, "rgba(160,220,255,0)"); g.fillStyle = cg; g.fillRect(0, yy - 5, W, 10); }
+  const rg = g.createRadialGradient(rx, ry + d, 20, rx, ry + d, 300); rg.addColorStop(0, `rgba(${14 + 50 * k},${44 - 10 * k},${70 - 30 * k},.42)`); rg.addColorStop(1, "rgba(8,24,40,0)"); g.fillStyle = rg; g.fillRect(0, ry - 10, W, H - ry + 10);
+  for (let i = 0; i < 5; i++) { const yy = ry + d + 14 + i * 16 + 4 * Math.sin(tt * 1.3 + i); const cg = g.createLinearGradient(0, yy - 5, 0, yy + 5); cg.addColorStop(0, "rgba(160,220,255,0)"); cg.addColorStop(.5, `rgba(${160 + 90 * k},${220 - 120 * k},${255 - 180 * k},${.05 + .04 * Math.sin(tt * 2 + i)})`); cg.addColorStop(1, "rgba(160,220,255,0)"); g.fillStyle = cg; g.fillRect(0, yy - 5, W, 10); }
   g.restore();
-  // surface line, foam, sparkle around the raft (fades out sideways; dim at night, warm when lit)
+  // contact line, foam, sparkle around the raft (fades out sideways; dim at night, warm when lit)
   const sc = k > .5 ? "255,190,160" : "200,230,255", fade = px => Math.max(0, 1 - Math.pow(Math.abs(px - rx) / 300, 2));
-  for (let px = 0; px < W; px += 4) { const f = fade(px); if (f <= 0) continue; g.strokeStyle = `rgba(${sc},${(.3 + .3 * k) * f})`; g.lineWidth = 1.4; g.beginPath(); g.moveTo(px, wy(px)); g.lineTo(px + 4, wy(px + 4)); g.stroke(); }
+  for (let px = 0; px < W; px += 3) { const f = fade(px); if (f <= 0) continue; g.strokeStyle = `rgba(${sc},${(.3 + .3 * k) * f})`; g.lineWidth = 1.4; g.beginPath(); g.moveTo(px, wy(px)); g.lineTo(px + 3, wy(px + 3)); g.stroke(); }
   for (let px = 0; px < W; px += 3) { const f = .5 + .5 * Math.sin(tt * 3.3 + px / 9) * Math.sin(px / 37 + tt), fd = fade(px); if (f > .74 && fd > 0) { g.fillStyle = `rgba(${sc},${(f - .72) * (1.2 + k) * fd})`; g.fillRect(px, wy(px) - 1 - (f - .7) * 6, 2.5, 2 + (f - .7) * 7); } }
-  for (let i = 0; i < 16; i++) { const px = (i * 83 + tt * 35) % W, yy = wy(px) + 8 + (i % 4) * 11; const a = (.12 + .18 * Math.sin(tt * 6 + i * 1.7) + .15 * k) * fade(px); g.fillStyle = `rgba(${sc},${Math.max(0, a)})`; g.fillRect(px, yy, 6 + (i % 3) * 4, 1.2); }
+  for (let i = 0; i < 16; i++) { const px = (i * 83 + tt * 35) % W, yy = wy(px) + 8 + (i % 4) * 11; const al = (.12 + .18 * Math.sin(tt * 6 + i * 1.7) + .15 * k) * fade(px); g.fillStyle = `rgba(${sc},${Math.max(0, al)})`; g.fillRect(px, yy, 6 + (i % 3) * 4, 1.2); }
   return {bob, roll};
 }
 // ============ scenes ============
@@ -131,7 +133,7 @@ function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.h
   if (lit && ST.fire >= 6) { g.fillStyle = "#e33"; g.fillRect(sx + 10, HZ - 6, 2, 2); g.fillStyle = "#cfe"; g.font = "11px Arial"; g.fillText("ship alters course towards you (red and green sidelights visible)", sx - 60, HZ + 18); }
   else { g.fillStyle = "#8fa6ad"; g.font = "11px Arial"; g.fillText("ship lights on the horizon", sx - 20, HZ + 18); }
   // liferaft (photoreal sprite) riding a real swell
-  const rx = 500, ry = 360, S = 360 / 792, X0 = rx - 180, Y0 = 65; const spr = raftSprite(lit ? 1 : 0);
+  const rx = 500, ry = 352, S = 360 / 792, X0 = rx - 180, Y0 = 352 + 320 * .12 - 320 * .916; const spr = raftSprite(lit ? 1 : 0);
   const {bob, roll} = drawSeaRaft(g, W, H, rx, ry, X0, Y0, S, t, lit ? 1 : 0, spr);
   const hx0 = X0 + 315 * S - rx, hy0 = Y0 + 136 * S - ry, hx = rx + hx0 * Math.cos(roll) - hy0 * Math.sin(roll), hy = ry + bob + hx0 * Math.sin(roll) + hy0 * Math.cos(roll);
   const fx = hx, fy = hy;
