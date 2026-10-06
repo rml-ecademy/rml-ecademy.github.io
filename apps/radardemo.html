@@ -739,8 +739,8 @@
       const SWEEP_RPM = 24;                      // X-band scanner ~24 rpm (one rotation every 2.5 s)
       const echoCv = document.createElement("canvas"); let ex = echoCv.getContext("2d");
       let sweepDeg = 0, sweepLastT = performance.now(), echoKey = "";
-      let offCentre = false;
-      function offVec(rad){ if(!offCentre) return {dx:0,dy:0}; const h=(num("course")-displayUp())*D; return {dx:-0.6*rad*Math.sin(h), dy:0.6*rad*Math.cos(h)}; } // own ship shifted aft on screen
+      let offCentre = false, offPlace = false, offFrac = {x:0, y:0};   // offset of own ship from the PPI centre, as a fraction of the radius (screen-fixed, like a real set)
+      function offVec(rad){ if(!offCentre) return {dx:0,dy:0}; return {dx:offFrac.x*rad, dy:offFrac.y*rad}; }
 
       function sweepScreenAngle(brgDeg){ return (brgDeg - displayUp() - 90) * D; }
       const D = Math.PI / 180,
@@ -1257,7 +1257,7 @@
         // targets: echo blob stretched in bearing (beamwidth) and range (pulse length), brightness by gain/strength, a little noise
         const bw = (3 + $("mes").selectedIndex) * 0.9, pl = 1 + $("mpl").selectedIndex * 1.2;
         targets.forEach((t) => {
-          if (Math.hypot(t.x, t.y) > range * (offCentre ? 1.7 : 1) || (gain / 100) * t.strength <= (radarBand === "S" ? sea / 400 + rain / 900 : sea / 180 + rain / 300)) return;
+          if (Math.hypot(t.x, t.y) > range * (offCentre ? 1.75 : 1) || (gain / 100) * t.strength <= (radarBand === "S" ? sea / 400 + rain / 900 : sea / 180 + rain / 300)) return;
           const p = map(t.x, t.y); const ang = Math.atan2(p.y - C, p.x - C); const dist = Math.hypot(p.x - C, p.y - C);
           const along = pl + 1.5 + Math.min(4, t.strength * 2), across = bw + dist * 0.012 + t.strength;   // echoes smear in bearing with range
           x.save(); x.translate(p.x, p.y); x.rotate(ang); x.fillStyle = "#7dffac"; x.shadowColor = "#52ff91"; x.shadowBlur = 6; x.globalAlpha = Math.min(1, 0.55 + t.strength * 0.5 * gain / 60);
@@ -1444,7 +1444,7 @@
         targets.forEach((t) => {
           let p = map(t.x, t.y);
           if (
-            Math.hypot(t.x, t.y) > range * (offCentre ? 1.7 : 1) ||
+            Math.hypot(t.x, t.y) > range * (offCentre ? 1.75 : 1) ||
             (gain / 100) * t.strength <= (radarBand === "S" ? sea / 400 + rain / 900 : sea / 180 + rain / 300)
           )
             return;
@@ -1542,6 +1542,7 @@
       };
       $("ppi").onpointerleave = () => ["curbrg", "currng", "curlat", "curlon"].forEach(id => $(id).textContent = "---");
       $("ppi").onpointerdown = (e) => {
+        if (offPlace) { const q = $("ppi").getBoundingClientRect(), w = Math.min(q.width, q.height), C = w / 2, rad = w * PPI_R; let fx = (e.clientX - q.left - C) / rad, fy = (e.clientY - q.top - C) / rad; const m = Math.hypot(fx, fy); if (m > 0.75) { fx *= 0.75 / m; fy *= 0.75 / m; } offFrac = {x: fx, y: fy}; offCentre = true; offPlace = false; echoKey = ""; $("offc").textContent = "OFF CENTRE ON"; $("offc").classList.add("active"); $("msg").textContent = "Own ship moved to the cursor position. Press OFF CENTRE again to return to centre."; return; }
         if (!guardDraw) return;
         e.currentTarget.setPointerCapture(e.pointerId);
         const z = showCursor(e);
@@ -1718,7 +1719,7 @@
         $("vector").textContent = vector + " VECTOR";
         updateModes();
       };
-      $("offc").onclick = () => { offCentre = !offCentre; $("offc").classList.toggle("active", offCentre); $("offc").textContent = "OFF CENTRE" + (offCentre ? " ON" : ""); echoKey = ""; };
+      $("offc").onclick = () => { if (offCentre && !offPlace) { offCentre = false; offPlace = false; } else { offPlace = true; } $("offc").classList.toggle("active", offCentre || offPlace); $("offc").textContent = offPlace ? "OFF CENTRE · CLICK PPI" : offCentre ? "OFF CENTRE ON" : "OFF CENTRE"; echoKey = ""; if (offPlace) $("msg").textContent = "OFF CENTRE: click on the PPI where you want own ship to be (up to 75 % of the radius). Press OFF CENTRE again to return to centre."; };
       $("trail").onclick = () => {
         showTrails = !showTrails;
         $("trail").textContent = "TRAILS " + (showTrails ? "ON" : "OFF");
