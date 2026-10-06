@@ -1253,11 +1253,15 @@
 <details class="menu-group">
 <summary>Stability &amp; Longitudinal Strength</summary>
 <div class="subtopics">
-<button class="topic-btn">GM / GZ Fundamentals</button>
-<button class="topic-btn">Free Surface Effect</button>
+<button class="topic-btn has-sim" data-app="stab" data-start="k">Trim &amp; Stability · Righting Lever (GZ) Trainer <span class="sim-tag">▶ LIVE SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="k">Reading the Loading Computer Printout (K) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="u:1">GM / GZ Fundamentals (U) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="u:4">Free Surface Effect (U) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="u:5">Stiff vs Tender · Rolling Period (U) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="p:1">Loading Computer Checks · Ship vs Printout (P) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="stab" data-start="p:4">IMO Intact Stability Criteria by Hand (P) <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn">Trim &amp; List Correction</button>
 <button class="topic-btn">Shear Force &amp; Bending Moment</button>
-<button class="topic-btn">Loading Computer Checks</button>
 <button class="topic-btn">Damage Stability Awareness</button>
 <button class="topic-btn">Heavy Weather Ballasting</button>
 <button class="topic-btn">Grain Stability Basics</button>
@@ -1563,7 +1567,7 @@ flare: { title: 'Red Hand Flare Training', src: 'app-flare', file: 'ECADEMY_HAND
 lsa: { title: 'Life-Saving Appliances Training', src: 'app-lsa', file: 'ECADEMY_LSA_TRAINER.html', crumb: 'Third Officer · LSA ·' },
 epirb: { title: 'EPIRB Training', src: 'app-epirb', file: 'ECADEMY_EPIRB_TRAINING.html', crumb: 'GMDSS · LSA ·' },
 sart: { title: 'SART Training', src: 'app-sart', file: 'ECADEMY_SART_TRAINING.html', crumb: 'GMDSS · LSA ·' },
-wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' } };
+wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' } };
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
@@ -1580,7 +1584,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         currentApp = key;
         frame.onload = () => { loading.style.display = 'none'; try{ frame.contentWindow.focus(); }catch(_){} };
         frame.removeAttribute('srcdoc');
-        const hash = start ? '#' + encodeURIComponent(start) : '';
+        const hash = start ? '#' + encodeURI(start) : '';
         if((window.ECADEMY_FREE || []).includes(key)) frame.src = 'apps/' + key + '.html' + hash;
         else {
           loading.textContent = 'Unlocking simulator…';
@@ -1886,6 +1890,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
          img:['sales/img/draft.jpg','assets/img3.webp'],
          hl:[['Draft Survey','Manual draft survey step by step, with 7 narrated video lessons, tank soundings and the hydrometer.'],
+             ['Trim & Stability','Righting lever (GZ) trainer: read the loading computer printout, see why the curve bends, and prove it on the ship with the rolling period, clinometer and drafts.'],
              ['Deck Maintenance','Planned maintenance, defect control, permits and inspections run by the Chief Officer.']],
          feats:['Everything in Junior Officers','Deck 03 · Chief Officer, cargo, stability and ballast'] },
     A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
