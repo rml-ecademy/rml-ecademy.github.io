@@ -88,6 +88,41 @@ function drawPS(g, night) { g.save(); PS.filter(p => p.sm).forEach(p => { const 
 function flame(g, x, y, t, scale = 1) { g.save(); g.globalCompositeOperation = "lighter"; const fl = 1 + Math.sin(t * 37) * .08 + Math.sin(t * 23) * .06;
   let gr = g.createRadialGradient(x, y, 0, x, y, 260 * scale * fl); gr.addColorStop(0, "rgba(255,60,40,.55)"); gr.addColorStop(.25, "rgba(255,30,20,.22)"); gr.addColorStop(1, "rgba(255,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, 260 * scale * fl, 0, 7); g.fill();
   gr = g.createRadialGradient(x, y - 4, 0, x, y - 4, 22 * scale * fl); gr.addColorStop(0, "rgba(255,255,240,1)"); gr.addColorStop(.35, "rgba(255,160,140,.95)"); gr.addColorStop(1, "rgba(255,30,20,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y - 4, 22 * scale * fl, 0, 7); g.fill(); g.restore(); }
+function drawSurvivor(g, k, hx, hy) { const LERP = (a, b) => a + (b - a) * k, M = [LERP(.36, 1), LERP(.3, .88), LERP(.28, .82)];
+  const S = (r, gg, b) => `rgb(${Math.min(255, r * M[0]) | 0},${Math.min(255, gg * M[1]) | 0},${Math.min(255, b * M[2]) | 0})`;
+  const SK = S(222, 175, 140), SK2 = S(170, 120, 90), HR = S(40, 28, 20), LJ = S(255, 120, 30), LJ2 = S(190, 70, 10), LJH = S(255, 170, 90), TP = S(225, 230, 235), CL = S(40, 60, 90), CL2 = S(20, 32, 50);
+  g.save(); g.translate(hx, hy);
+  // torso: dark overall under the jacket, shoulders
+  let gr = g.createLinearGradient(-18, 10, 18, 10); gr.addColorStop(0, CL2); gr.addColorStop(.5, CL); gr.addColorStop(1, CL2); g.fillStyle = gr; g.beginPath(); g.moveTo(-19, 12); g.quadraticCurveTo(-21, 2, -12, 0); g.lineTo(12, 0); g.quadraticCurveTo(21, 2, 19, 12); g.lineTo(18, 54); g.lineTo(-18, 54); g.closePath(); g.fill();
+  // lifejacket (front panels + collar behind the neck)
+  g.fillStyle = LJ2; g.beginPath(); g.ellipse(0, 4, 17, 9, 0, Math.PI, 0); g.fill();
+  gr = g.createLinearGradient(-16, 10, 16, 10); gr.addColorStop(0, LJ2); gr.addColorStop(.35, LJ); gr.addColorStop(.55, LJH); gr.addColorStop(1, LJ2); g.fillStyle = gr;
+  g.beginPath(); g.moveTo(-16, 10); g.quadraticCurveTo(-14, 6, -8, 8); g.lineTo(-2, 18); g.lineTo(-2, 50); g.quadraticCurveTo(-10, 52, -17, 48); g.closePath(); g.fill();
+  g.beginPath(); g.moveTo(16, 10); g.quadraticCurveTo(14, 6, 8, 8); g.lineTo(2, 18); g.lineTo(2, 50); g.quadraticCurveTo(10, 52, 17, 48); g.closePath(); g.fill();
+  g.strokeStyle = LJ2; g.lineWidth = 1; g.beginPath(); g.moveTo(-2, 18); g.lineTo(-2, 50); g.moveTo(2, 18); g.lineTo(2, 50); g.stroke();
+  g.save(); if (k > .05) { g.shadowColor = "#fff"; g.shadowBlur = 8 * k; } g.fillStyle = TP; g.fillRect(-14, 30, 11, 4); g.fillRect(3, 30, 11, 4); g.fillRect(-14, 40, 11, 3); g.fillRect(3, 40, 11, 3); g.restore();
+  g.strokeStyle = S(30, 30, 30); g.lineWidth = 2; g.beginPath(); g.moveTo(-16, 44); g.lineTo(16, 44); g.stroke(); g.fillStyle = S(60, 60, 60); g.fillRect(-4, 42, 8, 5);
+  // resting arm (far side) with hand on the tube
+  g.strokeStyle = CL; g.lineWidth = 8; g.lineCap = "round"; g.beginPath(); g.moveTo(15, 14); g.quadraticCurveTo(26, 30, 22, 48); g.stroke(); g.fillStyle = SK; g.beginPath(); g.ellipse(22, 51, 5, 4, .3, 0, 7); g.fill();
+  // neck + head
+  g.fillStyle = SK2; g.fillRect(-4, -6, 8, 10);
+  gr = g.createRadialGradient(-3, -16, 2, 0, -12, 13); gr.addColorStop(0, SK); gr.addColorStop(1, SK2); g.fillStyle = gr; g.beginPath(); g.ellipse(0, -12, 9.5, 11.5, 0, 0, 7); g.fill();
+  g.fillStyle = S(190, 140, 110); g.beginPath(); g.ellipse(-9, -12, 2, 3, 0, 0, 7); g.fill();   // ear
+  g.fillStyle = HR; g.beginPath(); g.moveTo(-10, -14); g.quadraticCurveTo(-8, -26, 2, -24); g.quadraticCurveTo(11, -24, 9, -14); g.quadraticCurveTo(6, -19, 0, -19); g.quadraticCurveTo(-6, -19, -10, -14); g.fill();
+  g.fillStyle = S(40, 30, 25); g.beginPath(); g.ellipse(-3.5, -11, 1.3, 1.6, 0, 0, 7); g.ellipse(3.5, -11, 1.3, 1.6, 0, 0, 7); g.fill();  // eyes
+  g.strokeStyle = S(120, 80, 60); g.lineWidth = 1; g.beginPath(); g.moveTo(-6, -14.5); g.lineTo(-1.5, -14.5); g.moveTo(1.5, -14.5); g.lineTo(6, -14.5); g.stroke();  // brows
+  g.beginPath(); g.moveTo(0, -9); g.lineTo(-1.5, -5); g.lineTo(1, -5); g.stroke();  // nose
+  g.strokeStyle = S(150, 90, 80); g.lineWidth = 1.2; g.beginPath(); g.moveTo(-3, -2); g.quadraticCurveTo(0, 0, 3, -2); g.stroke();  // mouth
+  g.restore(); }
+// arm reaching out: sleeve + hand with fingers, from shoulder (sx,sy) to hand (hx,hy); pointing angle of the held item in rad
+function drawArm(g, k, sx, sy, hx, hy) { const LERP = (a, b) => a + (b - a) * k, M = [LERP(.36, 1), LERP(.3, .88), LERP(.28, .82)];
+  const S = (r, gg, b) => `rgb(${Math.min(255, r * M[0]) | 0},${Math.min(255, gg * M[1]) | 0},${Math.min(255, b * M[2]) | 0})`;
+  const ex = (sx + hx) / 2 + 2, ey = (sy + hy) / 2 + 8;
+  g.save(); g.lineCap = "round"; g.strokeStyle = S(40, 60, 90); g.lineWidth = 10; g.beginPath(); g.moveTo(sx, sy); g.lineTo(ex, ey); g.stroke(); g.lineWidth = 9; g.beginPath(); g.moveTo(ex, ey); g.lineTo(hx, hy); g.stroke();
+  g.strokeStyle = S(255, 120, 30); g.lineWidth = 10; g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + (ex - sx) * .3, sy + (ey - sy) * .3); g.stroke();
+  g.fillStyle = S(222, 175, 140); g.beginPath(); g.ellipse(hx, hy, 6.5, 5.5, Math.atan2(hy - ey, hx - ex), 0, 7); g.fill();
+  g.strokeStyle = S(170, 120, 90); g.lineWidth = 1; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(hx - 2, hy - 4 + i * 3); g.lineTo(hx + 4, hy - 3 + i * 3); g.stroke(); }
+  g.restore(); }
 // ============ realistic davit-launched inflatable liferaft (side view, local origin at waterline centre) ============
 function drawRaft(g, k, t) { const lit = k > .5, LERP = (a, b) => a + (b - a) * k;
   const M = [LERP(.36, 1), LERP(.3, .88), LERP(.28, .82)];
@@ -130,11 +165,8 @@ function drawRaft(g, k, t) { const lit = k > .5, LERP = (a, b) => a + (b - a) * 
   g.strokeStyle = ORH; g.lineWidth = 3; g.stroke();
   g.save(); g.translate(-52, -96); g.rotate(-.45); g.fillStyle = ORD; g.beginPath(); g.roundRect(-30, -6, 60, 11, 5); g.fill(); g.fillStyle = ORH; g.beginPath(); g.roundRect(-28, -5, 56, 3, 2); g.fill(); g.restore();
   g.fillStyle = WH; g.beginPath(); g.moveTo(-96, -40); g.lineTo(-86, -34); g.lineTo(-96, -28); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-10, -40); g.lineTo(-20, -34); g.lineTo(-10, -28); g.closePath(); g.fill();
-  // survivor in lifejacket sitting at the entrance
-  const pc = lit ? ["#e2581a", "#7a2008"] : ["#4a1a06", "#180600"]; let pg = g.createLinearGradient(-58, -52, -32, -20); pg.addColorStop(0, pc[0]); pg.addColorStop(1, pc[1]); g.fillStyle = pg; g.beginPath(); g.roundRect(-60, -52, 30, 42, 7); g.fill();
-  g.fillStyle = lit ? "#f0e6c8" : "#4a3a2a"; g.fillRect(-56, -40, 4, 26); g.fillRect(-38, -40, 4, 26);
-  pg = g.createRadialGradient(-47, -62, 1, -45, -60, 11); pg.addColorStop(0, lit ? "#e8a080" : "#3a2018"); pg.addColorStop(1, lit ? "#6a2a18" : "#120806"); g.fillStyle = pg; g.beginPath(); g.arc(-45, -60, 10, 0, 7); g.fill();
-  g.fillStyle = lit ? "#2a0c06" : "#0a0402"; g.beginPath(); g.arc(-45, -63, 10.5, Math.PI, 0); g.fill();
+  // survivor (seated in the entrance): head, hair, face, neck, lifejacket with collar + reflective tape, resting arm
+  drawSurvivor(g, k, -45, -58);
   // lifeline (grab line) with patches along the upper tube
   g.strokeStyle = WH; g.lineWidth = 2; g.beginPath(); for (let x = -96; x < 96; x += 24) { g.moveTo(x, -4); g.quadraticCurveTo(x + 12, 10, x + 24, -4); } g.stroke();
   g.fillStyle = BKH; for (let x = -96; x <= 96; x += 24) { g.fillRect(x - 3, -8, 6, 7); }
@@ -155,8 +187,9 @@ function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.h
   // liferaft
   const rx = 500, ry = 360, bob = Math.sin(t * 1.3) * 3; g.save(); g.translate(rx, ry + bob); g.rotate(Math.sin(t * 1.3 + .8) * .015); drawRaft(g, lit ? 1 : 0, t); g.restore();
   // arm + flare held out on lee side
-  const hx = rx - 70, hy = ry - 40 + bob; g.strokeStyle = lit ? "#c8481a" : "#3a1606"; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(rx - 50, ry - 42 + bob); g.lineTo(hx, hy); g.stroke(); g.fillStyle = lit ? "#5a2010" : "#140804"; g.beginPath(); g.arc(hx, hy, 6, 0, 7); g.fill();
-  if (ST.fire >= 3) { g.save(); g.translate(hx, hy); g.rotate(-.5); g.fillStyle = lit ? "#d84a14" : "#5a2008"; g.fillRect(-5, -44, 10, 52); g.restore(); }
+  const hx = rx - 96, hy = ry - 64 + bob;
+  if (ST.fire >= 3) { g.save(); g.translate(hx, hy); g.rotate(-.5); const fg = g.createLinearGradient(-5, 0, 5, 0); fg.addColorStop(0, lit ? "#8a2a0a" : "#2a1004"); fg.addColorStop(.5, lit ? "#e85a1c" : "#5a2008"); fg.addColorStop(1, lit ? "#8a2a0a" : "#2a1004"); g.fillStyle = fg; g.fillRect(-5, -44, 10, 54); g.fillStyle = lit ? "#2a2a2a" : "#101010"; g.fillRect(-5, -4, 10, 14); g.restore(); }
+  drawArm(g, lit ? 1 : 0, rx - 61, ry - 48 + bob, hx, hy);
   const fx = hx - Math.sin(.5) * 44, fy = hy - Math.cos(.5) * 44;
   if (lit) { emit(fx, fy, -1, 6); stepPS(dt); drawPS(g, night); flame(g, fx, fy, t); g.fillStyle = "rgba(255,40,30,.08)"; g.fillRect(0, HZ, W, H - HZ); } else { stepPS(dt); drawPS(g, night); }
   g.fillStyle = "#cfe"; g.font = "bold 12px Arial"; g.textAlign = "left"; g.fillText("WIND", 20, 30); g.strokeStyle = "#cfe"; g.lineWidth = 2; g.beginPath(); g.moveTo(80, 26); g.lineTo(30 + 70, 26); g.moveTo(110, 26); g.lineTo(70, 26); g.lineTo(78, 21); g.moveTo(70, 26); g.lineTo(78, 31); g.stroke(); g.font = "11px Arial"; g.fillText("from the right: flare held on the LEE side (left)", 120, 30); }
