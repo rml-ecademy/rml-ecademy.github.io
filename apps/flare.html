@@ -88,6 +88,55 @@ function drawPS(g, night) { g.save(); PS.filter(p => p.sm).forEach(p => { const 
 function flame(g, x, y, t, scale = 1) { g.save(); g.globalCompositeOperation = "lighter"; const fl = 1 + Math.sin(t * 37) * .08 + Math.sin(t * 23) * .06;
   let gr = g.createRadialGradient(x, y, 0, x, y, 260 * scale * fl); gr.addColorStop(0, "rgba(255,60,40,.55)"); gr.addColorStop(.25, "rgba(255,30,20,.22)"); gr.addColorStop(1, "rgba(255,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, 260 * scale * fl, 0, 7); g.fill();
   gr = g.createRadialGradient(x, y - 4, 0, x, y - 4, 22 * scale * fl); gr.addColorStop(0, "rgba(255,255,240,1)"); gr.addColorStop(.35, "rgba(255,160,140,.95)"); gr.addColorStop(1, "rgba(255,30,20,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y - 4, 22 * scale * fl, 0, 7); g.fill(); g.restore(); }
+// ============ realistic davit-launched inflatable liferaft (side view, local origin at waterline centre) ============
+function drawRaft(g, k, t) { const lit = k > .5, LERP = (a, b) => a + (b - a) * k;
+  const M = [LERP(.36, 1), LERP(.3, .88), LERP(.28, .82)];
+  const S = (r, gg, b) => `rgb(${Math.min(255, r * M[0]) | 0},${Math.min(255, gg * M[1]) | 0},${Math.min(255, b * M[2]) | 0})`;
+  const OR = S(255, 108, 22), OR3 = S(150, 44, 6), ORH = S(255, 165, 85), ORD = S(205, 70, 10);
+  const BK = S(26, 26, 28), BK2 = S(58, 58, 62), BKH = S(112, 112, 118), BKD = S(8, 8, 10);
+  const WH = S(240, 240, 240), TAPE = S(215 + 40 * k, 222 + 33 * k, 228 + 27 * k);
+  let gr;
+  // shadow on the water + reflection
+  gr = g.createRadialGradient(0, 24, 10, 0, 24, 135); gr.addColorStop(0, "rgba(0,0,0,.6)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 26, 135, 24, 0, 0, 7); g.fill();
+  gr = g.createRadialGradient(0, 30, 4, 0, 46, 95); gr.addColorStop(0, `rgba(255,120,50,${.09 + .19 * k})`); gr.addColorStop(1, "rgba(255,120,50,0)"); g.save(); g.scale(1, .55); g.fillStyle = gr; g.beginPath(); g.arc(0, 46 / .55 * .55 + 30, 95, 0, 7); g.fill(); g.restore();
+  // lower buoyancy tube
+  gr = g.createLinearGradient(0, -8, 0, 28); gr.addColorStop(0, BK2); gr.addColorStop(.45, BK); gr.addColorStop(1, BKD); g.fillStyle = gr; g.beginPath(); g.ellipse(0, 11, 106, 18, 0, 0, 7); g.fill();
+  // boarding ramp (right side, slopes into the water)
+  g.fillStyle = BK2; g.beginPath(); g.moveTo(62, 2); g.lineTo(104, 0); g.lineTo(124, 30); g.lineTo(78, 34); g.closePath(); g.fill();
+  g.strokeStyle = BKD; g.lineWidth = 1.2; g.stroke();
+  g.strokeStyle = WH; g.lineWidth = 2; g.beginPath(); for (let k = 0; k < 3; k++) { const f = .25 + k * .25; g.moveTo(62 + (78 - 62) * f + 2, 2 + 32 * f); g.lineTo(104 + (124 - 104) * f - 2, 0 + 30 * f); } g.stroke();
+  // upper buoyancy tube
+  gr = g.createLinearGradient(0, -28, 0, 8); gr.addColorStop(0, BKH); gr.addColorStop(.4, BK2); gr.addColorStop(1, BK); g.fillStyle = gr; g.beginPath(); g.ellipse(0, -9, 104, 18, 0, 0, 7); g.fill();
+  g.strokeStyle = BKD; g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 1, 105, 10, 0, .12, Math.PI - .12); g.stroke();
+  // canopy (two tier: lower wall + dome) with seams
+  g.beginPath(); g.moveTo(-100, -14); g.bezierCurveTo(-103, -62, -82, -102, -42, -114); g.bezierCurveTo(-16, -121, 16, -121, 42, -114); g.bezierCurveTo(82, -102, 103, -62, 100, -14); g.quadraticCurveTo(0, -36, -100, -14); g.closePath();
+  gr = g.createRadialGradient(-30, -95, 8, 0, -60, 150); gr.addColorStop(0, ORH); gr.addColorStop(.3, OR); gr.addColorStop(.8, ORD); gr.addColorStop(1, OR3); g.fillStyle = gr; g.fill();
+  g.strokeStyle = OR3; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-101, -56); g.quadraticCurveTo(0, -76, 101, -56); g.stroke();
+  g.lineWidth = 1; [-62, -22, 22, 62].forEach(x => { g.beginPath(); g.moveTo(x * 1.02, -58 - Math.abs(x) * .02); g.quadraticCurveTo(x * 1.03, -40, x * 1.05, -24 + Math.abs(x) * .1); g.stroke(); });
+  g.beginPath(); g.moveTo(-70, -97); g.quadraticCurveTo(0, -112, 70, -97); g.stroke();
+  // retro-reflective tape (glows in the flare light)
+  g.save(); if (k > .05) { g.shadowColor = "#fff"; g.shadowBlur = 12 * k; } g.fillStyle = TAPE;
+  [[-8, -58, 7, 32], [40, -60, 7, 34], [82, -52, 6, 26], [-92, -50, 6, 26]].forEach(([x, y, w, h]) => { g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); });
+  [[-36, -105, 18, 5], [18, -105, 18, 5], [-72, -88, 14, 5], [58, -88, 14, 5]].forEach(([x, y, w, h]) => { g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); }); g.restore();
+  // capacity marking "20"
+  g.fillStyle = WH; g.beginPath(); g.roundRect(54, -44, 24, 18, 3); g.fill(); g.fillStyle = "#111"; g.font = "bold 14px Arial"; g.textAlign = "center"; g.fillText("20", 66, -30); g.textAlign = "left";
+  // entrance: rolled closure flap, dark opening, rim, arrows
+  g.fillStyle = ORD; g.beginPath(); g.roundRect(-84, -86, 64, 11, 5); g.fill(); g.fillStyle = ORH; g.beginPath(); g.roundRect(-82, -85, 60, 3, 2); g.fill();
+  gr = g.createLinearGradient(0, -80, 0, -16); gr.addColorStop(0, S(30, 10, 4)); gr.addColorStop(1, S(8, 3, 1)); g.fillStyle = gr; g.beginPath(); g.moveTo(-80, -20); g.lineTo(-80, -62); g.quadraticCurveTo(-78, -80, -52, -80); g.quadraticCurveTo(-26, -80, -24, -62); g.lineTo(-24, -20); g.closePath(); g.fill();
+  g.strokeStyle = ORH; g.lineWidth = 3; g.stroke();
+  g.fillStyle = WH; g.beginPath(); g.moveTo(-96, -42); g.lineTo(-86, -36); g.lineTo(-96, -30); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-10, -42); g.lineTo(-20, -36); g.lineTo(-10, -30); g.closePath(); g.fill();
+  // survivor in lifejacket sitting at the entrance
+  const pc = lit ? ["#e2581a", "#7a2008"] : ["#4a1a06", "#180600"]; let pg = g.createLinearGradient(-58, -52, -32, -20); pg.addColorStop(0, pc[0]); pg.addColorStop(1, pc[1]); g.fillStyle = pg; g.beginPath(); g.roundRect(-60, -52, 30, 42, 7); g.fill();
+  g.fillStyle = lit ? "#f0e6c8" : "#4a3a2a"; g.fillRect(-56, -40, 4, 26); g.fillRect(-38, -40, 4, 26);
+  pg = g.createRadialGradient(-47, -62, 1, -45, -60, 11); pg.addColorStop(0, lit ? "#e8a080" : "#3a2018"); pg.addColorStop(1, lit ? "#6a2a18" : "#120806"); g.fillStyle = pg; g.beginPath(); g.arc(-45, -60, 10, 0, 7); g.fill();
+  g.fillStyle = lit ? "#2a0c06" : "#0a0402"; g.beginPath(); g.arc(-45, -63, 10.5, Math.PI, 0); g.fill();
+  // lifeline (grab line) with patches along the upper tube
+  g.strokeStyle = WH; g.lineWidth = 2; g.beginPath(); for (let x = -96; x < 96; x += 24) { g.moveTo(x, -4); g.quadraticCurveTo(x + 12, 10, x + 24, -4); } g.stroke();
+  g.fillStyle = BKH; for (let x = -96; x <= 96; x += 24) { g.fillRect(x - 3, -8, 6, 7); }
+  // canopy light on top (SOLAS: lit automatically at night)
+  const lk = .6 + Math.sin(t * 2.2) * .4; gr = g.createRadialGradient(0, -123, 1, 0, -123, 26); gr.addColorStop(0, `rgba(255,255,255,${.9 * lk})`); gr.addColorStop(.3, `rgba(255,255,220,${.35 * lk})`); gr.addColorStop(1, "rgba(255,255,200,0)"); g.fillStyle = gr; g.beginPath(); g.arc(0, -123, 26, 0, 7); g.fill();
+  g.fillStyle = "#fff"; g.beginPath(); g.arc(0, -122, 4, 0, 7); g.fill(); g.fillStyle = BK2; g.fillRect(-5, -119, 10, 4);
+}
 // ============ scenes ============
 function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.height, HZ = 170, lit = ST.fire >= 5, night = true;
   let gr = g.createLinearGradient(0, 0, 0, HZ); gr.addColorStop(0, "#02040a"); gr.addColorStop(1, "#141c2c"); g.fillStyle = gr; g.fillRect(0, 0, W, HZ);
@@ -99,14 +148,9 @@ function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.h
   if (lit && ST.fire >= 6) { g.fillStyle = "#e33"; g.fillRect(sx + 10, HZ - 6, 2, 2); g.fillStyle = "#cfe"; g.font = "11px Arial"; g.fillText("ship alters course towards you (red and green sidelights visible)", sx - 60, HZ + 18); }
   else { g.fillStyle = "#8fa6ad"; g.font = "11px Arial"; g.fillText("ship lights on the horizon", sx - 20, HZ + 18); }
   // liferaft
-  const rx = 500, ry = 360, bob = Math.sin(t * 1.3) * 3; g.save(); g.translate(rx, ry + bob);
-  gr = g.createRadialGradient(-20, -50, 5, 0, -25, 90); gr.addColorStop(0, lit ? "#ff7a52" : "#7a3410"); gr.addColorStop(1, lit ? "#5a1404" : "#240a02"); g.fillStyle = gr; g.beginPath(); g.moveTo(-80, 0); g.quadraticCurveTo(-78, -84, 0, -86); g.quadraticCurveTo(78, -84, 80, 0); g.closePath(); g.fill();
-  g.fillStyle = "#0a0a0a"; g.beginPath(); g.ellipse(0, 6, 88, 15, 0, 0, 7); g.fill(); g.fillStyle = "#050302"; g.beginPath(); g.moveTo(-60, -2); g.quadraticCurveTo(-56, -50, -20, -52); g.lineTo(-20, -2); g.closePath(); g.fill();
-  const pc = lit ? ["#e2581a", "#7a2008"] : ["#4a1a06", "#180600"]; let pg = g.createLinearGradient(-52, -40, -28, -10); pg.addColorStop(0, pc[0]); pg.addColorStop(1, pc[1]); g.fillStyle = pg; g.beginPath(); g.roundRect(-54, -36, 26, 34, 6); g.fill();
-  pg = g.createRadialGradient(-44, -46, 1, -42, -44, 10); pg.addColorStop(0, lit ? "#e8a080" : "#3a2018"); pg.addColorStop(1, lit ? "#6a2a18" : "#120806"); g.fillStyle = pg; g.beginPath(); g.arc(-42, -44, 9, 0, 7); g.fill();
-  g.fillStyle = lit ? "#2a0c06" : "#0a0402"; g.beginPath(); g.arc(-42, -47, 9.5, Math.PI, 0); g.fill(); g.restore();
+  const rx = 500, ry = 360, bob = Math.sin(t * 1.3) * 3; g.save(); g.translate(rx, ry + bob); g.rotate(Math.sin(t * 1.3 + .8) * .015); drawRaft(g, lit ? 1 : 0, t); g.restore();
   // arm + flare held out on lee side
-  const hx = rx - 70, hy = ry - 40 + bob; g.strokeStyle = lit ? "#c8481a" : "#3a1606"; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(rx - 50, ry - 30 + bob); g.lineTo(hx, hy); g.stroke(); g.fillStyle = lit ? "#5a2010" : "#140804"; g.beginPath(); g.arc(hx, hy, 6, 0, 7); g.fill();
+  const hx = rx - 70, hy = ry - 40 + bob; g.strokeStyle = lit ? "#c8481a" : "#3a1606"; g.lineWidth = 9; g.lineCap = "round"; g.beginPath(); g.moveTo(rx - 50, ry - 42 + bob); g.lineTo(hx, hy); g.stroke(); g.fillStyle = lit ? "#5a2010" : "#140804"; g.beginPath(); g.arc(hx, hy, 6, 0, 7); g.fill();
   if (ST.fire >= 3) { g.save(); g.translate(hx, hy); g.rotate(-.5); g.fillStyle = lit ? "#d84a14" : "#5a2008"; g.fillRect(-5, -44, 10, 52); g.restore(); }
   const fx = hx - Math.sin(.5) * 44, fy = hy - Math.cos(.5) * 44;
   if (lit) { emit(fx, fy, -1, 6); stepPS(dt); drawPS(g, night); flame(g, fx, fy, t); g.fillStyle = "rgba(255,40,30,.08)"; g.fillRect(0, HZ, W, H - HZ); } else { stepPS(dt); drawPS(g, night); }
