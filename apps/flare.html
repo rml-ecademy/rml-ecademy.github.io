@@ -108,23 +108,28 @@ function drawRaft(g, k, t) { const lit = k > .5, LERP = (a, b) => a + (b - a) * 
   // upper buoyancy tube
   gr = g.createLinearGradient(0, -28, 0, 8); gr.addColorStop(0, BKH); gr.addColorStop(.4, BK2); gr.addColorStop(1, BK); g.fillStyle = gr; g.beginPath(); g.ellipse(0, -9, 104, 18, 0, 0, 7); g.fill();
   g.strokeStyle = BKD; g.lineWidth = 1.5; g.beginPath(); g.ellipse(0, 1, 105, 10, 0, .12, Math.PI - .12); g.stroke();
-  // canopy (two tier: lower wall + dome) with seams
-  g.beginPath(); g.moveTo(-100, -14); g.bezierCurveTo(-103, -62, -82, -102, -42, -114); g.bezierCurveTo(-16, -121, 16, -121, 42, -114); g.bezierCurveTo(82, -102, 103, -62, 100, -14); g.quadraticCurveTo(0, -36, -100, -14); g.closePath();
-  gr = g.createRadialGradient(-30, -95, 8, 0, -60, 150); gr.addColorStop(0, ORH); gr.addColorStop(.3, OR); gr.addColorStop(.8, ORD); gr.addColorStop(1, OR3); g.fillStyle = gr; g.fill();
-  g.strokeStyle = OR3; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-101, -56); g.quadraticCurveTo(0, -76, 101, -56); g.stroke();
-  g.lineWidth = 1; [-62, -22, 22, 62].forEach(x => { g.beginPath(); g.moveTo(x * 1.02, -58 - Math.abs(x) * .02); g.quadraticCurveTo(x * 1.03, -40, x * 1.05, -24 + Math.abs(x) * .1); g.stroke(); });
-  g.beginPath(); g.moveTo(-70, -97); g.quadraticCurveTo(0, -112, 70, -97); g.stroke();
+  // canopy: davit-launched raft = tent shape, inflated arches rising to the lifting point on top
+  g.beginPath(); g.moveTo(-100, -14); g.lineTo(-100, -44); g.bezierCurveTo(-92, -78, -55, -112, -16, -128); g.lineTo(16, -128); g.bezierCurveTo(55, -112, 92, -78, 100, -44); g.lineTo(100, -14); g.quadraticCurveTo(0, -36, -100, -14); g.closePath();
+  gr = g.createLinearGradient(-100, 0, 100, 0); gr.addColorStop(0, OR3); gr.addColorStop(.22, OR); gr.addColorStop(.42, ORH); gr.addColorStop(.6, OR); gr.addColorStop(1, OR3); g.fillStyle = gr; g.fill();
+  gr = g.createLinearGradient(0, -128, 0, -14); gr.addColorStop(0, "rgba(255,255,255,0)"); gr.addColorStop(.7, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.28)"); g.fillStyle = gr; g.fill();
+  // wall / tent seam and the radiating panel seams of the arches
+  g.strokeStyle = OR3; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-100, -44); g.quadraticCurveTo(0, -62, 100, -44); g.stroke();
+  g.lineWidth = 1.1; [[-58, -48, -10, -128], [-6, -56, 2, -128], [46, -52, 12, -128], [-92, -46, -14, -128], [92, -46, 14, -128]].forEach(([x0, y0, x1, y1]) => { g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2 - (x0 > 0 ? 6 : -6), (y0 + y1) / 2 + 10, x1, y1); g.stroke(); });
+  g.lineWidth = 1; [-62, -22, 22, 62].forEach(x => { g.beginPath(); g.moveTo(x * 1.03, -50 + Math.abs(x) * .04); g.lineTo(x * 1.05, -24 + Math.abs(x) * .1); g.stroke(); });
+  // lifting point on top (hook pad + ring)
+  g.fillStyle = BK2; g.beginPath(); g.roundRect(-18, -133, 36, 7, 3); g.fill(); g.strokeStyle = BKH; g.lineWidth = 3; g.beginPath(); g.arc(0, -138, 6, 0, 7); g.stroke();
   // retro-reflective tape (glows in the flare light)
   g.save(); if (k > .05) { g.shadowColor = "#fff"; g.shadowBlur = 12 * k; } g.fillStyle = TAPE;
-  [[-8, -58, 7, 32], [40, -60, 7, 34], [82, -52, 6, 26], [-92, -50, 6, 26]].forEach(([x, y, w, h]) => { g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); });
-  [[-36, -105, 18, 5], [18, -105, 18, 5], [-72, -88, 14, 5], [58, -88, 14, 5]].forEach(([x, y, w, h]) => { g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); }); g.restore();
+  [[-8, -42, 7, 22], [40, -44, 7, 24], [82, -40, 6, 20], [-92, -40, 6, 20]].forEach(([x, y, w, h]) => { g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); });
+  [[-40, -96, -.62], [12, -100, -.1], [50, -92, .55]].forEach(([x, y, r]) => { g.save(); g.translate(x, y); g.rotate(r); g.beginPath(); g.roundRect(-3, -14, 6, 28, 2); g.fill(); g.restore(); });
+  g.beginPath(); g.roundRect(-14, -126, 28, 4, 2); g.fill(); g.restore();
   // capacity marking "20"
   g.fillStyle = WH; g.beginPath(); g.roundRect(54, -44, 24, 18, 3); g.fill(); g.fillStyle = "#111"; g.font = "bold 14px Arial"; g.textAlign = "center"; g.fillText("20", 66, -30); g.textAlign = "left";
-  // entrance: rolled closure flap, dark opening, rim, arrows
-  g.fillStyle = ORD; g.beginPath(); g.roundRect(-84, -86, 64, 11, 5); g.fill(); g.fillStyle = ORH; g.beginPath(); g.roundRect(-82, -85, 60, 3, 2); g.fill();
-  gr = g.createLinearGradient(0, -80, 0, -16); gr.addColorStop(0, S(30, 10, 4)); gr.addColorStop(1, S(8, 3, 1)); g.fillStyle = gr; g.beginPath(); g.moveTo(-80, -20); g.lineTo(-80, -62); g.quadraticCurveTo(-78, -80, -52, -80); g.quadraticCurveTo(-26, -80, -24, -62); g.lineTo(-24, -20); g.closePath(); g.fill();
+  // entrance: peaked door in the tent wall, rolled-back closure flap, rim, arrows
+  gr = g.createLinearGradient(0, -92, 0, -16); gr.addColorStop(0, S(30, 10, 4)); gr.addColorStop(1, S(8, 3, 1)); g.fillStyle = gr; g.beginPath(); g.moveTo(-80, -20); g.lineTo(-80, -60); g.quadraticCurveTo(-72, -88, -50, -96); g.quadraticCurveTo(-30, -82, -24, -60); g.lineTo(-24, -20); g.closePath(); g.fill();
   g.strokeStyle = ORH; g.lineWidth = 3; g.stroke();
-  g.fillStyle = WH; g.beginPath(); g.moveTo(-96, -42); g.lineTo(-86, -36); g.lineTo(-96, -30); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-10, -42); g.lineTo(-20, -36); g.lineTo(-10, -30); g.closePath(); g.fill();
+  g.save(); g.translate(-52, -96); g.rotate(-.45); g.fillStyle = ORD; g.beginPath(); g.roundRect(-30, -6, 60, 11, 5); g.fill(); g.fillStyle = ORH; g.beginPath(); g.roundRect(-28, -5, 56, 3, 2); g.fill(); g.restore();
+  g.fillStyle = WH; g.beginPath(); g.moveTo(-96, -40); g.lineTo(-86, -34); g.lineTo(-96, -28); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-10, -40); g.lineTo(-20, -34); g.lineTo(-10, -28); g.closePath(); g.fill();
   // survivor in lifejacket sitting at the entrance
   const pc = lit ? ["#e2581a", "#7a2008"] : ["#4a1a06", "#180600"]; let pg = g.createLinearGradient(-58, -52, -32, -20); pg.addColorStop(0, pc[0]); pg.addColorStop(1, pc[1]); g.fillStyle = pg; g.beginPath(); g.roundRect(-60, -52, 30, 42, 7); g.fill();
   g.fillStyle = lit ? "#f0e6c8" : "#4a3a2a"; g.fillRect(-56, -40, 4, 26); g.fillRect(-38, -40, 4, 26);
@@ -134,8 +139,8 @@ function drawRaft(g, k, t) { const lit = k > .5, LERP = (a, b) => a + (b - a) * 
   g.strokeStyle = WH; g.lineWidth = 2; g.beginPath(); for (let x = -96; x < 96; x += 24) { g.moveTo(x, -4); g.quadraticCurveTo(x + 12, 10, x + 24, -4); } g.stroke();
   g.fillStyle = BKH; for (let x = -96; x <= 96; x += 24) { g.fillRect(x - 3, -8, 6, 7); }
   // canopy light on top (SOLAS: lit automatically at night)
-  const lk = .6 + Math.sin(t * 2.2) * .4; gr = g.createRadialGradient(0, -123, 1, 0, -123, 26); gr.addColorStop(0, `rgba(255,255,255,${.9 * lk})`); gr.addColorStop(.3, `rgba(255,255,220,${.35 * lk})`); gr.addColorStop(1, "rgba(255,255,200,0)"); g.fillStyle = gr; g.beginPath(); g.arc(0, -123, 26, 0, 7); g.fill();
-  g.fillStyle = "#fff"; g.beginPath(); g.arc(0, -122, 4, 0, 7); g.fill(); g.fillStyle = BK2; g.fillRect(-5, -119, 10, 4);
+  const lk = .6 + Math.sin(t * 2.2) * .4; gr = g.createRadialGradient(24, -124, 1, 24, -124, 26); gr.addColorStop(0, `rgba(255,255,255,${.9 * lk})`); gr.addColorStop(.3, `rgba(255,255,220,${.35 * lk})`); gr.addColorStop(1, "rgba(255,255,200,0)"); g.fillStyle = gr; g.beginPath(); g.arc(24, -124, 26, 0, 7); g.fill();
+  g.fillStyle = "#fff"; g.beginPath(); g.arc(24, -123, 4, 0, 7); g.fill(); g.fillStyle = BK2; g.fillRect(19, -120, 10, 4);
 }
 // ============ scenes ============
 function sceneUse(c, t, dt) { const g = c.getContext("2d"), W = c.width, H = c.height, HZ = 170, lit = ST.fire >= 5, night = true;
