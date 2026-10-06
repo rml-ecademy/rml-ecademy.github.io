@@ -1297,8 +1297,8 @@
           x.drawImage(echoCv, 0, 0, w, w);
           // the trace itself: bright line with a fading trail behind it
           const sa = sweepScreenAngle(sweepDeg + displayUp());
-          if (typeof x.createConicGradient === "function") { const cg = x.createConicGradient(sa - 0.9, C, C); cg.addColorStop(0, "rgba(83,255,162,0)"); cg.addColorStop(0.11, "rgba(83,255,162,.14)"); cg.addColorStop(0.143, "rgba(120,255,190,.32)"); cg.addColorStop(0.1431, "rgba(0,0,0,0)"); cg.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = cg; x.beginPath(); x.moveTo(C, C); x.arc(C, C, rad, sa - 0.9, sa); x.closePath(); x.fill(); }
-          x.strokeStyle = "rgba(170,255,210,.9)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(C, C); x.lineTo(C + Math.cos(sa) * rad, C + Math.sin(sa) * rad); x.stroke(); x.lineWidth = 1;
+          if (typeof x.createConicGradient === "function") { const cg = x.createConicGradient(sa - 0.9, C, C); cg.addColorStop(0, "rgba(83,255,162,0)"); cg.addColorStop(0.11, "rgba(83,255,162,.05)"); cg.addColorStop(0.143, "rgba(120,255,190,.13)"); cg.addColorStop(0.1431, "rgba(0,0,0,0)"); cg.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = cg; x.beginPath(); x.moveTo(C, C); x.arc(C, C, rad, sa - 0.9, sa); x.closePath(); x.fill(); }
+          x.strokeStyle = "rgba(170,255,210,.45)"; x.lineWidth = 1; x.beginPath(); x.moveTo(C, C); x.lineTo(C + Math.cos(sa) * rad, C + Math.sin(sa) * rad); x.stroke(); x.lineWidth = 1;
         }
         x.strokeStyle = "rgba(83,255,162,.2)";
         for (let i = 1; i <= 4; i++) {
