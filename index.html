@@ -1255,6 +1255,13 @@
 <div class="subtopics">
 <button class="topic-btn has-sim" data-app="stab" data-start="b:1">Trim &amp; Stability · Righting Lever (GZ) Trainer <span class="sim-tag">▶ LIVE SIM</span></button>
 <button class="topic-btn has-sim sm" data-app="stab" data-start="b:1">Stability Basics · K, B, G, M in Plain Words <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim" data-app="mgbk" data-start="low">MGBK Scenarios · What Happens to M, G, B, K When You Load, Ballast, Shift <span class="sim-tag">▶ LIVE SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="ballast">Ballast / Deballast · Where G Goes (MGBK) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="fse">Free Surface Effect · Slack Tank (MGBK) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="stiff">Stiff vs Tender · The Roll Tells You (MGBK) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="equil">Equilibrium · Stable, Neutral, Unstable (MGBK) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="loll">Angle of Loll · What It Looks Like and the Fix (MGBK) <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="mgbk" data-start="lift">Heavy Lift · G Jumps to the Crane Head (MGBK) <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn has-sim sm" data-app="stab" data-start="k">Reading the Loading Computer Printout (K) <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn has-sim sm" data-app="stab" data-start="u:2">GM / GZ Fundamentals (U) <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn has-sim sm" data-app="stab" data-start="u:5">Free Surface Effect (U) <span class="sim-tag">▶ SIM</span></button>
@@ -1575,7 +1582,7 @@ flare: { title: 'Red Hand Flare Training', src: 'app-flare', file: 'ECADEMY_HAND
 lsa: { title: 'Life-Saving Appliances Training', src: 'app-lsa', file: 'ECADEMY_LSA_TRAINER.html', crumb: 'Third Officer · LSA ·' },
 epirb: { title: 'EPIRB Training', src: 'app-epirb', file: 'ECADEMY_EPIRB_TRAINING.html', crumb: 'GMDSS · LSA ·' },
 sart: { title: 'SART Training', src: 'app-sart', file: 'ECADEMY_SART_TRAINING.html', crumb: 'GMDSS · LSA ·' },
-wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' } };
+wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' } };
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
