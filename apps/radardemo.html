@@ -725,6 +725,11 @@
 </footer>
 <script>
       const PPI_R = 0.492;   // PPI radius as a fraction of the canvas (was 0.475)
+      /* ---- antenna sweep & phosphor echo layer ---- */
+      const SWEEP_RPM = 24;                      // X-band scanner ~24 rpm (one rotation every 2.5 s)
+      const echoCv = document.createElement("canvas"); let ex = echoCv.getContext("2d");
+      let sweepDeg = 0, sweepLastT = performance.now(), echoKey = "";
+      function sweepScreenAngle(brgDeg){ return (brgDeg - displayUp() - 90) * D; }
       const D = Math.PI / 180,
         V = (c, s) => ({
           x: (Math.sin(c * D) * s) / 3600,
@@ -1216,6 +1221,36 @@
         updateGuardAlarm();
         if (guardPending()) playAlarmTone();
       }, 1000);
+      /* paint everything the radar actually "sees" (clutter, rain, land, targets, SART) onto the phosphor layer; the caller clips to the swept wedge */
+      function paintEchoes(x, C, rad, range, px, gain, sea, rain, a0, a1) {
+        const rot = -displayUp() * D, map = (a, b) => { const q = a * Math.cos(rot) + b * Math.sin(rot), v = -a * Math.sin(rot) + b * Math.cos(rot); return { x: C + q * px, y: C - v * px }; };
+        const rm = (X, Y) => map(X - ownPos.x, Y - ownPos.y);
+        const inWedge = (sx, sy) => { let a = Math.atan2(sy - C, sx - C); let da = ((a - a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); return da <= (a1 - a0) + 0.35; };
+        // sea clutter: dense speckle near the centre, thinned by A/C SEA and IR, random each pass so it "boils"
+        const seaLvl = Math.max(0, 1 - sea / 100), mir = 1 + $("mir").selectedIndex * 0.45; const n = Math.round(260 * seaLvl / mir * (a1 - a0) / (2 * Math.PI) * 12);
+        x.fillStyle = "rgba(80,255,140,.55)";
+        for (let i = 0; i < n; i++) { const a = a0 + Math.random() * (a1 - a0), r = rad * (0.02 + Math.pow(Math.random(), 2.4) * 0.30 * seaLvl); x.globalAlpha = 0.25 + Math.random() * 0.5; x.fillRect(C + Math.cos(a) * r, C + Math.sin(a) * r, 1.5 + Math.random() * 2, 1.2); }
+        x.globalAlpha = 1;
+        // rain cell (screen-fixed cell for the exercise), speckled, suppressed by A/C RAIN
+        const rainLvl = Math.max(0, 1 - rain / 100); if (rainLvl > 0.15) { const cx = C + rad * 0.3, cy = C - rad * 0.25; x.fillStyle = "rgba(85,255,148," + (0.35 * rainLvl) + ")"; for (let i = 0; i < 60; i++) { const t = Math.random() * 7, rr = Math.sqrt(Math.random()); const sx = cx + Math.cos(t) * rad * 0.2 * rr, sy = cy + Math.sin(t) * rad * 0.33 * rr; if (inWedge(sx, sy)) x.fillRect(sx, sy, 2, 2); } }
+        if (scenario === "coastal") { x.save(); x.translate(C, C); x.rotate(-displayUp() * D); x.translate(-C, -C); x.strokeStyle = "rgba(83,255,140,.75)"; x.lineWidth = 5; x.beginPath(); x.moveTo(C - rad * 0.9, C - rad * 0.3); x.bezierCurveTo(C - rad * 0.65, C - rad * 0.55, C - rad * 0.55, C - rad * 0.9, C - rad * 0.35, C - rad); x.stroke(); x.restore(); }
+        const gk = Math.max(.15, Math.min(1, gain / 80));
+        LAND.forEach(poly => {
+          x.beginPath(); poly.pts.forEach(([X, Y], i) => { const q = rm(X, Y); i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y); }); x.closePath();
+          x.save(); x.shadowColor = "rgba(255,200,40,.9)"; x.shadowBlur = 10; x.fillStyle = `rgba(230,180,20,${0.30 * gk})`; x.fill(); x.strokeStyle = `rgba(255,214,60,${0.55 * gk})`; x.lineWidth = 3; x.lineJoin = "round"; x.stroke(); x.restore();
+          x.fillStyle = `rgba(255,222,90,${0.75 * gk})`; poly.speck.forEach(([X, Y]) => { const q = rm(X, Y); x.fillRect(q.x - 1, q.y - 1, 2, 2); });
+        });
+        drawSART(x, map, range, px, gain, sea, rain);
+        // targets: echo blob stretched in bearing (beamwidth) and range (pulse length), brightness by gain/strength, a little noise
+        const bw = (3 + $("mes").selectedIndex) * 0.9, pl = 1 + $("mpl").selectedIndex * 1.2;
+        targets.forEach((t) => {
+          if (Math.hypot(t.x, t.y) > range || (gain / 100) * t.strength <= (radarBand === "S" ? sea / 400 + rain / 900 : sea / 180 + rain / 300)) return;
+          const p = map(t.x, t.y); const ang = Math.atan2(p.y - C, p.x - C); const dist = Math.hypot(p.x - C, p.y - C);
+          const along = pl + 1.5 + Math.min(4, t.strength * 2), across = bw + dist * 0.012 + t.strength;   // echoes smear in bearing with range
+          x.save(); x.translate(p.x, p.y); x.rotate(ang); x.fillStyle = "#7dffac"; x.shadowColor = "#52ff91"; x.shadowBlur = 6; x.globalAlpha = Math.min(1, 0.55 + t.strength * 0.5 * gain / 60);
+          x.beginPath(); x.ellipse(0, 0, along, across, 0, 0, 7); x.fill(); x.globalAlpha = 0.45; x.fillRect(-along, -across * 0.3, along * 0.6, across * 0.6 * Math.random()); x.restore(); x.globalAlpha = 1; x.shadowBlur = 0;
+        });
+      }
       function draw() {
         let c = $("ppi"),
           x = c.getContext("2d"),
@@ -1245,6 +1280,26 @@
         g.addColorStop(1, "#020b08");
         x.fillStyle = g;
         x.fillRect(0, 0, w, w);
+        /* ---- rotating sweep: echoes are painted only inside the wedge the antenna has just swept, on a persistent phosphor layer ---- */
+        { const now = performance.now(); let dt = Math.min(0.25, (now - sweepLastT) / 1000); sweepLastT = now;
+          const key = w + "|" + range + "|" + orient + "|" + (radarBand || "") + "|" + Math.round(displayUp());
+          if (echoCv.width !== c.width || echoKey !== key) { echoCv.width = c.width; echoCv.height = c.height; ex = echoCv.getContext("2d"); echoKey = key; }
+          ex.setTransform(d, 0, 0, d, 0, 0);
+          if (running) {
+            // phosphor decay: ~45 % brightness left after one full rotation
+            ex.globalCompositeOperation = "destination-out"; ex.fillStyle = "rgba(0,0,0," + Math.min(0.2, 0.32 * dt) + ")"; ex.fillRect(0, 0, w, w); ex.globalCompositeOperation = "source-over";
+            const prev = sweepDeg; sweepDeg = (sweepDeg + dt * SWEEP_RPM * 6) % 360; let span = (sweepDeg - prev + 360) % 360; if (span <= 0) span = 0.01;
+            const a0 = sweepScreenAngle(prev + displayUp()), a1 = a0 + span * D;   // sweep angle is relative to the display (screen) frame
+            ex.save(); ex.beginPath(); ex.moveTo(C, C); ex.arc(C, C, rad + 2, a0 - 0.01, a1 + 0.01); ex.closePath(); ex.clip();
+            paintEchoes(ex, C, rad, range, px, gain, sea, rain, a0, a1);
+            ex.restore();
+          }
+          x.drawImage(echoCv, 0, 0, w, w);
+          // the trace itself: bright line with a fading trail behind it
+          const sa = sweepScreenAngle(sweepDeg + displayUp());
+          if (typeof x.createConicGradient === "function") { const cg = x.createConicGradient(sa - 0.9, C, C); cg.addColorStop(0, "rgba(83,255,162,0)"); cg.addColorStop(0.11, "rgba(83,255,162,.14)"); cg.addColorStop(0.143, "rgba(120,255,190,.32)"); cg.addColorStop(0.1431, "rgba(0,0,0,0)"); cg.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = cg; x.beginPath(); x.moveTo(C, C); x.arc(C, C, rad, sa - 0.9, sa); x.closePath(); x.fill(); }
+          x.strokeStyle = "rgba(170,255,210,.9)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(C, C); x.lineTo(C + Math.cos(sa) * rad, C + Math.sin(sa) * rad); x.stroke(); x.lineWidth = 1;
+        }
         x.strokeStyle = "rgba(83,255,162,.2)";
         for (let i = 1; i <= 4; i++) {
           x.beginPath();
@@ -1336,43 +1391,6 @@
           x.fillText("GZ1 ARC " + Math.round(sweep) + "°", C + Math.cos(mid) * (outer + 12), C + Math.sin(mid) * (outer + 12));
           x.lineWidth = 1;
         }
-        for (let i = 0; i < (sea * 2) / (1 + $("mir").selectedIndex * 0.45); i++) {
-          let a = ((i * 137.5 + time) % 360) * D,
-            r = (0.04 + ((i * 29) % 100) / 450) * rad;
-          x.fillStyle = "rgba(80,255,140,.12)";
-          x.fillRect(C + Math.sin(a) * r, C - Math.cos(a) * r, 2, 2);
-        }
-        if (rain > 15) {
-          x.fillStyle = "rgba(85,255,148," + rain / 700 + ")";
-          x.beginPath();
-          x.ellipse(
-            C + rad * 0.3,
-            C - rad * 0.25,
-            rad * 0.2,
-            rad * 0.33,
-            0.5,
-            0,
-            7,
-          );
-          x.fill();
-        }
-        if (scenario === "coastal") {
-          x.save(); x.translate(C,C); x.rotate(-displayUp()*D); x.translate(-C,-C);
-          x.strokeStyle = "rgba(83,255,140,.55)";
-          x.lineWidth = 5;
-          x.beginPath();
-          x.moveTo(C - rad * 0.9, C - rad * 0.3);
-          x.bezierCurveTo(
-            C - rad * 0.65,
-            C - rad * 0.55,
-            C - rad * 0.55,
-            C - rad * 0.9,
-            C - rad * 0.35,
-            C - rad,
-          );
-          x.stroke();
-          x.restore();
-        }
         let rot = -displayUp() * D,
           map = (a, b) => {
             let q = a * Math.cos(rot) + b * Math.sin(rot),
@@ -1400,13 +1418,6 @@
             });
           }
           MAPL.forEach(seg => { x.strokeStyle = "rgba(190,110,230,.55)"; x.lineWidth = 1; x.setLineDash([10, 7]); x.beginPath(); seg.forEach(([X, Y], i) => { const q = rm(X, Y); i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y); }); x.stroke(); x.setLineDash([]); });
-          LAND.forEach(poly => {
-            x.beginPath(); poly.pts.forEach(([X, Y], i) => { const q = rm(X, Y); i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y); }); x.closePath();
-            x.save(); x.shadowColor = "rgba(255,200,40,.9)"; x.shadowBlur = 10;
-            x.fillStyle = `rgba(230,180,20,${0.30 * gk})`; x.fill();
-            x.strokeStyle = `rgba(255,214,60,${0.55 * gk})`; x.lineWidth = 3; x.lineJoin = "round"; x.stroke(); x.restore();
-            x.fillStyle = `rgba(255,222,90,${0.75 * gk})`; poly.speck.forEach(([X, Y]) => { const q = rm(X, Y); x.fillRect(q.x - 1, q.y - 1, 2, 2); });
-          });
           UL.forEach((l, li) => {
             const b = l.brg * D, u = {x:Math.sin(b), y:Math.cos(b)}, n = {x:Math.cos(b), y:-Math.sin(b)}, R = range * 1.6;
             const a1 = map(n.x * l.off - u.x * R, n.y * l.off - u.y * R), a2 = map(n.x * l.off + u.x * R, n.y * l.off + u.y * R);
@@ -1416,7 +1427,6 @@
             x.fillStyle = x.strokeStyle; x.textAlign = l.off >= 0 ? "left" : "right"; x.fillText(l.label, lp.x + (l.off >= 0 ? 6 : -6), lp.y); x.textAlign = "center";
           });
         }
-        drawSART(x, map, range, px, gain, sea, rain);
         targets.forEach((t) => {
           let p = map(t.x, t.y);
           if (
@@ -1431,13 +1441,6 @@
                 "rgba(82,255,145," + ((i + 1) / (a.length + 1)) * 0.35 + ")";
               x.fillRect(z.x - 1, z.y - 1, 3, 3);
             });
-          x.fillStyle = "#7dffac";
-          x.shadowColor = "#52ff91";
-          x.shadowBlur = 8;
-          x.beginPath();
-          x.arc(p.x, p.y, 3 + $("mes").selectedIndex + $("mpl").selectedIndex * 0.7, 0, 7);
-          x.fill();
-          x.shadowBlur = 0;
           if (t.tracked) {
             let a = A(t);
             x.strokeStyle =
