@@ -1429,11 +1429,14 @@
 <details class="menu-group">
 <summary>Ship Handling &amp; Pilotage</summary>
 <div class="subtopics">
-<button class="topic-btn">Wind / Current Effects</button>
+<button class="topic-btn has-sim" data-app="dock" data-start="calm">Berthing with Tugs — Ship Handling Simulator <span class="sim-tag">▶ LIVE SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="calm">Berthing / Unberthing · calm water, starboard side to <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="onshore">Wind / Current Effects · onshore wind 20 kn <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="offshore">Tugs &amp; Towage · offshore wind 25 kn, two tugs pushing <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="current">Stemming the current · river berth 1.5 kn <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="portside">Turning / Stopping Characteristics · port side to, astern swing <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="dock" data-start="unberth">Unberthing · single up, let go, tugs pull off <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn">Shallow Water / Bank Effect / Squat</button>
-<button class="topic-btn">Turning / Stopping Characteristics</button>
-<button class="topic-btn">Tugs &amp; Towage</button>
-<button class="topic-btn">Berthing / Unberthing</button>
 <button class="topic-btn">Anchoring / Dragging Anchor</button>
 <button class="topic-btn">Pilot Transfer Arrangement</button>
 <button class="topic-btn">Emergency Manoeuvres</button>
@@ -1582,7 +1585,7 @@ flare: { title: 'Red Hand Flare Training', src: 'app-flare', file: 'ECADEMY_HAND
 lsa: { title: 'Life-Saving Appliances Training', src: 'app-lsa', file: 'ECADEMY_LSA_TRAINER.html', crumb: 'Third Officer · LSA ·' },
 epirb: { title: 'EPIRB Training', src: 'app-epirb', file: 'ECADEMY_EPIRB_TRAINING.html', crumb: 'GMDSS · LSA ·' },
 sart: { title: 'SART Training', src: 'app-sart', file: 'ECADEMY_SART_TRAINING.html', crumb: 'GMDSS · LSA ·' },
-wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' } };
+wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' }, dock: { title: 'Ship Handling · Berthing with Two Tugs', src: 'app-dock', crumb: 'Master · Ship Handling ·' } };
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
