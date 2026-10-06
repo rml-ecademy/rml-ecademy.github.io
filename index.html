@@ -309,7 +309,7 @@
       overflow:hidden;
       border-radius:50%;
       background-color:#053c70;
-      background-image:url('assets/earth.jpg');
+      background-image:url('assets/earth.webp');
       background-repeat:repeat-x;
       background-position:0 50%;
       background-size:auto 100%;
@@ -868,6 +868,8 @@
     .app-loading{position:absolute;inset:46px 0 0;display:grid;place-items:center;color:var(--muted);font-size:.9rem;pointer-events:none}
     @media (max-width:640px){.app-crumb span.hide-sm{display:none}}
   </style>
+<link rel="preconnect" href="https://eazrfhrbhftskcrffjun.supabase.co" crossorigin>
+<link rel="preload" href="assets/supabase-2.117.2.js" as="script">
 </head>
 <body>
 <div class="site-shell">
@@ -1021,7 +1023,7 @@
 <button aria-expanded="false" class="rank-main" type="button">
 <span class="rank-arrow">+</span>
 <span aria-hidden="true" class="rank-watermark rank-photo safety-photo">
-<img alt="" src="assets/img1.webp"/>
+<img alt="" src="assets/img1.webp" loading="lazy" decoding="async"/>
 </span>
 <div class="rank-no">DECK 01</div>
 <h3>Third Officer</h3>
@@ -1114,7 +1116,7 @@
 <button aria-expanded="false" class="rank-main" type="button">
 <span class="rank-arrow">+</span>
 <span aria-hidden="true" class="rank-watermark rank-photo chart-photo">
-<img alt="" src="assets/img2.webp"/>
+<img alt="" src="assets/img2.webp" loading="lazy" decoding="async"/>
 </span>
 <div class="rank-no">DECK 02</div>
 <h3>Second Officer</h3>
@@ -1200,7 +1202,7 @@
 <button aria-expanded="false" class="rank-main" type="button">
 <span class="rank-arrow">+</span>
 <span aria-hidden="true" class="rank-watermark rank-photo cargo-photo">
-<img alt="" src="assets/img3.webp"/>
+<img alt="" src="assets/img3.webp" loading="lazy" decoding="async"/>
 </span>
 <div class="rank-no">DECK 03</div>
 <h3>Chief Officer</h3>
@@ -1326,7 +1328,7 @@
 <button aria-expanded="false" class="rank-main" type="button">
 <span class="rank-arrow">+</span>
 <span aria-hidden="true" class="rank-watermark rank-photo master-photo">
-<img alt="" src="assets/img4.webp"/>
+<img alt="" src="assets/img4.webp" loading="lazy" decoding="async"/>
 </span>
 <div class="rank-no">COMMAND DECK</div>
 <h3>Master</h3>
