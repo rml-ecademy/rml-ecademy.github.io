@@ -1342,9 +1342,7 @@
         }
         x.translate(OFF.dx, OFF.dy);   // from here on (C,C) is OWN SHIP
         if (ringCount) { const nR = ringCount, maxR = offCentre ? Math.ceil(nR * 1.8) : nR; x.strokeStyle = "rgba(83,255,162,.22)"; x.lineWidth = 1;
-          for (let i = 1; i <= maxR; i++) { const rr = (rad * i) / nR; x.beginPath(); x.arc(C, C, rr, 0, 7); x.stroke();
-            // ring range label on the 045 (screen) radial
-            const lab = (range * i / nR); const t = -Math.PI / 4; x.fillStyle = "rgba(140,255,190,.75)"; x.font = "10px monospace"; x.textAlign = "left"; x.fillText((lab < 1 ? lab.toFixed(2) : lab % 1 ? lab.toFixed(1) : lab) + " NM", C + Math.cos(t) * rr + 3, C + Math.sin(t) * rr - 3); } x.textAlign = "center"; }
+          for (let i = 1; i <= maxR; i++) { const rr = (rad * i) / nR; x.beginPath(); x.arc(C, C, rr, 0, 7); x.stroke(); } }
         let h = (o.c - displayUp()) * D;
         x.strokeStyle = "#f1db4f";
         x.beginPath();
