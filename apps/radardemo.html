@@ -610,7 +610,7 @@
 <div class="group">
 <h3>PRESENTATION</h3>
 <div class="buttons">
-<button id="orient">NORTH UP</button><button id="stabilize">GROUND STAB</button><button id="vector">REL VECTOR</button><button id="trail">TRAILS ON</button><button id="offc" title="Shift own ship aft on the PPI to see 1.6× further ahead">OFF CENTRE</button><button class="active" id="bandbtn" title="X-band 3 cm / S-band 10 cm">X-BAND</button><button class="active" id="guard">GUARD ON</button><button id="setguard">SET GUARD</button><button id="menu2">MENU</button><button id="reset">RESET</button>
+<button id="orient">NORTH UP</button><button id="stabilize">GROUND STAB</button><button id="vector">REL VECTOR</button><button id="trail">TRAILS ON</button><button id="offc" title="Shift own ship on the PPI: press, then click where own ship should be">OFF CENTRE</button><button class="active" id="ringsbtn" title="Range rings: 6 · 4 · 8 · off">RINGS 6</button><button class="active" id="bandbtn" title="X-band 3 cm / S-band 10 cm">X-BAND</button><button class="active" id="guard">GUARD ON</button><button id="setguard">SET GUARD</button><button id="menu2">MENU</button><button id="reset">RESET</button>
 </div>
 </div>
 </div>
@@ -739,6 +739,7 @@
       const SWEEP_RPM = 24;                      // X-band scanner ~24 rpm (one rotation every 2.5 s)
       const echoCv = document.createElement("canvas"); let ex = echoCv.getContext("2d");
       let sweepDeg = 0, sweepLastT = performance.now(), echoKey = "";
+      let ringCount = 6;
       let offCentre = false, offPlace = false, offFrac = {x:0, y:0};   // offset of own ship from the PPI centre, as a fraction of the radius (screen-fixed, like a real set)
       function offVec(rad){ if(!offCentre) return {dx:0,dy:0}; return {dx:offFrac.x*rad, dy:offFrac.y*rad}; }
 
@@ -1340,8 +1341,10 @@
           );
         }
         x.translate(OFF.dx, OFF.dy);   // from here on (C,C) is OWN SHIP
-        x.strokeStyle = "rgba(83,255,162,.2)";
-        for (let i = 1; i <= 6; i++) { x.beginPath(); x.arc(C, C, (rad * i) / 4, 0, 7); x.stroke(); }
+        if (ringCount) { const nR = ringCount, maxR = offCentre ? Math.ceil(nR * 1.8) : nR; x.strokeStyle = "rgba(83,255,162,.22)"; x.lineWidth = 1;
+          for (let i = 1; i <= maxR; i++) { const rr = (rad * i) / nR; x.beginPath(); x.arc(C, C, rr, 0, 7); x.stroke();
+            // ring range label on the 045 (screen) radial
+            const lab = (range * i / nR); const t = -Math.PI / 4; x.fillStyle = "rgba(140,255,190,.75)"; x.font = "10px monospace"; x.textAlign = "left"; x.fillText((lab < 1 ? lab.toFixed(2) : lab % 1 ? lab.toFixed(1) : lab) + " NM", C + Math.cos(t) * rr + 3, C + Math.sin(t) * rr - 3); } x.textAlign = "center"; }
         let h = (o.c - displayUp()) * D;
         x.strokeStyle = "#f1db4f";
         x.beginPath();
@@ -1719,6 +1722,7 @@
         $("vector").textContent = vector + " VECTOR";
         updateModes();
       };
+      $("ringsbtn").onclick = () => { ringCount = ({6:4, 4:8, 8:0, 0:6})[ringCount]; $("ringsbtn").textContent = ringCount ? "RINGS " + ringCount : "RINGS OFF"; $("ringsbtn").classList.toggle("active", ringCount > 0); };
       $("offc").onclick = () => { if (offCentre && !offPlace) { offCentre = false; offPlace = false; } else { offPlace = true; } $("offc").classList.toggle("active", offCentre || offPlace); $("offc").textContent = offPlace ? "OFF CENTRE · CLICK PPI" : offCentre ? "OFF CENTRE ON" : "OFF CENTRE"; echoKey = ""; if (offPlace) $("msg").textContent = "OFF CENTRE: click on the PPI where you want own ship to be (up to 75 % of the radius). Press OFF CENTRE again to return to centre."; };
       $("trail").onclick = () => {
         showTrails = !showTrails;
