@@ -401,7 +401,15 @@
 
       /* ===== Console layout: controls in side columns of the radar display ===== */
       .radar{display:grid;grid-template-columns:185px minmax(0,1fr) 185px;align-items:start;gap:8px;padding:6px}
-      .ppiwrap{display:flex;justify-content:center;align-items:flex-start;min-width:0;position:relative}
+      .ppiwrap{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;min-width:0;position:relative}
+      #bridgeWrap{flex:0 0 100%;width:100%;position:relative;margin-bottom:8px;background:#000;border:1px solid #2d4a3e;border-radius:6px;overflow:hidden;aspect-ratio:21/9;max-height:52vh}
+      #bridgeWrap[hidden]{display:none}
+      #bridge3d{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+      #bridgeHud{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+      .bctl{position:absolute;top:8px;right:8px;display:flex;gap:5px;pointer-events:auto}
+      .bctl button,.bctl select{font:700 10px monospace;letter-spacing:.06em;padding:5px 8px;background:rgba(6,20,14,.75);color:#9fe8c0;border:1px solid #3c6b55;border-radius:4px;cursor:pointer}
+      .bctl button.on{background:#2bd37f;color:#061a10;border-color:#2bd37f}
+      .btag{position:absolute;left:10px;bottom:8px;font:700 10px monospace;color:#9fe8c0;letter-spacing:.06em;background:rgba(6,20,14,.6);padding:4px 7px;border-radius:4px}
       .imminent{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:12px;padding:10px 14px;background:#b3160f;border:2px solid #ffd0c8;color:#fff;font:700 15px/1.3 monospace;letter-spacing:.04em;box-shadow:0 0 30px rgba(255,40,30,.8);animation:blink .6s steps(2) infinite;max-width:92%}
       .imminent[hidden]{display:none}
       .imminent.acked{animation:none;background:#5a1f1a}
@@ -542,7 +550,7 @@
 <div class="brand"><b>ECADEMY</b> · RADAR / ARPA TRAINER</div>
 <div class="status">
 <i class="lamp"></i> TX · <b id="bandlbl">X-BAND 9410 MHz (3 cm)</b> · UNOFFICIAL TRAINING SIMULATOR
-        <span aria-label="PPI size" class="seg" id="ppisize" role="group"><button data-z="fit">FIT</button><button data-z="large">LARGE</button><button data-z="max">MAX</button></span><button id="fsbtn" title="Use the whole screen">FULL SCREEN</button><button id="menubtn" style="margin-left:6px">MENU</button>
+        <span aria-label="PPI size" class="seg" id="ppisize" role="group"><button data-z="fit">FIT</button><button data-z="large">LARGE</button><button data-z="max">MAX</button></span><button id="bridgebtn" title="3D view from the bridge, synced with the radar picture">BRIDGE VIEW</button><button id="fsbtn" title="Use the whole screen">FULL SCREEN</button><button id="menubtn" style="margin-left:6px">MENU</button>
 </div>
 </header>
 <main class="app">
@@ -606,7 +614,9 @@
 </div>
 </div>
 </div>
-<div class="ppiwrap"><div class="imminent" hidden="" id="imminent" role="alert"><span id="imtext"></span><button id="imack" type="button">ACK</button></div><canvas id="ppi"></canvas>
+<div class="ppiwrap"><div hidden="" id="bridgeWrap"><canvas id="bridge3d"></canvas><canvas id="bridgeHud"></canvas>
+<div class="bctl"><button class="on" id="bDay">DAY</button><button id="bNight">NIGHT</button><select id="bSea"><option value="0">SEA 0 · calm</option><option value="1">SEA 1</option><option selected="" value="2">SEA 2</option><option value="3">SEA 3</option><option value="4">SEA 4</option><option value="5">SEA 5</option><option value="6">SEA 6 · rough</option></select><button id="bBinoc">BINOC</button><button id="bCentre">AHEAD</button><button id="bClose">✕</button></div>
+<div class="btag" id="bTag">BRIDGE VIEW · drag to look around · targets as seen from the conn</div></div><div class="imminent" hidden="" id="imminent" role="alert"><span id="imtext"></span><button id="imack" type="button">ACK</button></div><canvas id="ppi"></canvas>
 <div class="ppibelow">
 <div class="pibox" hidden="" id="pibox"></div>
 
@@ -2270,6 +2280,95 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
       load("open");
       draw();
       if (false) setTimeout(() => { try { if (!SART) $("sartbtn").click(); const b = $("sartbox"); if (b && b.scrollIntoView) b.scrollIntoView({block:"nearest"}); } catch (e) {} }, 700);
-    </script>
+    
+      /* ============================ BRIDGE VIEW · 3D (Three.js) ============================ */
+      const BRIDGE = (() => {
+        const NM = 1852; let on=false, ready=false, loading=false, renderer, scene, camera, seaMesh, seaMat, hullGroup, tgtGroup, tmesh={}, lookYaw=0, binoc=false, night=false, seaState=2, drag=null, sun, hemi, skyMat, fogDay, t0=performance.now();
+        const W=()=>$("bridge3d");
+        function loadLib(cb){ if(window.THREE) return cb(); if(loading) return; loading=true; const tryUrl=(u,next)=>{ const sc=document.createElement("script"); sc.src=u; sc.onload=()=>{loading=false;cb();}; sc.onerror=next; document.head.appendChild(sc); };
+          tryUrl("https://ecademymaritime.com/assets/three.min.js", ()=>tryUrl("../assets/three.min.js", ()=>{ loading=false; $("bTag").textContent="3D library could not be loaded — internet connection needed for the bridge view."; })); }
+        function hash(str){ let h=0; for(const ch of String(str)) h=(h*31+ch.charCodeAt(0))|0; return Math.abs(h); }
+        function init(){ const T=window.THREE; const cv=W(); renderer=new T.WebGLRenderer({canvas:cv,antialias:true}); renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));
+          scene=new T.Scene(); camera=new T.PerspectiveCamera(55, 21/9, 1, 40000);
+          hemi=new T.HemisphereLight(0xbfd8ff,0x1a2a33,0.9); scene.add(hemi); sun=new T.DirectionalLight(0xfff1d6,1.1); sun.position.set(-3000,2500,-4000); scene.add(sun);
+          // sky dome (gradient shader)
+          skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{top:{value:new T.Color(0x2f6fb5)},hor:{value:new T.Color(0xcfe3f2)},night:{value:0}},
+            vertexShader:"varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+            fragmentShader:"uniform vec3 top; uniform vec3 hor; uniform float night; varying vec3 vP; void main(){ float h=normalize(vP).y; float t=smoothstep(-0.02,0.5,h); vec3 c=mix(hor,top,t); gl_FragColor=vec4(c,1.0); }"});
+          scene.add(new T.Mesh(new T.SphereGeometry(30000,32,16),skyMat));
+          // sea: Gerstner waves in the vertex shader
+          const geo=new T.PlaneGeometry(16000,16000,300,300); geo.rotateX(-Math.PI/2);
+          seaMat=new T.ShaderMaterial({uniforms:{time:{value:0},amp:{value:1},sunDir:{value:new T.Vector3(-0.5,0.6,-0.7).normalize()},deep:{value:new T.Color(0x0b3a52)},shallow:{value:new T.Color(0x1f6f8a)},sky:{value:new T.Color(0xcfe3f2)},fogC:{value:new T.Color(0xcfe3f2)},fogD:{value:0.00012},night:{value:0}},
+            vertexShader:`uniform float time; uniform float amp; varying vec3 vN; varying vec3 vW; varying float vH;
+              vec3 gerst(vec2 p, vec2 dir, float steep, float len, float speed, float t, inout vec3 nrm){ float k=6.28318/len; float c=sqrt(9.81/k)*speed; vec2 d=normalize(dir); float f=k*(dot(d,p)-c*t); float a=steep/k; nrm.x-=d.x*steep*cos(f); nrm.z-=d.y*steep*cos(f); nrm.y-=steep*sin(f); return vec3(d.x*a*cos(f), a*sin(f), d.y*a*cos(f)); }
+              void main(){ vec3 p=position; vec3 n=vec3(0.0,1.0,0.0); vec3 o=vec3(0.0);
+                o+=gerst(p.xz, vec2(1.0,0.35), 0.18*amp, 60.0, 1.0, time, n); o+=gerst(p.xz, vec2(0.7,-0.6), 0.14*amp, 32.0, 1.0, time, n); o+=gerst(p.xz, vec2(-0.3,1.0), 0.10*amp, 18.0, 1.1, time, n); o+=gerst(p.xz, vec2(0.9,0.9), 0.08*amp, 9.0, 1.2, time, n); o+=gerst(p.xz, vec2(-0.8,0.2), 0.05*amp, 4.5, 1.3, time, n);
+                p+=o; vH=o.y; vN=normalize(n); vW=(modelMatrix*vec4(p,1.0)).xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0); }`,
+            fragmentShader:`uniform vec3 sunDir; uniform vec3 deep; uniform vec3 shallow; uniform vec3 sky; uniform vec3 fogC; uniform float fogD; uniform float night; varying vec3 vN; varying vec3 vW; varying float vH;
+              void main(){ vec3 V=normalize(cameraPosition-vW); vec3 N=normalize(vN); float fres=pow(1.0-max(dot(N,V),0.0),3.0); vec3 base=mix(deep,shallow,clamp(vH*0.25+0.5,0.0,1.0)); float diff=max(dot(N,sunDir),0.0); vec3 H=normalize(sunDir+V); float spec=pow(max(dot(N,H),0.0),180.0)*(1.0-night*0.85); vec3 c=base*(0.35+0.75*diff)+sky*fres*0.8+vec3(1.0,0.95,0.85)*spec*1.2; float d=length(cameraPosition-vW); float f=1.0-exp(-d*fogD); c=mix(c,fogC,f); gl_FragColor=vec4(c,1.0); }`});
+          seaMesh=new T.Mesh(geo,seaMat); scene.add(seaMesh);
+          buildOwnShip(T); tgtGroup=new T.Group(); scene.add(tgtGroup);
+          // controls
+          const cv2=W(); cv2.addEventListener("pointerdown",e=>{ drag={x:e.clientX,y0:lookYaw}; cv2.setPointerCapture(e.pointerId); cv2.style.cursor="grabbing"; }); cv2.addEventListener("pointermove",e=>{ if(!drag) return; const r=cv2.getBoundingClientRect(); lookYaw=Math.max(-150,Math.min(150, drag.y0 - (e.clientX-drag.x)/r.width*(binoc?12:70))); }); ["pointerup","pointercancel"].forEach(ev=>cv2.addEventListener(ev,()=>{drag=null; cv2.style.cursor="grab";}));
+          $("bDay").onclick=()=>setNight(false); $("bNight").onclick=()=>setNight(true); $("bSea").onchange=e=>seaState=+e.target.value; $("bBinoc").onclick=()=>{ binoc=!binoc; $("bBinoc").classList.toggle("on",binoc); }; $("bCentre").onclick=()=>lookYaw=0; $("bClose").onclick=()=>toggle(false);
+          ready=true; }
+        function setNight(n){ night=n; $("bDay").classList.toggle("on",!n); $("bNight").classList.toggle("on",n); const T=window.THREE;
+          skyMat.uniforms.top.value.set(n?0x03070f:0x2f6fb5); skyMat.uniforms.hor.value.set(n?0x0b1424:0xcfe3f2); seaMat.uniforms.sky.value.set(n?0x0b1424:0xcfe3f2); seaMat.uniforms.fogC.value.set(n?0x060a12:0xcfe3f2); seaMat.uniforms.deep.value.set(n?0x02060c:0x0b3a52); seaMat.uniforms.shallow.value.set(n?0x071525:0x1f6f8a); seaMat.uniforms.night.value=n?1:0;
+          hemi.intensity=n?0.12:0.9; sun.intensity=n?0.08:1.1; sun.color.set(n?0x8fa6ff:0xfff1d6); scene.fog=n?new T.FogExp2(0x060a12,0.00025):new T.FogExp2(0xcfe3f2,0.00009); }
+        function box(T,w,h,d,col,x,y,z){ const m=new T.Mesh(new T.BoxGeometry(w,h,d),new T.MeshStandardMaterial({color:col,roughness:0.85,metalness:0.1})); m.position.set(x,y,z); return m; }
+        function buildOwnShip(T){ hullGroup=new T.Group(); const L=190,B=28.5, deckY=9; // ballast freeboard ~9 m
+          hullGroup.add(box(T,B,12,L,0x1b1e22,0,deckY-6,0));                       // hull sides (black)
+          hullGroup.add(box(T,B-1.2,0.6,L-2,0x7d8893,0,deckY,0));                  // main deck
+          hullGroup.add(box(T,B-2,0.5,22,0x98a3ae,0,deckY+2.4,-L/2+12)); hullGroup.add(box(T,B-2,2.4,0.4,0x3b444d,0,deckY+1.2,-L/2+23)); // forecastle
+          const hx0=-L/2+34, hw=(L-66-30)/7; for(let i=0;i<7;i++){ const z=hx0+i*(hw+5)+hw/2; hullGroup.add(box(T,B*0.56,1.9,hw,0x8e3f33,0,deckY+1.0,-z)); hullGroup.add(box(T,B*0.58,0.3,hw+0.6,0x2f363d,0,deckY+1.95,-z)); }
+          [1,3,5].forEach(i=>{ const z=-(hx0+i*(hw+5)-2.5); const ped=new T.Mesh(new T.CylinderGeometry(2.4,2.6,9,16),new T.MeshStandardMaterial({color:0xf0c23a,roughness:0.7})); ped.position.set(B/2-5.2,deckY+4.5,z); hullGroup.add(ped); const jib=box(T,0.9,0.9,30,0xe7b320,B/2-5.2,deckY+10,z-14); jib.rotation.x=-0.08; hullGroup.add(jib); });
+          const mast=new T.Mesh(new T.CylinderGeometry(0.25,0.4,16,8),new T.MeshStandardMaterial({color:0xd9dde2})); mast.position.set(0,deckY+8,-L/2+14); hullGroup.add(mast);
+          // railings
+          const railMat=new T.LineBasicMaterial({color:0xdde3e8,transparent:true,opacity:0.7}); [B/2-0.8,-(B/2-0.8)].forEach(x=>{ const pts=[]; for(let z=-L/2+2; z<=L/2-30; z+=4){ pts.push(new T.Vector3(x,deckY+1.1,-z)); } hullGroup.add(new T.Line(new T.BufferGeometry().setFromPoints(pts),railMat)); for(let z=-L/2+2; z<=L/2-30; z+=8){ hullGroup.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(x,deckY+0.3,-z),new T.Vector3(x,deckY+1.1,-z)]),railMat)); } });
+          // bridge front (what you see at the bottom edge): window sills
+          hullGroup.add(box(T,B-1,0.5,10,0xe9eef3,0,deckY+13.2,L/2-36)); // bridge deck below the windows
+          scene.add(hullGroup); }
+        let _glow=null; function glowTex(T){ if(_glow) return _glow; const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); const r=g.createRadialGradient(32,32,2,32,32,30); r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(0.25,'rgba(255,255,255,.9)'); r.addColorStop(0.5,'rgba(255,255,255,.25)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=r; g.fillRect(0,0,64,64); _glow=new T.CanvasTexture(c); return _glow; }
+        function targetMesh(T,t){ const g=new T.Group(); const h=hash(t.id||t.name||"x"); const L=120+(h%140), B=L*0.16, fb=4+(h%5); const col=[0x3d5468,0x7a2d2d,0x2f5a40,0x55595e,0x8a4a22][h%5];
+          g.add(box(T,B,fb+6,L,col,0,fb/2+ -3,0)); g.add(box(T,B-1,0.5,L-2,0x8a949e,0,fb+0.3,0)); const accAft=(h%3)!==0; g.add(box(T,B*0.7,10,L*0.12,0xe9eef3,0,fb+5.5,accAft?L*0.36:-L*0.3)); g.add(box(T,B*0.3,6,B*0.3,0x1c2126,0,fb+13,accAft?L*0.42:-L*0.24));
+          // nav lights (sprites)
+          const mk=(c)=>{ const m=new T.SpriteMaterial({map:glowTex(T),color:c,transparent:true,opacity:0,depthTest:false,sizeAttenuation:false}); const sp=new T.Sprite(m); sp.scale.set(0.012,0.012,1); return sp; };
+          const lights={mastF:mk(0xffffff),mastA:mk(0xffffff),port:mk(0xff2a2a),stbd:mk(0x2aff5a),stern:mk(0xffffff)};
+          lights.mastF.position.set(0,fb+14,-L*0.3); lights.mastA.position.set(0,fb+20,accAft?L*0.42:-L*0.1); lights.port.position.set(-B/2-0.5,fb+9,accAft?L*0.3:-L*0.3); lights.stbd.position.set(B/2+0.5,fb+9,accAft?L*0.3:-L*0.3); lights.stern.position.set(0,fb+5,L/2);
+          Object.values(lights).forEach(l=>g.add(l)); g.userData={L,lights}; return g; }
+        function updateTargets(T){ const hdg=num("course")*D; const seen={};
+          targets.forEach(t=>{ seen[t.id]=1; let g=tmesh[t.id]; if(!g){ g=targetMesh(T,t); tmesh[t.id]=g; tgtGroup.add(g); }
+            const relB=Math.atan2(t.x,t.y)-hdg, d=Math.hypot(t.x,t.y)*NM; const fwd=d*Math.cos(relB), stb=d*Math.sin(relB); g.position.set(stb,0,-fwd);
+            g.rotation.y=-((t.course||0)*D-hdg)+Math.PI;   // target heading relative to own heading (model bow at -z)
+            // nav lights by aspect: bearing of OWN ship as seen from the target, relative to the target's bow (true frame)
+            const beta=Math.atan2(-t.x,-t.y); let rho=beta-(t.course||0)*D; rho=Math.atan2(Math.sin(rho),Math.cos(rho)); const deg=Math.abs(rho*180/Math.PI); const side=rho>0?"stbd":"port";
+            const vis=night?Math.min(1, 1.6 - d/(8*NM)):0; const li=g.userData.lights; const sc=Math.max(0.01,Math.min(0.03, 0.03*(1.5*NM)/Math.max(d,1)))*(binoc?0.8:1);
+            Object.values(li).forEach(l=>l.scale.set(sc,sc*(16/9)/(21/9),1)); li.mastF.material.opacity=li.mastA.material.opacity= (deg<=112.5)?vis:0; li.stern.material.opacity=(deg>112.5)?vis:0; li.port.material.opacity=(deg<=112.5&&(side==="port"||deg<3))?vis:0; li.stbd.material.opacity=(deg<=112.5&&(side==="stbd"||deg<3))?vis:0; });
+          Object.keys(tmesh).forEach(id=>{ if(!seen[id]){ tgtGroup.remove(tmesh[id]); delete tmesh[id]; } }); }
+        function frame(){ if(!on||!ready) return; const T=window.THREE; const cv=W(); const r=cv.getBoundingClientRect(); const w=Math.max(2,Math.round(r.width)), h=Math.max(2,Math.round(r.height)); if(cv.width!==w*renderer.getPixelRatio()||cv.height!==h*renderer.getPixelRatio()){ renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+          const t=(performance.now()-t0)/1000; seaMat.uniforms.time.value=t; seaMat.uniforms.amp.value=0.15+seaState*0.42;
+          // ship motion from the sea: pitch / roll / heave grow with sea state
+          const ss=seaState; const pitch=Math.sin(t*0.55)*0.0045*ss, roll=Math.sin(t*0.42+1)*0.012*ss, heave=Math.sin(t*0.5)*0.35*ss;
+          hullGroup.rotation.x=pitch; hullGroup.rotation.z=roll; hullGroup.position.y=heave;
+          camera.fov=binoc?8:55; camera.updateProjectionMatrix(); camera.position.set(0, 9+17.5+heave, 95-34); camera.rotation.set(0,0,0); camera.rotation.order="YXZ"; camera.rotation.y=-lookYaw*D; camera.rotation.x=pitch*1.0-0.03; camera.rotation.z=roll;
+          updateTargets(T); renderer.render(scene,camera); drawHud(w,h); }
+        function drawHud(w,h){ const hc=$("bridgeHud"); const d=devicePixelRatio||1; if(hc.width!==w*d||hc.height!==h*d){ hc.width=w*d; hc.height=h*d; } const x=hc.getContext("2d"); x.setTransform(d,0,0,d,0,0); x.clearRect(0,0,w,h);
+          const fov=(binoc?8:55)*D, aspect=w/h, hfov=2*Math.atan(Math.tan(fov/2)*aspect); const hdg=num("course");
+          const sx=(relDeg)=>{ let a=(relDeg-lookYaw)*D; a=Math.atan2(Math.sin(a),Math.cos(a)); if(Math.abs(a)>hfov/2+0.2) return null; return w/2+Math.tan(a)/Math.tan(hfov/2)*w/2; };
+          // bearing scale
+          x.fillStyle="rgba(6,20,14,.55)"; x.fillRect(0,0,w,26); x.font="bold 10px monospace"; x.textAlign="center"; const step=binoc?1:10;
+          for(let b=0;b<360;b+=step){ const rel=((b-hdg)%360+360)%360; const px=sx(rel); if(px===null) continue; const major=b%(binoc?5:30)===0; x.fillStyle=major?"#9fe8c0":"rgba(159,232,192,.5)"; x.fillRect(px-0.5,26-(major?12:6),1,major?12:6); if(major) x.fillText(String(b).padStart(3,"0"),px,10); }
+          const hx=sx(0); if(hx!==null){ x.fillStyle="#f1db4f"; x.beginPath(); x.moveTo(hx,26); x.lineTo(hx-5,18); x.lineTo(hx+5,18); x.closePath(); x.fill(); }
+          // look centre bearing
+          x.fillStyle="#9fe8c0"; x.textAlign="left"; x.fillText("LOOKING "+String(Math.round(((hdg+lookYaw)%360+360)%360)).padStart(3,"0")+"° T · REL "+(lookYaw>=0?"G":"R")+String(Math.round(Math.abs(lookYaw))).padStart(3,"0")+(binoc?" · BINOCULARS 7×":""), 10, h-28);
+          // target labels (projected)
+          const T=window.THREE; const v=new T.Vector3(); targets.forEach(t=>{ const g=tmesh[t.id]; if(!g) return; v.set(g.position.x,14,g.position.z); v.project(camera); if(v.z>1||Math.abs(v.x)>1.05||Math.abs(v.y)>1.05) return; const px=(v.x+1)/2*w, py=(1-v.y)/2*h; const brg=((Math.atan2(t.x,t.y)*R2D_)%360+360)%360; x.fillStyle=t.tracked?"#5dffc0":"rgba(159,232,192,.8)"; x.textAlign="center"; x.fillText((t.tracked?t.id+" · ":"")+(t.name||"")+" · "+String(Math.round(brg)).padStart(3,"0")+"° · "+Math.hypot(t.x,t.y).toFixed(1)+" NM", px, py-6); x.fillRect(px-0.5,py-3,1,6); }); }
+        const R2D_=180/Math.PI;
+        function toggle(v){ on=v===undefined?!on:v; $("bridgeWrap").hidden=!on; $("bridgebtn").classList.toggle("on",on); if(on){ loadLib(()=>{ if(!ready) init(); }); } }
+        $("bridgebtn").onclick=()=>toggle();
+        (function loop(){ try{ frame(); }catch(e){ console.warn("bridge view",e); } requestAnimationFrame(loop); })();
+        return {toggle};
+      })();
+</script>
 </body>
 </html>
