@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>ECADEMY Affiliate</title>
+<style>
+:root{--navy:#061622;--line:rgba(113,216,255,.18);--cyan:#64ddff;--white:#f4fbff;--muted:#9fb8c7;--amber:#ffc857;--green:#5ee6a8;--red:#ff8a7a}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#0d3049,var(--navy));color:var(--white);font:15px/1.5 system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh}
+a{color:var(--cyan)}
+.wrap{width:min(980px,100% - 32px);margin:0 auto;padding:24px 0 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.brand{font-weight:800;letter-spacing:.12em;font-size:1.2rem}.brand b{color:var(--cyan)}
+.tag{font:600 .7rem/1 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+.card{background:linear-gradient(155deg,rgba(17,54,77,.72),rgba(5,25,39,.92));border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+h1{margin:6px 0 4px;font-size:1.6rem;letter-spacing:-.01em}
+h2{margin:0 0 12px;font-size:1.1rem}
+.muted{color:var(--muted)}
+.link{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.link code{flex:1 1 280px;min-height:46px;display:flex;align-items:center;padding:0 14px;border-radius:10px;background:#07192a;border:1px solid rgba(100,221,255,.35);font:600 1rem ui-monospace,monospace;color:var(--cyan);overflow-wrap:anywhere}
+button{min-height:46px;padding:0 18px;border-radius:10px;border:0;background:var(--cyan);color:#061622;font:700 .92rem system-ui,Arial;cursor:pointer}
+button.ghost{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.22)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:rgba(3,18,29,.55)}
+.tile b{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile span{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.tile small{display:block;color:var(--muted);font-size:.8rem;margin-top:2px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:.92rem}
+th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+td.n{font-variant-numeric:tabular-nums}
+.ok{color:var(--green)}.soon{color:var(--amber)}
+pre{white-space:pre-wrap;margin:0;padding:14px;border-radius:10px;background:#07192a;border:1px solid rgba(255,255,255,.1);font:14px/1.5 system-ui,Arial;color:#dfeef7}
+ol{margin:0;padding-left:20px}ol li{margin:4px 0}
+.err{max-width:520px;margin:12vh auto;text-align:center}
+@media (max-width:720px){.tiles{grid-template-columns:1fr 1fr}th:nth-child(3),td:nth-child(3){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="brand"><b>E</b>CADEMY · AFFILIATE</div><div class="muted" id="upd"></div></header>
+  <div id="app"><p class="muted">Loading your dashboard…</p></div>
+</div>
+<script src="assets/supabase-2.117.2.js"></script>
+<script>
+(function(){
+  const sb = supabase.createClient('https://eazrfhrbhftskcrffjun.supabase.co', 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I', { auth:{ persistSession:false } });
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const peso = n => { n = Number(n || 0); return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits:2 }); };
+  const day = d => new Date(d).toLocaleDateString('en-PH', { dateStyle:'medium' });
+  const PKG = { J:'Junior Officers', C:'Chief Mate', A:'All Access' };
+  const k = new URLSearchParams(location.search).get('k') || '';
+  const fail = msg => $('app').innerHTML = '<div class="card err"><h2>' + msg + '</h2><p class="muted">Ask ECADEMY for your dashboard link.</p></div>';
+  if(!/^[0-9a-f-]{36}$/i.test(k)) return fail('This dashboard link is not valid.');
+  async function load(){
+    const { data, error } = await sb.rpc('aff_stats', { p_secret:k });
+    if(error) return fail('Could not load the dashboard.');
+    if(!data) return fail('This dashboard link is no longer active.');
+    const link = 'https://ecademymaritime.com/?ref=' + data.code;
+    const E = data.enrollees || [];
+    const earned = E.reduce((s, e) => s + Number(e.commission || 0), 0), paid = E.filter(e => e.paid).reduce((s, e) => s + Number(e.commission || 0), 0);
+    const caption = `Seafarers: train for your next rank with ECADEMY Maritime — realistic simulators for Radar/ARPA, ECDIS, LSA & FFE, draft survey and ship handling, organised by rank from Third Officer to Master.\n\nTry it here: ${link}`;
+    $('app').innerHTML = `
+      <section class="card">
+        <div class="tag">Affiliate · code ${esc(data.code)}${data.active ? '' : ' · paused'}</div>
+        <h1>Hi, ${esc(data.name)}</h1>
+        <p class="muted" style="margin:0">Share your link. When someone enrolls through it, you earn <b style="color:var(--white)">${Number(data.rate)}%</b> of what they pay.</p>
+        <div class="link"><code>${esc(link)}</code><button id="cp">Copy link</button>${navigator.share ? '<button class="ghost" id="sh">Share</button>' : ''}</div>
+      </section>
+      <section class="tiles card" style="background:none;border:0;padding:0">
+        <div class="tile"><span>Link clicks</span><b>${data.clicks}</b><small>${data.clicks30} in the last 30 days</small></div>
+        <div class="tile"><span>Enrollees</span><b>${E.length}</b><small>${data.clicks ? Math.round(E.length / data.clicks * 100) + '% of clicks' : '—'}</small></div>
+        <div class="tile"><span>Commission earned</span><b>${peso(earned)}</b><small>all time</small></div>
+        <div class="tile"><span>To be paid</span><b style="color:var(--amber)">${peso(earned - paid)}</b><small>${peso(paid)} already paid</small></div>
+      </section>
+      <section class="card">
+        <h2>Your enrollees</h2>
+        <table><thead><tr><th>Name</th><th>Package</th><th>Enrolled</th><th>Commission</th><th>Status</th></tr></thead>
+        <tbody>${E.map(e => `<tr><td>${esc(e.who)}</td><td>${PKG[e.package] || ''}</td><td>${day(e.date)}</td><td class="n">${e.commission == null ? '—' : peso(e.commission)}</td><td>${e.paid ? '<span class="ok">Paid ' + day(e.paid) + '</span>' : '<span class="soon">To be paid</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No enrollees yet. Share your link to get started.</td></tr>'}</tbody></table>
+      </section>
+      <section class="card">
+        <h2>Ready-to-post caption</h2>
+        <pre id="cap">${esc(caption)}</pre>
+        <div class="link"><button class="ghost" id="cc">Copy caption</button></div>
+      </section>
+      <section class="card">
+        <h2>How it works</h2>
+        <ol class="muted">
+          <li>Someone opens your link. It is remembered on their phone or laptop for <b style="color:var(--white)">60 days</b>.</li>
+          <li>When they press <b style="color:var(--white)">Enroll</b>, your code ${esc(data.code)} is included in their Messenger message to ECADEMY.</li>
+          <li>Once their GCash payment is confirmed, the enrollment and your commission appear here.</li>
+          <li>Commissions are paid out by ECADEMY; the status changes to <span class="ok">Paid</span>.</li>
+        </ol>
+        <p class="muted" style="margin-bottom:0">Keep this dashboard page private. Only share the link with <b style="color:var(--white)">?ref=${esc(data.code)}</b>.</p>
+      </section>`;
+    const copy = (b, t) => navigator.clipboard.writeText(t).then(() => { const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => b.textContent = o, 1300); }, () => prompt('Copy:', t));
+    $('cp').onclick = e => copy(e.target, link);
+    $('cc').onclick = e => copy(e.target, caption);
+    if($('sh')) $('sh').onclick = () => navigator.share({ title:'ECADEMY Maritime', text:caption, url:link }).catch(() => {});
+    $('upd').textContent = 'Updated ' + new Date().toLocaleTimeString('en-PH', { timeStyle:'short' });
+  }
+  load();
+})();
+</script>
+</body>
+</html>

@@ -1906,8 +1906,16 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
   const MESSENGER = 'https://m.me/ecademymaritime';   // ECADEMY Maritime Facebook page (Messenger)
   const CONTACT = MESSENGER;
+  /* ===== AFFILIATE: ?ref=CODE is remembered 60 days (last link clicked wins) ===== */
+  let AFF_NEW = false;
+  const AFF_CODE = (function(){ try {
+    const c = (new URLSearchParams(location.search).get('ref') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (c.length >= 3 && c.length <= 20) { localStorage.setItem('ecad_ref', JSON.stringify({ c, t: Date.now() })); AFF_NEW = true;
+      const u = new URL(location.href); u.searchParams.delete('ref'); history.replaceState(null, '', u.pathname + u.search + u.hash); return c; }
+    const s = JSON.parse(localStorage.getItem('ecad_ref') || 'null'); if (s && Date.now() - s.t < 60 * 864e5) return s.c;
+  } catch (_) {} return ''; })();
   const enrollLink = (p, upgrade) => MESSENGER + '?text=' + encodeURIComponent(
-    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'enroll in'} the ${p.name} package (${p.who}). My email: `);
+    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'enroll in'} the ${p.name} package (${p.who}).${AFF_CODE ? ' Referral code: ' + AFF_CODE + '.' : ''} My email: `);
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
          img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
@@ -1935,6 +1943,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const linkType = hp.get('type');                          // 'invite' | 'recovery' from an emailed / admin link
   const linkError = hp.get('error_description');
   const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' } });
+  if (AFF_NEW) { try { let v = localStorage.getItem('ecad_vis'); if (!v) { v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); localStorage.setItem('ecad_vis', v); } sb.rpc('aff_click', { p_code: AFF_CODE, p_visitor: v }).then(() => {}, () => {}); } catch (_) {} }
   window.ECADEMY_SB = sb;
 
   const lockSvg = '<svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-7-2a2 2 0 0 1 4 0v2h-4V7z"/></svg>';

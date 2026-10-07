@@ -44,7 +44,10 @@ td small{display:block;color:var(--muted)}
 .acts{display:flex;gap:5px;flex-wrap:wrap}
 .login{max-width:440px;margin:8vh auto 0}
 .note{color:var(--muted);font-size:.86rem;margin-top:14px}
-@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.affform{display:grid;grid-template-columns:1.6fr 1fr .7fr 1.3fr auto;gap:10px;align-items:start}
+.affform label{margin-top:0}
+.money{font-variant-numeric:tabular-nums}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.affform{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -81,6 +84,7 @@ td small{display:block;color:var(--muted)}
         <label for="val">Validity</label>
         <select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1" selected>1 month</option><option value="m3">3 months</option><option value="m6">6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option></select>
         <div class="two"><div><label for="amt">Amount paid</label><input id="amt" placeholder="2499"></div><div><label for="ref">GCash / Maya ref no.</label><input id="ref" placeholder="1234 5678 9012"></div></div>
+        <label for="aff">Referred by · affiliate code <span style="color:var(--muted);font-weight:400">(optional; from the "Referral code" in the Messenger message)</span></label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="note" id="affHint" style="margin-top:4px"></div>
         <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
         <label class="check"><input type="checkbox" id="newLink"> Also make a new set-password link for an existing student</label>
         <button class="full" id="eb" type="submit">Enroll and get the link</button>
@@ -100,9 +104,22 @@ td small{display:block;color:var(--muted)}
       <div class="tools"><input id="q" placeholder="Search name, email or package"><button class="ghost small" id="refresh" type="button">Refresh</button><button class="ghost small" id="csv" type="button">Export CSV</button><button class="ghost small" id="out1" type="button">Log out</button></div>
       <div class="tablewrap"><table><thead><tr><th>Student</th><th>Package</th><th>Access</th><th>Devices</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
     </section>
+    <section class="card" style="grid-column:1/-1">
+      <h2>Affiliates</h2>
+      <p class="note" style="margin-top:0">Give a person a code; their link is <b>ecademymaritime.com/?ref=CODE</b>. Anyone who opens it and enrolls within 60 days carries the code in the Messenger message. Type that code in <b>Referred by</b> when you enroll the student, and the commission is recorded. Send the affiliate their <b>dashboard link</b> so they can see their clicks, enrollees and commission.</p>
+      <form id="af" class="affform">
+        <div><label for="aName">Affiliate name</label><input id="aName" required placeholder="3rd Off. Juan dela Cruz" autocomplete="off"></div>
+        <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
+        <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="20"></div>
+        <div><label for="aContact">GCash / contact (for payouts)</label><input id="aContact" placeholder="0917 xxx xxxx" autocomplete="off"></div>
+        <div style="align-self:end"><button class="full" id="ab" type="submit">Save affiliate</button></div>
+      </form>
+      <div class="err" id="aerr" role="alert"></div>
+      <div class="count" id="acount"></div>
+      <div class="tablewrap"><table><thead><tr><th>Affiliate</th><th>Clicks</th><th>Enrollees</th><th>Commission</th><th>Links</th><th></th></tr></thead><tbody id="arows"></tbody></table></div>
+    </section>
   </div>
 </div>
-
 <script src="assets/supabase-2.117.2.js"></script>
 <script>
 (function(){
@@ -113,6 +130,7 @@ td small{display:block;color:var(--muted)}
   const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit' } });
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const peso = n => { n = Number(n || 0); return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits:2 }); };
   const fmt = d => d ? new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : 'Lifetime';
   let members = [], lastLink = '';
 
@@ -164,7 +182,7 @@ td small{display:block;color:var(--muted)}
     const active = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date())).length;
     $('count').textContent = members.length + ' students · ' + active + ' active · ' + members.filter(m=>m.package==='J').length + ' Junior · ' + members.filter(m=>m.package==='C').length + ' Chief Mate · ' + members.filter(m=>m.package==='A').length + ' All Access';
     $('rows').innerHTML = list.map(m => `<tr>
-      <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}</td>
+      <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}${m.aff_code ? '<small>via <b>' + esc(m.aff_code) + '</b>' + (m.commission != null ? ' · commission ' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="st-ok">paid</span>' : '<span class="st-soon">unpaid</span>') : '') + '</small>' : ''}</td>
       <td><span class="pk">${esc(NAMES[m.package])}</span></td>
       <td>${status(m)}</td>
       <td>Phone: ${m.phone ? '<span class="st-ok">registered</span>' : 'free'}<br>Laptop: ${m.computer ? '<span class="st-ok">registered</span>' : 'free'}${m.last_seen ? '<small>last used ' + fmt(m.last_seen) + '</small>' : ''}</td>
@@ -172,7 +190,7 @@ td small{display:block;color:var(--muted)}
         <button class="small" data-a="renew" data-id="${m.user_id}">Renew</button>
         <button class="small ghost" data-a="link" data-id="${m.user_id}">New link</button>
         <button class="small ghost" data-a="dev" data-id="${m.user_id}">Reset devices</button>
-        <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button>
+        <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button>${m.aff_code && m.commission != null ? `<button class="small ghost" data-a="paid" data-id="${m.user_id}">${m.commission_paid_at ? 'Undo paid' : 'Commission paid'}</button>` : ''}
       </div></td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--muted)">No students yet. Enroll the first one on the left.</td></tr>';
   }
   async function load(){ try { members = (await call({ action:'list' })).members; render(); } catch(e){ $('count').textContent = 'Could not load students: ' + e.message; } }
@@ -184,13 +202,57 @@ td small{display:block;color:var(--muted)}
     try {
       if(b.dataset.a === 'link'){ const r = await call({ action:'link', email:m.email }); showOut('New set-password link for ' + (m.name || m.email), message(m.name, m.package, m.expires_at, r.link), r.link); }
       if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? Their phone and laptop are cleared; the next phone and the next laptop they use will be registered.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
+      if(b.dataset.a === 'paid'){ await call({ action:'aff_paid', user_id:m.user_id, paid:!m.commission_paid_at }); await load(); await loadAff(); }
       if(b.dataset.a === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + (m.name || m.email) + '?')){ await call({ action:'revoke', user_id:m.user_id, revoked:!m.revoked }); await load(); } }
+    } catch(err){ alert(err.message); }
+    b.disabled = false;
+  });
+  /* ---------- affiliates ---------- */
+  let affs = [];
+  const affLink = a => 'https://ecademymaritime.com/?ref=' + a.code;
+  const dashLink = a => HUB + 'aff.html?k=' + a.secret;
+  function affHint(){
+    const c = $('aff').value.trim().toUpperCase(); const a = affs.find(x => x.code === c);
+    const amt = parseFloat(($('amt').value || '').replace(/[^0-9.]/g, ''));
+    $('affHint').innerHTML = !c ? '' : !a ? '<span class="st-bad">No affiliate with code ' + esc(c) + '</span>' : esc(a.name) + ' · ' + a.rate_pct + '%' + (isFinite(amt) ? ' → commission <b>' + peso(Math.round(amt * a.rate_pct) / 100) + '</b>' : ' (type the amount paid to compute the commission)') + (a.active ? '' : ' · <span class="st-bad">paused</span>');
+  }
+  $('aff').addEventListener('input', affHint); $('amt').addEventListener('input', affHint);
+  function renderAff(){
+    $('affCodes').innerHTML = affs.map(a => `<option value="${esc(a.code)}">${esc(a.name)}</option>`).join('');
+    const unpaid = affs.reduce((s, a) => s + Number(a.unpaid || 0), 0);
+    $('acount').textContent = affs.length + ' affiliates · ' + affs.reduce((s, a) => s + a.clicks, 0) + ' clicks · ' + affs.reduce((s, a) => s + a.enrollees, 0) + ' enrollees · unpaid commission ' + peso(unpaid);
+    $('arows').innerHTML = affs.map(a => `<tr>
+      <td><b>${esc(a.name)}</b><small>Code <b>${esc(a.code)}</b> · ${a.rate_pct}%${a.contact ? ' · ' + esc(a.contact) : ''}${a.active ? '' : ' · <span class="st-bad">paused</span>'}</small></td>
+      <td class="money">${a.clicks}</td><td class="money">${a.enrollees}</td>
+      <td class="money">${peso(a.earned)}<small>${a.unpaid > 0 ? '<span class="st-soon">unpaid ' + peso(a.unpaid) + '</span>' : 'all paid'}</small></td>
+      <td><div class="acts"><button class="small" data-c="link" data-code="${esc(a.code)}">Copy affiliate link</button><button class="small ghost" data-c="dash" data-code="${esc(a.code)}">Copy dashboard link</button></div></td>
+      <td><div class="acts"><button class="small ghost" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="small ghost" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="small ghost" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--muted)">No affiliates yet. Add the first one above.</td></tr>';
+    affHint();
+  }
+  async function loadAff(){ try { affs = (await call({ action:'aff_list' })).affiliates; renderAff(); } catch(e){ $('acount').textContent = 'Could not load affiliates: ' + e.message; } }
+  $('af').addEventListener('submit', async e => {
+    e.preventDefault(); $('ab').disabled = true; $('aerr').textContent = '';
+    try { await call({ action:'aff_save', name:$('aName').value.trim(), code:$('aCode').value.trim().toUpperCase(), rate_pct:parseFloat($('aRate').value), contact:$('aContact').value.trim(), active:true });
+      $('af').reset(); $('aRate').value = 20; await loadAff(); } catch(err){ $('aerr').textContent = err.message; }
+    $('ab').disabled = false;
+  });
+  function copy(btn, text, label){ navigator.clipboard.writeText(text).then(() => { const t = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = t, 1200); }, () => prompt(label, text)); }
+  $('arows').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-c]'); if(!b) return; const a = affs.find(x => x.code === b.dataset.code); if(!a) return;
+    if(b.dataset.c === 'link') return copy(b, affLink(a), 'Affiliate link');
+    if(b.dataset.c === 'dash') return copy(b, 'Hi ' + a.name + ', here is your ECADEMY affiliate kit.\n\nYour link to share:\n' + affLink(a) + '\n\nYour private dashboard (clicks, enrollees, commission). Do not share this one:\n' + dashLink(a), 'Dashboard link');
+    if(b.dataset.c === 'edit'){ $('aName').value = a.name; $('aCode').value = a.code; $('aRate').value = a.rate_pct; $('aContact').value = a.contact || ''; $('aName').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+    b.disabled = true;
+    try {
+      if(b.dataset.c === 'pause') await call({ action:'aff_save', code:a.code, name:a.name, rate_pct:a.rate_pct, contact:a.contact, active:!a.active });
+      if(b.dataset.c === 'secret' && confirm('Make a new dashboard link for ' + a.name + '? The old one stops working.')) await call({ action:'aff_newsecret', code:a.code });
+      await loadAff();
     } catch(err){ alert(err.message); }
     b.disabled = false;
   });
   $('csv').onclick = () => {
     const c = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
-    const csv = ['name,email,package,expires,status,amount,ref,devices,enrolled'].concat(members.map(m => [m.name, m.email, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.devices, m.created_at].map(c).join(','))).join('\n');
+    const csv = ['name,email,package,expires,status,amount,ref,devices,enrolled,affiliate,commission,commission_paid'].concat(members.map(m => [m.name, m.email, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.devices, m.created_at, m.aff_code, m.commission, m.commission_paid_at].map(c).join(','))).join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
   };
 
@@ -200,11 +262,11 @@ td small{display:block;color:var(--muted)}
   $('copyLink').onclick = () => navigator.clipboard.writeText(lastLink);
   $('ef').addEventListener('submit', async e => {
     e.preventDefault(); $('eb').disabled = true; $('eerr').textContent = '';
-    const body = { action:'enroll', email:$('email').value.trim().toLowerCase(), name:$('name').value.trim(), package:$('pkg').value, validity:$('val').value, amount:$('amt').value.trim(), ref:$('ref').value.trim(), extend:$('extend').checked, newLink:$('newLink').checked };
+    const body = { action:'enroll', aff_code:$('aff').value.trim().toUpperCase(), email:$('email').value.trim().toLowerCase(), name:$('name').value.trim(), package:$('pkg').value, validity:$('val').value, amount:$('amt').value.trim(), ref:$('ref').value.trim(), extend:$('extend').checked, newLink:$('newLink').checked };
     try {
       const r = await call(body);
       showOut(r.link ? 'Enrolled: send this to ' + (body.name || body.email) : 'Updated: ' + (body.name || body.email) + ' (already has an account)', message(body.name, body.package, r.member.expires_at, r.link), r.link);
-      $('amt').value = ''; $('ref').value = ''; await load();
+      $('amt').value = ''; $('ref').value = ''; $('aff').value = ''; affHint(); await load(); await loadAff();
     } catch(err){ $('eerr').textContent = err.message; }
     $('eb').disabled = false;
   });
@@ -214,7 +276,7 @@ td small{display:block;color:var(--muted)}
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ show('loginView'); $('who').textContent = ''; return; }
     $('who').textContent = session.user.email;
-    try { members = (await call({ action:'list' })).members; show('adminView'); render(); }
+    try { members = (await call({ action:'list' })).members; show('adminView'); render(); loadAff(); }
     catch(e){ if(/admin/i.test(e.message) || /forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; show('denied'); } else { show('adminView'); $('count').textContent = 'Could not load students: ' + e.message; } }
   }
   boot();
