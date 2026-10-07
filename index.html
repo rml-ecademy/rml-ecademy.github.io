@@ -1869,11 +1869,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <button class="x" id="loginClose" type="button" aria-label="Close">×</button>
     <div class="tier" style="color:var(--cyan)">MEMBER LOGIN</div>
     <h3 id="loginH">Log in to ECADEMY</h3>
-    <p id="loginP">Use the email you enrolled with and your password.</p>
+    <p id="loginP">Use the email you got access with and your password.</p>
     <label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
     <label for="loginPw">Password</label><input id="loginPw" type="password" required placeholder="Your password" autocomplete="current-password">
     <div class="err" id="loginErr" role="alert"></div>
-    <div class="row"><button class="cta" id="loginBtn" type="submit">Log in</button><a class="ghost" href="#plans" id="loginEnroll">Not enrolled yet</a></div>
+    <div class="row"><button class="cta" id="loginBtn" type="submit">Log in</button><a class="ghost" href="#plans" id="loginEnroll">No access yet? Get Access</a></div>
     <div class="alt"><a href="#" id="forgotPw">Forgot password? Send me a reset link</a></div>
   </form>
 </div>
@@ -1894,7 +1894,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="tier" id="enrollTier">LOCKED DECK</div>
     <h3 id="enrollTitle">This deck is part of a higher package</h3>
     <p id="enrollText"></p>
-    <div class="row"><a class="cta" id="enrollGo" href="#plans">Enroll now</a><a class="ghost" id="enrollLogin" href="#">Already enrolled? Log in</a></div>
+    <div class="row"><a class="cta" id="enrollGo" href="#plans">Get Access</a><a class="ghost" id="enrollLogin" href="#">Already have access? Log in</a></div>
   </div>
 </div>
 <script src="assets/supabase-2.117.2.js"></script>
@@ -1915,7 +1915,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const s = JSON.parse(localStorage.getItem('ecad_ref') || 'null'); if (s && Date.now() - s.t < 60 * 864e5) return s.c;
   } catch (_) {} return ''; })();
   const enrollLink = (p, upgrade) => MESSENGER + '?text=' + encodeURIComponent(
-    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'enroll in'} the ${p.name} package (${p.who}).${AFF_CODE ? ' Referral code: ' + AFF_CODE + '.' : ''} My email: `);
+    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'get access to'} the ${p.name} package (${p.who}).${AFF_CODE ? ' Referral code: ' + AFF_CODE + '.' : ''} My email: `);
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
          img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
@@ -1934,7 +1934,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
          hl:[['Ship Manoeuvring','Ship handling, pilotage and emergency manoeuvres from the Master\'s position.'],
              ['PSC','Port State, Flag and Class preparation and the Master\'s compliance strategy.'],
              ['Full Bridge','Full bridge simulation with all equipment, including heavy-weather navigation.']],
-         feats:['Everything in Chief Mate','Command Deck · Master','All future modules while enrolled'] }
+         feats:['Everything in Chief Mate','Command Deck · Master','All future modules while you have access'] }
   };
   window.ECADEMY_FREE = ['flare', 'radardemo'];
   /* ================== */
@@ -2056,10 +2056,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
         : member && !valid
           ? (member.revoked ? 'Your access is paused. Please message ECADEMY.' : 'Your package expired on ' + fmt(member.expires_at) + '. Renew to open the simulators again.')
-          : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Enroll, set your password from the link we send you, then log in here.';
-      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Enroll in ' + need.name; go.target = need.url ? '_blank' : '';
+          : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Get access, set your password from the link we send you, then log in here.';
+      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Get Access · ' + need.name; go.target = need.url ? '_blank' : '';
       go.onclick = () => modal.classList.remove('open');
-      const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already enrolled? Log in';
+      const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already have access? Log in';
       lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(session) logout(); else openLogin(); };
       modal.classList.add('open');
     }
@@ -2088,8 +2088,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
-              <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Enroll now')}</a>
-              <span class="fine">Opens Messenger to enroll with our team. Ask for the current price and promo. Pay via GCash.</span>
+              <a class="cta" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Get Access')}</a>
+              <span class="fine">Opens Messenger — our team will set up your access.</span>
             </div>
           </div>
         </article>`).join('')}
