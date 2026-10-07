@@ -1922,7 +1922,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const s = JSON.parse(localStorage.getItem('ecad_ref') || 'null'); if (s && Date.now() - s.t < 60 * 864e5) return s.c;
   } catch (_) {} return ''; })();
   const enrollLink = (p, upgrade) => MESSENGER + '?text=' + encodeURIComponent(
-    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'get access to'} the ${p.name} package (${p.who}).${AFF_CODE ? ' Referral code: ' + AFF_CODE + '.' : ''} My email: `);
+    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'get access to'} the ${p.name} package (${p.who}).${AFF_CODE ? '\nReferral code: ' + AFF_CODE : ''}\n\n` +
+    `Name: \nPhone #: \nEmail: \n\n` +
+    `*** IMPORTANT: Your email will be your USERNAME to log in to ECADEMY. Please make sure it is correct. ***`);
   const PACKAGES = {
     J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
          img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
@@ -2096,7 +2098,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
               <a class="cta${pkg ? '' : ' cta-nudge'}" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Get Access')}</a>
-              <span class="fine">Opens Messenger — our team will set up your access.</span>
+              <span class="fine">Opens Messenger. Fill in your name, phone and email. <b style="color:var(--amber)">Your email will be your username.</b></span>
             </div>
           </div>
         </article>`).join('')}
