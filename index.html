@@ -1515,7 +1515,7 @@
 <section class="plans" id="plans" aria-label="ECADEMY packages">
   <div class="section-kicker">Choose your package</div>
   <div class="section-title">
-    <h2>Which rank are you training for?</h2>
+    <h2>Choose your package</h2>
     <p>Each package unlocks the decks for your rank and every rank below it. Message us for the current price and promo, then log in and the simulators open here.</p>
   </div>
   <div class="pkg-carousel" id="planGrid" aria-roledescription="carousel" aria-label="ECADEMY packages"></div>
@@ -1567,24 +1567,26 @@
       toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
     }
 
+    /* opened deck: its lessons open in a full-width panel under the card's row, the cards stay in place */
+    const rankPanel = document.createElement('section'); rankPanel.className = 'rank-panel'; rankPanel.hidden = true;
+    rankPanel.innerHTML = '<div class="rank-panel-head"><div><span class="rank-panel-no"></span><h3></h3></div><button type="button" class="rank-panel-x" aria-label="Close">×</button></div>';
+    document.querySelectorAll('.rank-card').forEach(card => { const m = card.querySelector('.rank-menu'); if(m){ card._menu = m; card._home = document.createComment('menu'); m.before(card._home); } });
+    function closeRank(card){ if(!card) return; card.classList.remove('open'); card.querySelector('.rank-main').setAttribute('aria-expanded','false'); if(card._menu && card._home) card._home.after(card._menu); rankPanel.hidden = true; rankPanel.remove(); }
+    rankPanel.querySelector('.rank-panel-x').addEventListener('click', () => { const c = document.querySelector('.rank-card.open'); closeRank(c); c && c.scrollIntoView({behavior:'smooth', block:'nearest'}); });
     document.querySelectorAll('.rank-main').forEach(button => {
       button.addEventListener('click', () => {
         const card = button.closest('.rank-card');
         const isOpen = card.classList.contains('open');
-
-        document.querySelectorAll('.rank-card.open').forEach(other => {
-          if(other !== card){
-            other.classList.remove('open');
-            other.querySelector('.rank-main').setAttribute('aria-expanded','false');
-          }
-        });
-
-        card.classList.toggle('open', !isOpen);
-        button.setAttribute('aria-expanded', String(!isOpen));
-
-        if(!isOpen){
-          setTimeout(() => card.scrollIntoView({behavior:'smooth', block:'nearest'}), 80);
-        }
+        document.querySelectorAll('.rank-card.open').forEach(closeRank);
+        if(isOpen) return;
+        card.classList.add('open'); button.setAttribute('aria-expanded','true');
+        rankPanel.dataset.rank = card.dataset.rank;
+        rankPanel.style.setProperty('--rank-accent', getComputedStyle(card).getPropertyValue('--rank-accent'));
+        rankPanel.querySelector('.rank-panel-no').textContent = card.querySelector('.rank-no').textContent;
+        rankPanel.querySelector('h3').textContent = card.querySelector('h3').textContent;
+        if(card._menu) rankPanel.appendChild(card._menu);
+        card.after(rankPanel); rankPanel.hidden = false;
+        setTimeout(() => rankPanel.scrollIntoView({behavior:'smooth', block:'nearest'}), 80);
       });
     });
 
@@ -1671,23 +1673,23 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const D = Math.PI / 180, TILT = 23.5 * D;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // ---------- canvases ----------
-  const gc = document.createElement("canvas"), oc = document.createElement("canvas"); gc.id = "egl"; oc.id = "eov";
+  const gc = document.createElement("canvas"), oc = document.createElement("canvas"), xc = document.createElement("canvas"); gc.id = "egl"; oc.id = "eov"; xc.className = "eg-axis"; let C3 = 0; const g3 = xc.getContext("2d");
   const gl = gc.getContext("webgl", {antialias:true, premultipliedAlpha:false}) || gc.getContext("experimental-webgl");
   if (!gl) return; // keep the CSS globe
   const tip = document.createElement("div"); tip.className = "eg-tip"; stage.appendChild(tip);
   
   // ---------- WebGL globe ----------
   const VS = "attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}";
-  const FS = `precision highp float;varying vec2 v;uniform sampler2D T;uniform float spin,tilt,aspect,time;
+  const FS = `precision highp float;varying vec2 v;uniform sampler2D T;uniform float spin,tilt,aspect,time;uniform mat3 G;uniform vec3 SUN;
   vec3 storm(vec3 col,vec2 P,vec2 c,float r,float w){vec2 d=P-c;float L=length(d);float a=time*w;float cs=cos(a),sn=sin(a);vec2 q=c+vec2(d.x*cs-d.y*sn,d.x*sn+d.y*cs);vec3 rc=texture2D(T,q/vec2(1774.,887.)).rgb;return mix(col,rc,smoothstep(r,r*.6,L));}
   const float PI=3.14159265;
   void main(){vec2 p=v*2.-1.;float r2=dot(p,p);if(r2>1.){gl_FragColor=vec4(0.);return;}
-   vec3 n=vec3(p,sqrt(1.-r2));float c=cos(tilt),s=sin(tilt);vec3 q=vec3(c*n.x-s*n.y,s*n.x+c*n.y,n.z);
+   vec3 n=vec3(p,sqrt(1.-r2));vec3 q=G*n;
    float lat=asin(clamp(q.y,-1.,1.)),lon=atan(q.x,q.z)+spin;vec2 t=vec2(fract(lon/(2.*PI)+.5),.5-lat/PI);
    vec3 col=texture2D(T,t).rgb;vec2 P=t*vec2(1774.,887.);
    col=storm(col,P,vec2(592.,330.),48.,.16);col=storm(col,P,vec2(1677.,347.),58.,.14);col=storm(col,P,vec2(360.,602.),52.,-.15);col=storm(col,P,vec2(1205.,662.),58.,-.13);
-   vec3 L=normalize(vec3(-.5,.42,.76));float lam=max(dot(n,L),0.);
-   col*=.42+.78*lam;
+   vec3 L=SUN;float dl=dot(n,L);float lam=max(dl,0.);float day=smoothstep(-.08,.12,dl);
+   col*=mix(.22,.42+.78*lam,day);col+=vec3(1.,.72,.38)*.12*max(0.,1.-abs(dl*7.-.25));
    float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),36.);float ocean=smoothstep(.15,.0,col.g-col.b*.55);
    col+=spec*(.18+.32*ocean)*vec3(.7,.88,1.);
    float rim=pow(1.-n.z,2.6);col=mix(col,vec3(.32,.76,1.),rim*.72);
@@ -1696,14 +1698,34 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   let prog; try { prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw 1; } catch (e) { return; }
   gl.useProgram(prog); const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
   const aL = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(aL); gl.vertexAttribPointer(aL, 2, gl.FLOAT, false, 0, 0);
-  const uTime = gl.getUniformLocation(prog, "time"), uSpin = gl.getUniformLocation(prog, "spin"), uTilt = gl.getUniformLocation(prog, "tilt");
+  const uTime = gl.getUniformLocation(prog, "time"), uSpin = gl.getUniformLocation(prog, "spin"), uTilt = gl.getUniformLocation(prog, "tilt"), uG = gl.getUniformLocation(prog, "G"), uSun = gl.getUniformLocation(prog, "SUN");
+  // ---------- seasons: axis fixed at 23.5° in space; seen from the Sun it leans toward it in June, away in December ----------
+  // view frame: x right, y up (= ecliptic north), z toward viewer. Sun in the ecliptic plane, in front-left.
+  const SUNV = (() => { const a = [-.8, 0, .6], l = Math.hypot(...a); return a.map(x => x / l); })(), SUNA = Math.atan2(-SUNV[0], SUNV[2]);
+  const YEAR = 60; // seconds for one orbit
+  const doy0 = (() => { const d = new Date(), j = new Date(d.getFullYear(), 0, 1); return (d - j) / 864e5; })();
+  let lamS = ((doy0 - 79.5) / 365.25) * 2 * Math.PI; // Sun's ecliptic longitude (0 = March equinox)
+  let M = [1, 0, 0, 0, 1, 0, 0, 0, 1], AX = [0, 1, 0], DEC = 0;
+  function season(){ const psi = lamS + SUNA; // axis azimuth so that sin(dec) = sin(23.5°)·sin(lamS)
+    const st = Math.sin(TILT), ct = Math.cos(TILT); AX = [st * Math.cos(psi), ct, st * Math.sin(psi)];
+    const u = [AX[2], 0, -AX[0]], ul = Math.hypot(u[0], u[2]) || 1; u[0] /= ul; u[2] /= ul; // rotation axis: Y × A
+    const c = ct, s = st, t = 1 - c, x = u[0], y = 0, z = u[2]; // Rodrigues, rotates Y onto AX
+    M = [t*x*x + c, t*x*y - s*z, t*x*z + s*y,  t*x*y + s*z, t*y*y + c, t*y*z - s*x,  t*x*z - s*y, t*y*z + s*x, t*z*z + c];
+    DEC = Math.asin(AX[0] * SUNV[0] + AX[1] * SUNV[1] + AX[2] * SUNV[2]) / D; }
+  season();
+  const seasonEl = document.createElement("div"); seasonEl.className = "eg-season"; stage.appendChild(seasonEl);
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function seasonText(){ const doy = ((lamS / (2 * Math.PI)) * 365.25 + 79.5 + 365.25 * 4) % 365.25, dt = new Date(2026, 0, 1 + Math.floor(doy));
+    const a = Math.abs(DEC), hemi = DEC >= 0 ? "N" : "S"; let ev = "";
+    if (a > 23.1) ev = DEC > 0 ? " · June solstice · Tropic of Cancer" : " · December solstice · Tropic of Capricorn"; else if (a < 1.2) ev = (doy < 180 ? " · March" : " · September") + " equinox";
+    return `Axis 23.5° · ${MON[dt.getMonth()]} ${dt.getDate()} · Sun overhead <b>${a.toFixed(1)}°${hemi}</b>${ev}`; }
   gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   let texReady = false;
   const img = new Image(); img.onload = () => { const cv = document.createElement("canvas"); cv.width = 2048; cv.height = 1024; cv.getContext("2d").drawImage(img, 0, 0, 2048, 1024);
     const tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, cv); gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const ext = gl.getExtension("EXT_texture_filter_anisotropic"); if (ext) gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 4);
-    texReady = true; surf.classList.add("gl"); axis.classList.add("gl"); surf.appendChild(gc); surf.appendChild(oc); resize(); };
+    texReady = true; surf.classList.add("gl"); axis.classList.add("gl"); surf.appendChild(gc); surf.appendChild(oc); axis.appendChild(xc); resize(); };
   img.src = m[1];
   // ---------- shipping routes (lat, lon waypoints) ----------
   // waypoints in TEXTURE pixel space (1774 x 887 artistic map) so ships follow the painted sea lanes
@@ -1723,11 +1745,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const SHIPS = PLAN.map((p, i) => { const r = ROUTES[p[0]]; return {k:p[0], r, type:p[1], s:p[2] * r.len, dir:p[3] || 1, kn:+(12 + (i * 37 % 11)).toFixed(1), name:"MV " + NAMES[i % NAMES.length], trail:[], tt:0}; });
   // ---------- view state ----------
   let spin = 117 * D, auto = true, follow = null, drag = null, hover = null, W = 0, H = 0, dpr = 1, vis = true, last = performance.now();
-  function proj(v) { const c = Math.cos(spin), s = Math.sin(spin), qx = v[0] * c - v[2] * s, qz = v[0] * s + v[2] * c, qy = v[1]; const ct = Math.cos(TILT), st = Math.sin(TILT);
-    const nx = ct * qx + st * qy, ny = -st * qx + ct * qy; return {x:W / 2 + nx * W / 2, y:H / 2 - ny * H / 2, z:qz}; }
+  function proj(v) { const c = Math.cos(spin), s = Math.sin(spin), qx = v[0] * c - v[2] * s, qz = v[0] * s + v[2] * c, qy = v[1];
+    const nx = M[0] * qx + M[1] * qy + M[2] * qz, ny = M[3] * qx + M[4] * qy + M[5] * qz, nz = M[6] * qx + M[7] * qy + M[8] * qz; return {x:W / 2 + nx * W / 2, y:H / 2 - ny * H / 2, z:nz}; }
   // q (globe frame) relative to spin: shader lon = atan(q.x,q.z)+spin  =>  q = rotY(-spin) * v
-  function resize() { dpr = Math.min(2, window.devicePixelRatio || 1); W = surf.clientWidth; H = surf.clientHeight; for (const c of [gc, oc]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } gl.viewport(0, 0, gc.width, gc.height); }
-  if (window.ResizeObserver) new ResizeObserver(resize).observe(surf); else addEventListener("resize", resize);
+  function resize() { dpr = Math.min(2, window.devicePixelRatio || 1); W = surf.clientWidth; H = surf.clientHeight; for (const c of [gc, oc]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); } gl.viewport(0, 0, gc.width, gc.height); C3 = xc.clientWidth / 2; xc.width = xc.height = Math.round(xc.clientWidth * dpr); }
+  if (window.ResizeObserver) { const ro = new ResizeObserver(resize); ro.observe(surf); ro.observe(xc); } else addEventListener("resize", resize);
   if (window.IntersectionObserver) new IntersectionObserver(e => { vis = e[0].isIntersecting; }).observe(stage);
   const g2 = oc.getContext("2d");
   function shipDraw(sh, p, ang, k) { const col = TYPES[sh.type][1], L = 21 * k, B = 5.6 * k; g2.save(); g2.translate(p.x, p.y); g2.rotate(ang);
@@ -1742,9 +1764,24 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if (!reduce) { for (const sh of SHIPS) { const v = (sh.kn / 18) * .0045; sh.s += sh.dir * v * dt * 60 * .06; if (sh.s > sh.r.len) { sh.s = sh.r.len; sh.dir = -1; sh.trail = []; } if (sh.s < 0) { sh.s = 0; sh.dir = 1; sh.trail = []; } sh.tt += dt; const pos = at(sh.r, sh.s); sh.pos = pos; if (sh.tt > .25) { sh.tt = 0; sh.trail.push(pos); if (sh.trail.length > 28) sh.trail.shift(); } }
       if (follow) { const p = follow.pos, tgt = Math.atan2(p[0], p[2]); let d = tgt - spin; d = Math.atan2(Math.sin(d), Math.cos(d)); spin += d * Math.min(1, dt * 2.5); }
       else if (auto && !drag) spin -= dt * 2 * Math.PI / 120; } else SHIPS.forEach(sh => sh.pos = sh.pos || at(sh.r, sh.s));
+    if (!reduce) { lamS += dt * 2 * Math.PI / YEAR; season(); }
+    if (!frame.st || now - frame.st > 250) { frame.st = now; seasonEl.innerHTML = seasonText(); }
+    gl.uniformMatrix3fv(uG, false, new Float32Array(M)); gl.uniform3fv(uSun, SUNV);
     gl.uniform1f(uSpin, spin); gl.uniform1f(uTime, reduce ? 0 : now / 1000); gl.uniform1f(uTilt, TILT); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     // overlay
     g2.setTransform(dpr, 0, 0, dpr, 0, 0); g2.clearRect(0, 0, W, H); const k0 = W / 600, t = now / 1000;
+    g3.setTransform(dpr, 0, 0, dpr, 0, 0); g3.clearRect(0, 0, 2 * C3, 2 * C3);
+    { const ax = (f) => ({x:C3 + AX[0] * f * W / 2, y:C3 - AX[1] * f * W / 2}); const fe = 1 / (Math.hypot(AX[0], AX[1]) || 1);
+      g3.strokeStyle = "rgba(12,45,72,.6)"; g3.lineWidth = 1.4; g3.beginPath();
+      for (const sg of [1, -1]) { const vis = sg * AX[2] > 0, a = ax(sg * (vis ? 1 : fe)), b = ax(sg * (fe + .14)); g3.moveTo(a.x, a.y); g3.lineTo(b.x, b.y); }
+      g3.stroke();
+      for (const sg of [1, -1]) if (sg * AX[2] > 0) { const p = ax(sg); g3.beginPath(); g3.arc(p.x, p.y, 2.4 * k0, 0, 7); g3.fillStyle = "rgba(255,255,255,.9)"; g3.fill(); }
+      g3.font = `700 ${Math.max(10, 11 * k0)}px "Albert Sans",system-ui,sans-serif`; g3.textAlign = "center"; g3.textBaseline = "middle"; g3.fillStyle = "#0C2D48"; const pn2 = ax(fe + .22), ps2 = ax(-fe - .22); g3.fillText("N", pn2.x, pn2.y); g3.fillText("S", ps2.x, ps2.y); g3.textAlign = "left"; }
+    // axis, equator, tropics and the point where the Sun is overhead
+    const latLine = (la, col, dash) => { g2.beginPath(); let pen = false; for (let lo = -180; lo <= 180; lo += 3) { const p = proj(v3(la, lo)); if (p.z > 0) { pen ? g2.lineTo(p.x, p.y) : g2.moveTo(p.x, p.y); pen = true; } else pen = false; } g2.strokeStyle = col; g2.setLineDash(dash); g2.lineWidth = 1 * k0; g2.stroke(); g2.setLineDash([]); };
+    latLine(0, "rgba(255,255,255,.45)", [2 * k0, 3 * k0]); latLine(23.44, "rgba(255,210,110,.6)", [6 * k0, 4 * k0]); latLine(-23.44, "rgba(255,210,110,.6)", [6 * k0, 4 * k0]);
+    
+    { const sp = {x:W / 2 + SUNV[0] * W / 2, y:H / 2 - SUNV[1] * H / 2}; const gr = g2.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, 16 * k0); gr.addColorStop(0, "rgba(255,236,160,.95)"); gr.addColorStop(.35, "rgba(255,200,90,.55)"); gr.addColorStop(1, "rgba(255,200,90,0)"); g2.fillStyle = gr; g2.beginPath(); g2.arc(sp.x, sp.y, 16 * k0, 0, 7); g2.fill(); }
     // routes
     g2.lineWidth = 1.1 * k0; g2.setLineDash([3 * k0, 4 * k0]); g2.lineDashOffset = -t * 6;
     for (const key in ROUTES) { const r = ROUTES[key]; g2.beginPath(); let pen = false; for (const v of r.P) { const p = proj(v); if (p.z > .02) { pen ? g2.lineTo(p.x, p.y) : g2.moveTo(p.x, p.y); pen = true; } else pen = false; } g2.strokeStyle = "rgba(120,215,255,.32)"; g2.stroke(); }
@@ -1772,7 +1809,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   oc.addEventListener("pointerup", e => { const d = drag; drag = null; oc.classList.remove("drag"); if (d && !d.moved) { const sh = pick(e); follow = sh && sh !== follow ? sh : null; if (!follow && !hover) tip.classList.remove("on"); } else { auto = true; } });
   oc.addEventListener("pointerleave", () => { hover = null; if (!follow) tip.classList.remove("on"); });
   requestAnimationFrame(frame);
-  window.EGLOBE = {hits:() => (frame.hits || []).map(h => [h[0].name, h[1].x, h[1].y]), follow:() => follow && follow.name, spin:v => { spin = v * D; auto = false; }};
+  window.EGLOBE = {hits:() => (frame.hits || []).map(h => [h[0].name, h[1].x, h[1].y]), follow:() => follow && follow.name, spin:v => { spin = v * D; auto = false; }, season:v => { lamS = v * D; season(); }};
 })();
 </script>
 
@@ -2077,7 +2114,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     }
     $('enrollClose').onclick = () => modal.classList.remove('open');
     modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
-    document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card').dataset.rank); }, true);
+    document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card,.rank-panel').dataset.rank); }, true);
 
     const pill = $('loginPill');
     if(session){
@@ -2328,6 +2365,29 @@ footer::before{content:"";position:absolute;inset:0 calc(50% - 50vw);background:
 .login-box .err{color:#A3191F}
 .login-box .alt a{color:var(--sounding)}
 .toast{background:var(--ink);color:#fff;border:0}
+
+/* ---------- tweaks: deck panel, package spacing, app opening, globe season ---------- */
+.rank-grid{grid-auto-flow:row dense}
+.rank-grid .rank-card.open{grid-column:auto;outline:2px solid var(--rank-accent);outline-offset:-1px}
+.rank-panel{grid-column:1/-1;background:#fff;border:1px solid var(--rule);border-top:4px solid var(--rank-accent,var(--sounding));border-radius:14px;padding:18px 22px 22px;box-shadow:0 20px 44px rgba(12,45,72,.12);animation:panelIn .32s ease both}
+.rank-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.rank-panel-no{display:block;color:var(--rank-accent);font:600 .82rem/1 "Albert Sans",system-ui,sans-serif;margin-bottom:6px}
+.rank-panel h3{margin:0;font-size:1.45rem;font-weight:600;color:var(--ink)}
+.rank-panel-x{width:38px;height:38px;border-radius:50%;border:1px solid var(--rule);background:#fff;color:var(--ink);font-size:1.4rem;line-height:1;cursor:pointer}
+.rank-panel-x:hover{background:var(--ink);color:#fff}
+.rank-panel .rank-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start;margin:0;padding-top:0;border-top:0}
+.rank-panel .role-note{grid-column:1/-1;margin:0 0 4px}
+@media (max-width:820px){.rank-panel .rank-menu{grid-template-columns:1fr}.rank-panel{padding:16px}}
+@keyframes panelIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.pkg-cta{margin-top:24px}
+.pkg-thumbs img:only-child{aspect-ratio:21/9}
+.app-overlay.open{animation:appIn .38s ease both}
+@keyframes appIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.globe-surface.gl ~ .earth-axis-line,.globe-stage:has(.globe-surface.gl) .earth-axis-line{display:none}
+.eg-axis{position:absolute;left:-16%;top:-16%;width:132%;height:132%;pointer-events:none;z-index:5}
+.eg-season{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);z-index:6;white-space:nowrap;font:600 12px/1.3 "Albert Sans",system-ui,sans-serif;color:var(--ink-2);background:rgba(255,255,255,.9);border:1px solid var(--rule);border-radius:20px;padding:6px 12px;box-shadow:0 6px 16px rgba(12,45,72,.08);pointer-events:none}
+.eg-season b{color:var(--brass)}
+@media (prefers-reduced-motion:reduce){.rank-panel,.app-overlay.open{animation:none}}
 .member-bar{background:var(--ink);border:0;color:#fff;box-shadow:0 12px 30px rgba(12,45,72,.3)}
 .member-bar a{color:var(--brass-2)}
 
