@@ -2611,8 +2611,24 @@ footer::before{background:#0E2238}
 .pkg-cta .cta.owned{background:#fff!important;color:var(--ink)!important;border:1px solid var(--rule);cursor:default;pointer-events:none;box-shadow:none}
 .member-bar{background:var(--ink);border:0;color:#fff;box-shadow:0 12px 30px rgba(12,45,72,.3)}
 .member-bar a{color:var(--brass-2)}
+/* rank cards: bigger, bolder, crisp (not faded) */
+.rank-card .rank-main{padding:162px 22px 4px;min-height:270px}
+.rank-card .rank-no{color:#1B4470!important;font:800 .86rem/1 "Albert Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.rank-card .rank-no::before{content:"";width:18px;height:3px;border-radius:2px;background:#1B4470}
+.rank-card h3{font-size:clamp(1.65rem,2.1vw,1.95rem)!important;font-weight:800!important;letter-spacing:-.03em!important;line-height:1.08;color:#0B1B2E!important;margin:0 0 10px}
+.rank-card p{color:var(--ink-2)!important;font-size:1rem;font-weight:500;line-height:1.55}
+.rank-card .rank-watermark.rank-photo img{filter:saturate(1.08) contrast(1.05)}
+.rank-card.locked .rank-main{filter:none}
+.rank-panel h3{font-size:1.6rem!important;font-weight:800!important}
+.rank-panel .rank-panel-no{color:#1B4470;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.section-title p{color:var(--ink-2);font-size:1.05rem;font-weight:500}
+.rank-grid{align-items:stretch}
+.rank-card{display:flex;flex-direction:column}
+.rank-card .rank-main{flex:1 0 auto;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left}
 
 @media (max-width:640px){
+  .rank-card h3{font-size:1.7rem!important}
+  .rank-card p{font-size:.98rem}
   .rank-card .rank-main{padding-top:150px}
   .rank-watermark.rank-photo{height:134px}
   .rank-arrow{top:108px}
