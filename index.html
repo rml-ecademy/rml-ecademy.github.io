@@ -2137,8 +2137,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
             <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
-              <a class="cta${pkg ? '' : ' cta-nudge'}" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg && pkg.ranks.length >= p.ranks.length ? (pkg === p ? 'Your package' : 'Included in your package') : (pkg ? 'Upgrade to ' + p.name : 'Get Access')}</a>
-              <span class="fine">Opens Messenger. Fill in your name, phone and email. <b style="color:var(--amber)">Your email will be your username.</b></span>
+              ${pkg && pkg.ranks.length >= p.ranks.length
+                ? `<span class="cta owned">✓ ${pkg === p ? 'Your current package' : 'Already included in your ' + pkg.name + ' package'}</span>
+              <span class="fine">These decks are already open in your account.</span>`
+                : `<a class="cta${pkg ? '' : ' cta-nudge'}" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg ? 'Upgrade to ' + p.name : 'Get Access'}</a>
+              <span class="fine">Opens Messenger. Fill in your name, phone and email. <b style="color:var(--amber)">Your email will be your username.</b></span>`}
             </div>
           </div>
         </article>`).join('')}
@@ -2454,6 +2457,7 @@ header{border-bottom:1px solid var(--rule);background:rgba(255,255,255,.92)}
 footer::before{background:#111}
 .enroll-box .tier{color:var(--mute)}
 .toast{background:#111}
+.pkg-cta .cta.owned{background:#fff!important;color:var(--ink)!important;border:1px solid var(--rule);cursor:default;pointer-events:none;box-shadow:none}
 .member-bar{background:var(--ink);border:0;color:#fff;box-shadow:0 12px 30px rgba(12,45,72,.3)}
 .member-bar a{color:var(--brass-2)}
 
