@@ -1635,7 +1635,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     /* ---------- simulator tone: "Dim" lifts the near-black panels to a mild slate; screens drawn on canvas stay as they are ---------- */
     const appTone = (() => {
       const RX = /#([0-9a-f]{3,8})\b|rgba?\([^)]*\)/gi, PROPS = ['background-color','background-image','border-top-color','border-right-color','border-bottom-color','border-left-color','outline-color'];
-      let mode = 'dim'; try { mode = localStorage.getItem('ecad_tone') || 'dim'; } catch(_) {}
+      const DARK_FIRST = ['radar', 'radardemo']; // radar screens stay full dark unless the student switches
+      let mode = 'dim';
+      function modeFor(app){ let m = null; try { m = localStorage.getItem('ecad_tone_' + app); } catch(_) {} return m || (DARK_FIRST.includes(app) ? 'dark' : 'dim'); }
       let store = [], obs = null, busy = false, doc = null;
       function parse(t){ t = t.trim(); let m;
         if(t[0] === '#'){ let h = t.slice(1); if(h.length === 3 || h.length === 4) h = h.split('').map(c => c + c).join(''); if(h.length !== 6 && h.length !== 8) return null; return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16), h.length === 8 ? parseInt(h.slice(6,8),16) / 255 : 1]; }
@@ -1664,8 +1666,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       function off(){ if(obs) obs.disconnect(); obs = null; busy = true; for(let i = store.length - 1; i >= 0; i--){ const [st, n, v, pr] = store[i]; try { st.setProperty(n, v, pr); } catch(_) {} } store = []; busy = false; }
       const btn = document.getElementById('appTone');
       function label(){ btn.textContent = mode === 'dim' ? '◐ Dim' : '● Dark'; btn.setAttribute('aria-pressed', String(mode === 'dim')); }
-      function apply(){ off(); let d = null; try { d = frame.contentDocument; } catch(_) {} if(d && mode === 'dim' && d.documentElement) on(d); label(); }
-      btn.addEventListener('click', () => { mode = mode === 'dim' ? 'dark' : 'dim'; try { localStorage.setItem('ecad_tone', mode); } catch(_) {} apply(); });
+      function apply(){ off(); mode = modeFor(currentApp); let d = null; try { d = frame.contentDocument; } catch(_) {} if(d && mode === 'dim' && d.documentElement) on(d); label(); }
+      btn.addEventListener('click', () => { const m = modeFor(currentApp) === 'dim' ? 'dark' : 'dim'; try { localStorage.setItem('ecad_tone_' + currentApp, m); } catch(_) {} apply(); });
       label();
       return { apply };
     })();
