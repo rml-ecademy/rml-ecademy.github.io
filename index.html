@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta content="#F4F0E8" name="theme-color"/>
+<meta content="#EAF0F6" name="theme-color"/>
 <title>ECADEMY Maritime — Train like you're on the bridge</title>
 <meta name="description" content="Maritime simulators and training for deck officers, Third Officer to Master. Radar/ARPA, ECDIS, LSA/FFE, Draft Survey and Full Bridge. Learn online, anytime, on any device.">
 <meta property="og:type" content="website">
@@ -2513,11 +2513,14 @@ footer::before{background:#111}
 @media (max-width:640px){#appOverlay #appTab{display:none}#appOverlay .app-btn{padding:8px 10px}}
 .psc-tag{background:#fff!important;color:var(--ink)!important;border:1px solid var(--rule)!important;box-shadow:none!important}
 .psc-tag .psc-dot{background:var(--port)!important;box-shadow:none!important}
-/* page tone: sand, like chart paper; cards stay white */
-:root{--chart:#F4F0E8;--shoal:#ECE6DA;--shoal-2:#DCD4C3;--rule:#E3DCCD;--line:#E3DCCD}
-html body{background:#F4F0E8}
-header{background:rgba(244,240,232,.94)}
-.plans::before{background:#ECE6DA}
+/* page tone: light navy (pale sea blue); cards stay white; navy ink and buttons */
+:root{--chart:#EAF0F6;--shoal:#DDE6F0;--shoal-2:#C9D6E4;--rule:#D3DEEA;--line:#D3DEEA;--ink:#10233A;--ink-2:#2A3D55;--mute:#5B6E84}
+html body{background:#EAF0F6}
+header{background:rgba(234,240,246,.94)}
+.plans::before{background:#DDE6F0}
+.pkg-cta .cta,.pkg-slide.featured .pkg-cta .cta,.enroll-box .cta,.login-box .cta,.sim-tag,.pkg-dots button.on{background:#12304F!important;border-color:#12304F}
+.pkg-cta .cta:hover,.enroll-box .cta:hover,.login-box .cta:hover{background:#1B4470!important}
+footer::before{background:#0E2238}
 .pkg-cta .cta.owned{background:#fff!important;color:var(--ink)!important;border:1px solid var(--rule);cursor:default;pointer-events:none;box-shadow:none}
 .member-bar{background:var(--ink);border:0;color:#fff;box-shadow:0 12px 30px rgba(12,45,72,.3)}
 .member-bar a{color:var(--brass-2)}
