@@ -16,7 +16,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="629">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
     :root{
       --navy:#061622;
@@ -1548,14 +1548,26 @@
 </div>
 <div class="app-overlay" id="appOverlay" role="dialog" aria-modal="true" aria-label="Simulator">
   <div class="app-bar">
-    <div class="app-crumb"><b>ECADEMY</b> <span class="hide-sm">· Second Officer · Navigational Equipment ·</span> <strong id="appTitle">Radar / ARPA</strong></div>
-    <button class="app-btn" id="appTab" type="button">↗ Open in new tab</button>
+    <button class="app-btn ico" id="appMenuBtn" type="button" title="Lessons" aria-label="Show or hide the lesson menu">☰</button>
+    <div class="app-brand"><span>E</span>CADEMY</div>
+    <button class="app-head" id="appHead" type="button" title="Objective and tips">
+      <span class="app-crumb"><span class="hide-sm">Second Officer · Navigational Equipment ·</span></span>
+      <strong id="appTitle">Radar / ARPA</strong>
+      <span class="app-obj" id="appObj"></span>
+    </button>
+    <button class="app-btn" id="appTab" type="button"><i>↗</i><span class="lb"> New tab</span></button>
     <button class="app-btn" id="appTone" type="button" title="Switch between dimmed and full dark">◐ Dim</button>
-    <button class="app-btn" id="appFull" type="button">⛶ Full screen</button>
-    <button class="app-btn close" id="appClose" type="button">✕ Back to ECADEMY</button>
+    <button class="app-btn" id="appFull" type="button" title="Full screen"><i>⛶</i><span class="lb"> Full screen</span></button>
+    <button class="app-btn close" id="appClose" type="button"><i>✕</i><span class="lb"> Back to ECADEMY</span></button>
   </div>
-  <div class="app-loading" id="appLoading">Loading simulator…</div>
-  <iframe class="app-frame" id="appFrame" title="Simulator" allow="fullscreen"></iframe>
+  <div class="app-info" id="appInfo" hidden></div>
+  <div class="app-body">
+    <aside class="app-menu" id="appMenu" aria-label="Lessons in this deck"></aside>
+    <div class="app-stage">
+      <div class="app-loading" id="appLoading">Loading simulator…</div>
+      <iframe class="app-frame" id="appFrame" title="Simulator" allow="fullscreen"></iframe>
+    </div>
+  </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <script>
@@ -1610,7 +1622,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     });
     function openApp(key, start){
       const app = APPS[key]; if(!app) return false;
-      document.querySelector('.app-crumb .hide-sm').textContent = app.crumb || 'Second Officer · Navigational Equipment ·';
+      document.querySelector('.app-crumb .hide-sm').textContent = (app.crumb || 'Second Officer · Navigational Equipment ·').replace(/\s*·\s*$/, '');
+      try { lessonUI.open(key, start, app); } catch(_) {}
       const loading = document.getElementById('appLoading');
       document.getElementById('appTitle').textContent = app.title;
       overlay.classList.add('open'); document.body.style.overflow = 'hidden';
@@ -1666,7 +1679,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         obs.observe(d.documentElement, { subtree:true, childList:true, attributes:true, attributeFilter:['style'] }); }
       function off(){ if(obs) obs.disconnect(); obs = null; busy = true; for(let i = store.length - 1; i >= 0; i--){ const [st, n, v, pr] = store[i]; try { st.setProperty(n, v, pr); } catch(_) {} } store = []; busy = false; }
       const btn = document.getElementById('appTone');
-      function label(){ btn.textContent = mode === 'dim' ? '◐ Dim' : '● Dark'; btn.setAttribute('aria-pressed', String(mode === 'dim')); }
+      function label(){ btn.innerHTML = mode === 'dim' ? '<i>◐</i><span class="lb"> Dim</span>' : '<i>●</i><span class="lb"> Dark</span>'; btn.setAttribute('aria-pressed', String(mode === 'dim')); }
       function apply(){ off(); mode = modeFor(currentApp); let d = null; try { d = frame.contentDocument; } catch(_) {} if(d && mode === 'dim' && d.documentElement) on(d); label(); }
       btn.addEventListener('click', () => { const m = modeFor(currentApp) === 'dim' ? 'dark' : 'dim'; try { localStorage.setItem('ecad_tone_' + currentApp, m); } catch(_) {} apply(); });
       label();
@@ -1677,6 +1690,48 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       overlay.classList.remove('open'); document.body.style.overflow = ''; frame.removeAttribute('srcdoc'); if(frame.src.startsWith('blob:')) URL.revokeObjectURL(frame.src.split('#')[0]); frame.src = 'about:blank'; currentApp = null;
     }
     document.getElementById('appClose').addEventListener('click', closeApp);
+
+    /* ---------- lesson screen: compact header, collapsible lesson menu, objective panel ---------- */
+    const lessonUI = (() => {
+      const OBJ = {
+        radar:'Track targets, read CPA/TCPA and decide the COLREG action in time.', radardemo:'Try the radar controls: gain, sea, rain, range, EBL/VRM.',
+        ecdis:'Plan, check and monitor a Manila–Cebu route; keep charts and safety settings correct.', navdesk:'Run the weekly chart and publication update on the bridge PC.',
+        draft:'Survey the ship by hand: drafts, corrections, density and soundings, to find the cargo on board.', dock:'Berth, unberth and anchor with engine, rudder, tugs and lines.',
+        flare:'Know the red hand flare and fire it the right way.', rocket:'Know the rocket parachute flare and fire it the right way.', lsa:'Inspect and use each life-saving appliance as PSC expects.',
+        epirb:'Test, register and activate the EPIRB correctly.', sart:'Test the SART and recognise it on the radar.', stab:'Read the GZ curve and keep the ship stable.', mgbk:'See how M, G, B and K move as the ship loads.',
+        apem:'Build a voyage plan through Appraisal, Planning, Execution and Monitoring.', appr:'Gather every source for the passage appraisal.', plan:'Turn the appraisal into a safe planned route.',
+        mfhf:'Send and receive DSC calls on MF/HF.', satc:'Send and read SAT-C messages.', gvm:'Compare the gyro and the magnetic compass.', gyroerr:'Find and apply the gyro error.', mag:'Find deviation and correct the magnetic compass.', wefax:'Receive and read the weather fax chart.'};
+      const menu = document.getElementById('appMenu'), info = document.getElementById('appInfo'), mbtn = document.getElementById('appMenuBtn');
+      let lastBtn = null, closed = false;
+      try { closed = localStorage.getItem('ecad_menu') === 'closed'; } catch(_) {}
+      if(innerWidth < 760) closed = true;
+      const setClosed = c => { closed = c; overlay.classList.toggle('menu-closed', c); try { localStorage.setItem('ecad_menu', c ? 'closed' : 'open'); } catch(_) {} };
+      mbtn.addEventListener('click', () => setClosed(!closed));
+      document.addEventListener('click', e => { const b = e.target.closest('.topic-btn[data-app]'); if(b && !menu.contains(b)) lastBtn = b; }, true);
+      document.getElementById('appHead').addEventListener('click', () => { info.hidden = !info.hidden; });
+      const txt = el => { if(!el) return ''; const c = el.cloneNode(true); c.querySelectorAll('.sim-tag').forEach(x => x.remove()); return c.textContent.trim(); };
+      function open(key, start, app){
+        const src = (lastBtn && lastBtn.dataset.app === key) ? lastBtn : (document.querySelector(`.topic-btn[data-app="${key}"]${start ? `[data-start="${start}"]` : ''}`) || document.querySelector(`.topic-btn[data-app="${key}"]`));
+        const obj = OBJ[key] || 'Practise on the live simulator: ' + app.title + '.';
+        document.getElementById('appObj').textContent = obj;
+        info.hidden = true;
+        info.innerHTML = `<b>Objective</b> ${obj}<span class="sep"></span><b>Tips</b> ☰ shows or hides the lessons · ⛶ Full screen for more space · ◐ Dim / ● Dark changes the tone · Esc or ✕ goes back`;
+        const rm = src && src.closest('.rank-menu'); menu.innerHTML = '';
+        if(!rm){ overlay.classList.add('menu-none'); return; } overlay.classList.remove('menu-none');
+        const deck = rm.closest('.rank-card,.rank-panel'); const deckName = deck ? (deck.querySelector('h3') || {}).textContent || deck.dataset.rank : '';
+        let h = `<div class="am-deck">${deckName || 'Lessons'}</div>`;
+        rm.querySelectorAll('details.menu-group').forEach(g => { const bs = [...g.querySelectorAll('.topic-btn[data-app]')]; if(!bs.length) return;
+          h += `<div class="am-grp">${(g.querySelector('summary') || {}).textContent || ''}</div>`;
+          bs.forEach(b => { const i = [...rm.querySelectorAll('.topic-btn[data-app]')].indexOf(b); const on = b === src; const lk = b.classList.contains('locked');
+            h += `<button type="button" class="am-it${on ? ' on' : ''}${lk ? ' lk' : ''}" data-i="${i}">${txt(b)}${lk ? ' <span>🔒</span>' : ''}</button>`; }); });
+        menu.innerHTML = h;
+        const all = [...rm.querySelectorAll('.topic-btn[data-app]')];
+        menu.querySelectorAll('.am-it').forEach(it => it.addEventListener('click', () => { const b = all[+it.dataset.i]; if(!b || b === src) return;
+          if(b.classList.contains('locked')) closeApp(); lastBtn = b; b.click(); if(innerWidth < 760) setClosed(true); }));
+        overlay.classList.toggle('menu-closed', closed);
+      }
+      return { open };
+    })();
     document.getElementById('appFull').addEventListener('click', () => {
       if(document.fullscreenElement) document.exitFullscreen(); else overlay.requestFullscreen && overlay.requestFullscreen().catch(()=>{});
     });
@@ -2499,6 +2554,38 @@ header{border-bottom:1px solid var(--rule);background:rgba(255,255,255,.92)}
 footer::before{background:#111}
 .enroll-box .tier{color:var(--mute)}
 .toast{background:#111}
+/* ---------- lesson screen (inside): dark navy, compact header, collapsible lesson menu ---------- */
+#appOverlay{background:#0B1724;font-family:Inter,"Segoe UI",system-ui,sans-serif}
+#appOverlay .app-bar{background:#071521!important;border-bottom:1px solid #1d3247!important;min-height:54px;padding:6px 12px;gap:10px}
+#appOverlay .app-btn{font-family:Inter,system-ui,sans-serif!important;font-weight:600;font-size:.8rem;border-color:#2b4560!important;color:#E6EDF3!important;background:transparent}
+#appOverlay .app-btn:hover{border-color:#55D9F5!important;background:#132638!important}
+#appOverlay .app-btn.close{background:#0369A1!important;border-color:#0369A1!important;color:#fff!important}
+#appOverlay .app-btn.close:hover{background:#0B7DBF!important}
+#appOverlay .app-btn.ico{width:38px;padding:7px 0;font-size:1.05rem}
+.app-brand{font:700 1rem/1 Rajdhani,"Albert Sans",sans-serif;letter-spacing:.14em;color:#E6EDF3;white-space:nowrap}
+.app-brand span{color:#e5484d}
+.app-head{flex:1;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:baseline;text-align:left;background:none;border:0;padding:0 6px;cursor:pointer;color:#E6EDF3}
+.app-head .app-crumb{grid-column:1;grid-row:1;font:500 .72rem Inter,sans-serif!important;color:#A8BACB!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-head #appTitle{grid-column:2;grid-row:1;font:700 1.15rem/1.1 Rajdhani,"Albert Sans",sans-serif;letter-spacing:.03em;color:#E6EDF3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-head .app-obj{grid-column:1 / span 2;grid-row:2;font:400 .75rem/1.3 Inter,sans-serif;color:#A8BACB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-head .app-obj::after{content:"  ⓘ";color:#55D9F5}
+.app-info{background:#0E2133;border-bottom:1px solid #1d3247;color:#E6EDF3;font:400 .82rem/1.5 Inter,sans-serif;padding:10px 16px}
+.app-info b{color:#55D9F5;font-weight:600;margin-right:6px}.app-info .sep{display:inline-block;width:18px}
+.app-body{flex:1;display:flex;min-height:0;position:relative}
+.app-menu{width:270px;flex:0 0 270px;background:#132638;border-right:1px solid #1d3247;overflow:auto;transition:margin-left .25s ease;padding:10px 0 20px}
+#appOverlay.menu-closed .app-menu,#appOverlay.menu-none .app-menu{margin-left:-271px}
+#appOverlay.menu-none #appMenuBtn{display:none}
+.am-deck{font:700 1.05rem Rajdhani,sans-serif;letter-spacing:.06em;color:#E6EDF3;padding:4px 16px 8px;text-transform:uppercase}
+.am-grp{font:600 .72rem Rajdhani,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#A8BACB;padding:12px 16px 4px}
+.am-it{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;color:#E6EDF3;font:500 .84rem/1.35 Inter,sans-serif;padding:8px 14px 8px 13px;cursor:pointer}
+.am-it:hover{background:#18304A}
+.am-it.on{border-left-color:#55D9F5;background:#183450;color:#fff;font-weight:600}
+.am-it.lk{color:#7f93a7}.am-it.lk span{font-size:.7rem}
+.app-stage{flex:1;min-width:0;position:relative;display:flex}
+.app-stage .app-frame{flex:1;width:100%;height:100%;border:0;background:#0B1724}
+#appOverlay .app-stage .app-loading{inset:0!important;color:#A8BACB}
+#appOverlay .app-btn i{font-style:normal}
+@media (max-width:760px){#appOverlay .app-btn .lb{display:none}#appOverlay .app-btn{padding:8px 11px!important}.app-menu{position:absolute;left:0;top:0;bottom:0;z-index:3;box-shadow:8px 0 30px #0008}.app-brand{display:none}.app-head .app-crumb{display:none}.app-head #appTitle{grid-column:1 / span 2;font-size:1rem}#appOverlay #appTab{display:none}}
 /* the simulator overlay stays dark: give it back its own dark-theme colours */
 #appOverlay{--navy:#061622;--navy-2:#0a2235;--line:rgba(255,255,255,.14);--cyan:#64ddff;--cyan-2:#14b8d4;--white:#f4fbff;--muted:#b9c4cc;--amber:#ffc857;--green:#5ee6a8;--ink:#f4fbff;--ink-2:#dfe6eb;--mute:#b9c4cc;color:#f4fbff}
 #appOverlay .app-bar{background:#1e2329;border-bottom:1px solid rgba(255,255,255,.12);min-height:52px;padding:8px 14px}
