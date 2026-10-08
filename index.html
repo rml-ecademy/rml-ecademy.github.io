@@ -1165,6 +1165,7 @@
 <details class="menu-group">
 <summary>Charts &amp; Nautical Publications</summary>
 <div class="subtopics">
+<button class="topic-btn has-sim" data-app="navdesk" data-start="">Bridge PC · Weekly Chart &amp; Publication Updates <span class="sim-tag">▶ LIVE SIM</span></button>
 <button class="topic-btn">ENC / Paper Chart Correction</button>
 <button class="topic-btn">Notices to Mariners</button>
 <button class="topic-btn">Sailing Directions</button>
@@ -1601,7 +1602,7 @@ flare: { title: 'Red Hand Flare Training', src: 'app-flare', file: 'ECADEMY_HAND
 lsa: { title: 'Life-Saving Appliances Training', src: 'app-lsa', file: 'ECADEMY_LSA_TRAINER.html', crumb: 'Third Officer · LSA ·' },
 epirb: { title: 'EPIRB Training', src: 'app-epirb', file: 'ECADEMY_EPIRB_TRAINING.html', crumb: 'GMDSS · LSA ·' },
 sart: { title: 'SART Training', src: 'app-sart', file: 'ECADEMY_SART_TRAINING.html', crumb: 'GMDSS · LSA ·' },
-wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' }, dock: { title: 'Ship Handling · Berthing with Two Tugs', src: 'app-dock', crumb: 'Master · Ship Handling ·' }, apem: { title: 'Passage Planning · APEM Voyage Planning Trainer', src: 'app-apem', crumb: 'Second Officer · Passage Planning ·' }, appr: { title: 'Passage Planning · Appraisal (APEM Stage 1)', src: 'app-appr', crumb: 'Second Officer · Passage Planning ·' }, plan: { title: 'Passage Planning · Planning (APEM Stage 2)', src: 'app-plan', crumb: 'Second Officer · Passage Planning ·' } };
+wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' }, dock: { title: 'Ship Handling · Berthing with Two Tugs', src: 'app-dock', crumb: 'Master · Ship Handling ·' }, apem: { title: 'Passage Planning · APEM Voyage Planning Trainer', src: 'app-apem', crumb: 'Second Officer · Passage Planning ·' }, appr: { title: 'Passage Planning · Appraisal (APEM Stage 1)', src: 'app-appr', crumb: 'Second Officer · Passage Planning ·' }, plan: { title: 'Passage Planning · Planning (APEM Stage 2)', src: 'app-plan', crumb: 'Second Officer · Passage Planning ·' }, navdesk: { title: 'Bridge PC · Weekly Chart & Publication Updates', src: 'app-navdesk', crumb: 'Second Officer · Charts & Publications ·' } };
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
@@ -1635,7 +1636,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     /* ---------- simulator tone: "Dim" lifts the near-black panels to a mild slate; screens drawn on canvas stay as they are ---------- */
     const appTone = (() => {
       const RX = /#([0-9a-f]{3,8})\b|rgba?\([^)]*\)/gi, PROPS = ['background-color','background-image','border-top-color','border-right-color','border-bottom-color','border-left-color','outline-color'];
-      const DARK_FIRST = ['radar', 'radardemo']; // radar screens stay full dark unless the student switches
+      const DARK_FIRST = ['radar', 'radardemo', 'navdesk']; // radar screens stay full dark unless the student switches
       let mode = 'dim';
       function modeFor(app){ let m = null; try { m = localStorage.getItem('ecad_tone_' + app); } catch(_) {} return m || (DARK_FIRST.includes(app) ? 'dark' : 'dim'); }
       let store = [], obs = null, busy = false, doc = null;
