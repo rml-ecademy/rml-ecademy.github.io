@@ -876,15 +876,9 @@
 <div class="site-shell">
 <header>
 <a aria-label="ECADEMY home" class="brand" href="#">
-<span aria-hidden="true" class="brand-mark">
-<svg fill="none" viewbox="0 0 64 64">
-<path d="M13 38h38l-5 10H18L13 38Z" stroke="#64ddff" stroke-width="2"></path>
-<path d="M22 38V21h20v17M28 21v-8h8v8" stroke="#64ddff" stroke-width="2"></path>
-<path d="M9 52c6 3 12 3 18 0 6 3 12 3 18 0 4 2 7 2 10 1" stroke="#64ddff" stroke-width="2"></path>
-</svg>
-</span>
+
 <span class="brand-copy">
-<strong>ECADEMY</strong>
+<img class="brand-logo" src="assets/logo-ink.png" alt="ECADEMY" width="198" height="30"/>
 <span>Maritime training for deck officers</span>
 </span>
 </a>
@@ -898,7 +892,7 @@
 <main>
 <section class="hero">
 <div>
-<h1><span class="e">E</span>CADEMY</h1>
+<h1 class="hero-logo"><img src="assets/logo-ink-lg.png" alt="ECADEMY" width="1584" height="240"/></h1>
 <div class="tagline">Your <span>Seafarers Hub.</span></div>
 <p class="hero-copy">
             Practical maritime learning built around the way officers actually work onboard.
@@ -1542,14 +1536,14 @@
 </section>
 </main>
 <footer>
-<span>© 2026 ECADEMY Maritime</span>
+<span class="foot-brand"><img src="assets/logo-white.png" alt="ECADEMY" height="20"/> © 2026 ECADEMY Maritime</span>
 <span>Training only. Not for navigation.</span>
 </footer>
 </div>
 <div class="app-overlay" id="appOverlay" role="dialog" aria-modal="true" aria-label="Simulator">
   <div class="app-bar">
     <button class="app-btn ico" id="appMenuBtn" type="button" title="Lessons" aria-label="Show or hide the lesson menu">☰</button>
-    <div class="app-brand"><span>E</span>CADEMY</div>
+    <div class="app-brand"><img src="assets/logo-white.png" alt="ECADEMY" height="18"/></div>
     <button class="app-head" id="appHead" type="button" title="Objective and tips">
       <span class="app-crumb"><span class="hide-sm">Second Officer · Navigational Equipment ·</span></span>
       <strong id="appTitle">Radar / ARPA</strong>
@@ -2611,6 +2605,13 @@ footer::before{background:#0E2238}
 .pkg-cta .cta.owned{background:#fff!important;color:var(--ink)!important;border:1px solid var(--rule);cursor:default;pointer-events:none;box-shadow:none}
 .member-bar{background:var(--ink);border:0;color:#fff;box-shadow:0 12px 30px rgba(12,45,72,.3)}
 .member-bar a{color:var(--brass-2)}
+/* wordmark logo */
+h1.hero-logo{line-height:0;margin-bottom:18px}h1.hero-logo img{display:block;width:min(560px,100%);height:auto}
+.brand-copy .brand-logo{display:block;height:30px;width:auto}
+.brand-copy span{margin-top:5px}
+.app-brand img{display:block;height:18px;width:auto}
+.foot-brand{display:inline-flex;align-items:center;gap:12px}.foot-brand img{height:20px;width:auto}
+@media (max-width:640px){.brand-copy .brand-logo{height:24px}}
 /* rank cards: bigger, bolder, crisp (not faded) */
 .rank-card .rank-main{padding:162px 22px 4px;min-height:270px}
 .rank-card .rank-no{color:#1B4470!important;font:800 .86rem/1 "Albert Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
