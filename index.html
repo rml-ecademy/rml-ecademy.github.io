@@ -1697,10 +1697,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         mfhf:'Send and receive DSC calls on MF/HF.', satc:'Send and read SAT-C messages.', gvm:'Compare the gyro and the magnetic compass.', gyroerr:'Find and apply the gyro error.', mag:'Find deviation and correct the magnetic compass.', wefax:'Receive and read the weather fax chart.'};
       const menu = document.getElementById('appMenu'), info = document.getElementById('appInfo'), mbtn = document.getElementById('appMenuBtn');
       let lastBtn = null, closed = false;
-      try { closed = localStorage.getItem('ecad_menu') === 'closed'; } catch(_) {}
-      if(innerWidth < 760) closed = true;
-      const setClosed = c => { closed = c; overlay.classList.toggle('menu-closed', c); try { localStorage.setItem('ecad_menu', c ? 'closed' : 'open'); } catch(_) {} };
-      mbtn.addEventListener('click', () => setClosed(!closed));
+      closed = true; // lessons drawer stays hidden: the simulator keeps the full width
+      const setClosed = c => { closed = c; overlay.classList.toggle('menu-closed', c); };
+      mbtn.addEventListener('click', e => { e.stopPropagation(); setClosed(!closed); });
+      document.addEventListener('click', e => { if(!closed && !menu.contains(e.target)) setClosed(true); });
+      document.addEventListener('keydown', e => { if(e.key === 'Escape' && !closed) setClosed(true); });
       document.addEventListener('click', e => { const b = e.target.closest('.topic-btn[data-app]'); if(b && !menu.contains(b)) lastBtn = b; }, true);
       document.getElementById('appHead').addEventListener('click', () => { info.hidden = !info.hidden; });
       const txt = el => { if(!el) return ''; const c = el.cloneNode(true); c.querySelectorAll('.sim-tag').forEach(x => x.remove()); return c.textContent.trim(); };
@@ -1721,9 +1722,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         menu.innerHTML = h;
         const all = [...rm.querySelectorAll('.topic-btn[data-app]')];
         menu.querySelectorAll('.am-it').forEach(it => it.addEventListener('click', () => { const b = all[+it.dataset.i]; if(!b || b === src) return;
-          if(b.classList.contains('locked')) closeApp(); lastBtn = b; b.click(); if(innerWidth < 760) setClosed(true); }));
+          if(b.classList.contains('locked')) closeApp(); lastBtn = b; b.click(); setClosed(true); }));
         overlay.classList.toggle('menu-closed', closed);
       }
+      document.getElementById('appFrame').addEventListener('load', () => { if(!closed) setClosed(true); });
       return { open };
     })();
     document.getElementById('appFull').addEventListener('click', () => {
@@ -2566,7 +2568,8 @@ footer::before{background:#111}
 .app-info{background:#0E2133;border-bottom:1px solid #1d3247;color:#E6EDF3;font:400 .82rem/1.5 Inter,sans-serif;padding:10px 16px}
 .app-info b{color:#55D9F5;font-weight:600;margin-right:6px}.app-info .sep{display:inline-block;width:18px}
 .app-body{flex:1;display:flex;min-height:0;position:relative}
-.app-menu{width:270px;flex:0 0 270px;background:#132638;border-right:1px solid #1d3247;overflow:auto;transition:margin-left .25s ease;padding:10px 0 20px}
+.app-menu{width:270px;flex:0 0 270px;background:#132638;border-right:1px solid #1d3247;overflow:auto;transition:margin-left .25s ease;padding:10px 0 20px;position:absolute;left:0;top:0;bottom:0;z-index:3;box-shadow:8px 0 30px #0008}
+.app-body{position:relative}
 #appOverlay.menu-closed .app-menu,#appOverlay.menu-none .app-menu{margin-left:-271px}
 #appOverlay.menu-none #appMenuBtn{display:none}
 .am-deck{font:700 1.05rem Rajdhani,sans-serif;letter-spacing:.06em;color:#E6EDF3;padding:4px 16px 8px;text-transform:uppercase}
