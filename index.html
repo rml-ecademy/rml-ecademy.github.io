@@ -892,7 +892,7 @@
 <main>
 <section class="hero">
 <div>
-<h1 class="hero-logo"><img src="assets/logo-ink-lg.png" alt="ECADEMY" width="1584" height="240"/></h1>
+<h1 class="hero-logo"><img src="assets/logo-white-lg.png" alt="ECADEMY" width="1584" height="240"/></h1>
 <div class="tagline">Your <span>Seafarers Hub.</span></div>
 <p class="hero-copy">
             Practical maritime learning built around the way officers actually work onboard.
@@ -2650,6 +2650,53 @@ h1.hero-logo{line-height:0;margin-bottom:18px}h1.hero-logo img{display:block;wid
   h1{font-size:clamp(3.4rem,17vw,5rem)}
 }
 
+
+/* ===== SITE THEME · OCEAN DEPTH (sky → sea → deep water) ===== */
+:root{--sky:#c4e8f3;--sea:#3f8ae6;--deep:#0b2a5c;--abyss:#02060c;--glass:rgba(255,255,255,.07);--glassline:rgba(255,255,255,.42);
+ --ink:#eef5fb;--ink-2:#cfdeec;--mute:#9fb6ca;--rule:rgba(255,255,255,.16);--line:rgba(255,255,255,.16);--chart:#02060c;--shoal:rgba(255,255,255,.06);--shoal-2:rgba(255,255,255,.22)}
+html body{background:var(--abyss) linear-gradient(180deg,var(--sky) 0,#8fc5ec 260px,var(--sea) 560px,var(--deep) 900px,#061a38 1150px,var(--abyss) 1500px) no-repeat;background-size:100% 1500px;color:var(--ink)}
+header{background:transparent!important;border-bottom-color:rgba(16,35,58,.15)!important}
+header nav a,header .login-pill{color:#0e2742!important}header .login-pill{border-color:#0e2742!important;background:rgba(255,255,255,.35)!important}
+header .brand-copy span{color:#2b4867!important}
+.hero > div:first-child{position:relative;padding:34px 34px 30px;border-radius:30px 140px 30px 30px;border:1px solid var(--glassline);
+ background:linear-gradient(180deg,rgba(255,255,255,.28) 0%,rgba(63,138,230,.55) 34%,rgba(11,42,92,.9) 72%,rgba(2,6,12,.95) 100%);backdrop-filter:blur(6px);box-shadow:0 30px 60px rgba(2,10,25,.35)}
+.hero .tagline,.hero .tagline span{color:#e9f4fc!important}.hero-copy{color:#d6e6f3!important}
+.micro-stats .stat{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.22)!important}.micro-stats .stat b{color:#fff!important}.micro-stats .stat small{color:#b7cde0!important}
+.section-title h2,.section-title p,.section-kicker,h2,h3{color:var(--ink)!important}.section-title p{color:var(--ink-2)!important}
+.career-section .section-title{border-bottom-color:var(--rule)!important}
+.rank-card,.rank-card:hover,.rank-card.master,.rank-card.master:hover{border-radius:24px!important;border:1px solid var(--glassline)!important;
+ background:linear-gradient(180deg,rgba(4,16,36,.92) 0%,rgba(11,42,92,.9) 45%,rgba(63,138,230,.75) 82%,rgba(196,232,243,.9) 100%)!important;box-shadow:0 18px 40px rgba(0,0,0,.35)!important;overflow:hidden}
+.rank-card .rank-no{color:#8fd8ff!important}.rank-card .rank-no::before{background:#8fd8ff!important}
+.rank-card h3{color:#fff!important}.rank-card p{color:#e3eef8!important}
+.rank-watermark.rank-photo{border-radius:22px 22px 0 0;overflow:hidden}
+.rank-arrow{background:rgba(255,255,255,.92)!important;color:#0b2a5c!important}
+.rank-panel,.rank-panel.open{background:rgba(6,20,42,.92)!important;border:1px solid var(--glassline)!important;border-radius:24px!important}
+.role-note{background:rgba(255,255,255,.07)!important;color:var(--ink-2)!important;border-color:var(--rule)!important}
+.menu-group{background:rgba(255,255,255,.05)!important;border-color:var(--rule)!important}.menu-group summary{color:#fff!important}
+.topic-btn{background:rgba(255,255,255,.06)!important;border-color:var(--rule)!important;color:var(--ink-2)!important}.topic-btn:hover{border-color:#8fd8ff!important;color:#fff!important}
+.topic-btn.has-sim{border-color:rgba(143,216,255,.5)!important;color:#fff!important}
+.plans::before{background:transparent!important}
+.plans{position:relative}
+.pkg-slide{border-radius:26px!important;border:1px solid var(--glassline)!important;background:linear-gradient(180deg,rgba(4,16,36,.95),rgba(11,42,92,.92) 55%,rgba(63,138,230,.6))!important;color:var(--ink)}
+.pkg-body ul{color:var(--ink-2)!important}
+.pkg-cta .cta,.enroll-box .cta,.login-box .cta{background:#1e7bf0!important;border-color:#1e7bf0!important;color:#fff!important;border-radius:10px}
+.pkg-cta .cta.owned{background:rgba(255,255,255,.1)!important;color:#fff!important;border-color:var(--glassline)!important}
+.coming-card{background:linear-gradient(180deg,rgba(11,42,92,.85),rgba(4,16,36,.95))!important;border:1px solid var(--glassline)!important;border-radius:24px!important;color:var(--ink)!important}
+.coming-card.quote{background:linear-gradient(180deg,rgba(63,138,230,.55),rgba(11,42,92,.9))!important;color:#fff!important}
+.course-tags span{background:rgba(255,255,255,.08)!important;color:#fff!important;border-color:var(--rule)!important}
+footer{background:transparent!important;color:var(--mute)!important}footer::before{background:#000!important}
+.member-bar{background:rgba(6,20,42,.95)!important;border:1px solid var(--glassline)!important}
+.psc-tag{background:rgba(255,255,255,.1)!important;color:#fff!important;border-color:var(--glassline)!important}
+.blueprint-card,.blueprint-card.globe-stage{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}.blueprint-card::before,.blueprint-card::after,.blueprint-card .corner{display:none!important}
+.lock-badge{background:rgba(2,10,22,.78)!important;color:#fff!important;border:1px solid rgba(255,255,255,.35)!important}
+.lock-badge.ok{color:#7ff0b8!important;border-color:rgba(127,240,184,.6)!important}
+.rank-panel .rank-panel-no{color:#8fd8ff!important}.rank-panel-x{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid var(--glassline)!important}
+.pkg-cta .cta,.pkg-slide.featured .pkg-cta .cta{background:#1e7bf0!important;border-color:#1e7bf0!important;color:#fff!important}
+.pkg-cta .cta:hover{background:#3a8ff5!important}
+.pkg-dots button{background:rgba(255,255,255,.06)!important;color:var(--ink-2)!important;border-color:var(--rule)!important}
+.pkg-dots button.on{background:#1e7bf0!important;color:#fff!important;border-color:#1e7bf0!important}
+.pkg-arrow{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid var(--glassline)!important}
+.eg-season{background:rgba(2,10,22,.7)!important;color:#e6f2fb!important;border:1px solid rgba(255,255,255,.3)!important}
 </style>
 </body>
 </html>
