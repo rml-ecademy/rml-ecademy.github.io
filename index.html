@@ -1561,6 +1561,7 @@
       <span class="app-obj" id="appObj"></span>
     </button>
     <button class="app-btn" id="appTab" type="button"><i>↗</i><span class="lb"> New tab</span></button>
+    <button class="app-btn help-btn" id="appHelp" type="button" title="How to operate this equipment, from power on to power off" hidden><i>?</i><span class="lb"> Help</span></button>
     <button class="app-btn" id="appTone" type="button" title="Switch between dimmed and full dark">◐ Dim</button>
     <button class="app-btn" id="appFull" type="button" title="Full screen"><i>⛶</i><span class="lb"> Full screen</span></button>
     <button class="app-btn close" id="appClose" type="button"><i>✕</i><span class="lb"> Back to ECADEMY</span></button>
@@ -1571,6 +1572,11 @@
     <div class="app-stage">
       <div class="app-loading" id="appLoading">Loading simulator…</div>
       <iframe class="app-frame" id="appFrame" title="Simulator" allow="fullscreen; microphone; autoplay"></iframe>
+      <aside class="app-help" id="appHelpPanel" aria-label="Operating procedure" hidden>
+        <div class="ah-head"><div><div class="ah-kick">OPERATING PROCEDURE</div><h3 id="ahTitle">Help</h3></div><button type="button" class="ah-x" id="ahClose" aria-label="Close help">✕</button></div>
+        <div class="ah-tools"><button type="button" id="ahAll">Expand all</button><span>Power on → tasks → power off</span></div>
+        <div class="ah-body" id="ahBody"></div>
+      </aside>
     </div>
   </div>
 </div>
@@ -1634,7 +1640,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       overlay.classList.add('open'); document.body.style.overflow = 'hidden';
       loading.style.display = 'grid'; loading.textContent = 'Loading simulator…';
       try{
-        currentApp = key;
+        currentApp = key; try{ helpUI.set(key); }catch(_){}
         frame.onload = () => { loading.style.display = 'none'; try{ appTone.apply(); frame.contentWindow.focus(); }catch(_){} };
         frame.removeAttribute('srcdoc');
         const hash = start ? '#' + encodeURI(start) : '';
@@ -1695,6 +1701,25 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       overlay.classList.remove('open'); document.body.style.overflow = ''; frame.removeAttribute('srcdoc'); if(frame.src.startsWith('blob:')) URL.revokeObjectURL(frame.src.split('#')[0]); frame.src = 'about:blank'; currentApp = null;
     }
     document.getElementById('appClose').addEventListener('click', closeApp);
+    /* ---------- Help: operating procedure for the open equipment (assets/help.json) ---------- */
+    const helpUI = (() => {
+      const btn = document.getElementById('appHelp'), panel = document.getElementById('appHelpPanel'), body = document.getElementById('ahBody');
+      let data = null, loading = null, key = null;
+      const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+      const fmt = t => esc(t).replace(/"([^"]{1,48})"/g, '<b class="ah-key">$1</b>').replace(/(^|[\s(])'([^']{1,48})'(?=[\s,.;:)]|$)/g, '$1<b class="ah-key">$2</b>').replace(/\(on board\)/gi, '<em class="ah-ob">on board</em>');
+      const load = () => loading || (loading = fetch('assets/help.json', { cache:'no-cache' }).then(r => r.json()).then(j => data = j).catch(() => data = {}));
+      function render(){ const h = data && data[key]; if(!h){ body.innerHTML = '<p class="ah-none">No procedure for this trainer yet.</p>'; return; }
+        document.getElementById('ahTitle').textContent = h.title;
+        body.innerHTML = h.sections.map((s, i) => `<details class="ah-sec"${i === 0 ? ' open' : ''}><summary><span class="ah-n">${i + 1}</span>${esc(s.h)}</summary><ol>${s.steps.map(t => `<li>${fmt(t)}</li>`).join('')}</ol></details>`).join('') + (h.tips && h.tips.length ? `<div class="ah-tips"><div class="ah-kick">TIPS</div><ul>${h.tips.map(t => `<li>${fmt(t)}</li>`).join('')}</ul></div>` : ''); }
+      function open(){ panel.hidden = false; btn.classList.add('on'); load().then(render); }
+      function close(){ panel.hidden = true; btn.classList.remove('on'); }
+      btn.addEventListener('click', () => panel.hidden ? open() : close());
+      document.getElementById('ahClose').addEventListener('click', close);
+      document.getElementById('ahAll').addEventListener('click', e => { const all = [...body.querySelectorAll('details')]; const o = !all.every(d => d.open); all.forEach(d => d.open = o); e.target.textContent = o ? 'Collapse all' : 'Expand all'; });
+      document.addEventListener('keydown', e => { if(e.key === 'Escape' && !panel.hidden){ e.stopImmediatePropagation(); close(); } }, true);
+      const KNOWN = ['radar','radardemo','ecdis','gps','ais','log','echo','navtex','pilot','bnwas','vdr','gvm','mag','gyroerr','sextant','plotting','wefax','vhf','mfhf','satc','epirb','sart'];
+      return { set(k){ key = k; close(); btn.hidden = !KNOWN.includes(k); if(!btn.hidden) load(); } };
+    })();
 
     /* ---------- lesson screen: compact header, collapsible lesson menu, objective panel ---------- */
     const lessonUI = (() => {
@@ -2700,6 +2725,30 @@ footer{background:transparent!important;color:var(--mute)!important}footer::befo
 h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:360px}
 @media (max-width:900px){h1.hero-logo{padding-right:64px}}
 @media (max-width:640px){.hero > div:first-child{padding:26px 22px 24px!important;border-radius:26px 56px 26px 26px!important}h1.hero-logo{padding-right:40px}h1.hero-logo img{max-width:300px}}
+
+/* simulator Help drawer */
+#appOverlay .help-btn{border-color:#55D9F5!important;color:#55D9F5!important}#appOverlay .help-btn i{font-style:normal;font-weight:800;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#55D9F5;color:#071521;font-size:.75rem;margin-right:2px}
+#appOverlay .help-btn.on{background:#55D9F5!important;color:#071521!important}
+.app-stage{position:relative}
+.app-help{position:absolute;top:0;right:0;bottom:0;width:min(420px,100%);z-index:5;background:#0B1724;border-left:1px solid #22394f;box-shadow:-12px 0 30px rgba(0,0,0,.5);display:flex;flex-direction:column;color:#E6EDF3;font:14px/1.5 Inter,system-ui,sans-serif}
+.app-help[hidden]{display:none!important}
+.ah-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 8px;border-bottom:1px solid #22394f}
+.ah-head h3{margin:2px 0 0;font:700 1.2rem Rajdhani,"Albert Sans",sans-serif;letter-spacing:.02em;color:#fff!important}
+.ah-kick{font:700 .68rem Rajdhani,sans-serif;letter-spacing:.16em;color:#55D9F5}
+.ah-x{background:transparent;border:1px solid #2b4560;color:#E6EDF3;border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:1rem}
+.ah-tools{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid #16293b;color:#A8BACB;font-size:.78rem}
+.ah-tools button{background:#132638;border:1px solid #2b4560;color:#E6EDF3;border-radius:6px;padding:5px 10px;font:600 .75rem Inter,sans-serif;cursor:pointer}
+.ah-body{overflow:auto;padding:8px 12px 24px;flex:1;min-height:0}
+.ah-sec{border:1px solid #1d3247;border-radius:10px;margin:8px 0;background:#0f1f2e}
+.ah-sec summary{cursor:pointer;list-style:none;padding:10px 12px;font:600 .92rem Inter,sans-serif;color:#fff;display:flex;gap:10px;align-items:center}
+.ah-sec summary::-webkit-details-marker{display:none}.ah-sec summary::after{content:"+";margin-left:auto;color:#55D9F5;font-weight:700}.ah-sec[open] summary::after{content:"–"}
+.ah-n{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:6px;background:#132638;border:1px solid #2b4560;color:#55D9F5;font:700 .75rem ui-monospace,monospace}
+.ah-sec ol{margin:0;padding:0 14px 12px 36px}.ah-sec li{margin:6px 0;color:#d3e0ec;font-size:.86rem}
+.ah-key{color:#fff;background:#132638;border:1px solid #2b4560;border-radius:5px;padding:0 5px;font-weight:600;white-space:nowrap}
+.ah-ob{font-style:normal;font-size:.72rem;color:#ffc857;border:1px solid #6b5520;border-radius:4px;padding:0 4px}
+.ah-tips{margin:12px 2px;padding:10px 12px;border-left:3px solid #ffc857;background:#151f2b;border-radius:6px}.ah-tips ul{margin:6px 0 0;padding-left:18px}.ah-tips li{margin:4px 0;font-size:.84rem;color:#d3e0ec}
+.ah-none{color:#A8BACB;padding:12px}
+@media (max-width:640px){.app-help{width:100%}}
 </style>
 </body>
 </html>
