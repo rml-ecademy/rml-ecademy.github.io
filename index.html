@@ -1065,7 +1065,11 @@
 <button class="topic-btn">Fire Dampers &amp; Ventilation Shutdowns</button>
 <button class="topic-btn">EEBD / SCBA / Fireman’s Outfit</button>
 <button class="topic-btn">International Shore Connection</button>
-<button class="topic-btn">Fire Control Plan &amp; Symbols</button>
+<button class="topic-btn has-sim" data-app="fireplan" data-start="A">Fire Control Plan &amp; Symbols · interactive deck plans <span class="sim-tag">▶ LIVE SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="fireplan" data-start="legend">IMO symbols · legend with use of each item <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="fireplan" data-start="inv">FFE inventory by deck · SOLAS quick check <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="fireplan" data-start="find">Find it · 18 "where is the nearest…" questions <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="fireplan" data-start="drill">Fire drills · galley, engine room CO₂, cargo hold, cabin at night <span class="sim-tag">▶ SIM</span></button>
 </div>
 </details>
 <details class="menu-group">
@@ -1614,7 +1618,7 @@ flare: { title: 'Red Hand Flare Training', src: 'app-flare', file: 'ECADEMY_HAND
 lsa: { title: 'Life-Saving Appliances Training', src: 'app-lsa', file: 'ECADEMY_LSA_TRAINER.html', crumb: 'Third Officer · LSA ·' },
 epirb: { title: 'EPIRB Training', src: 'app-epirb', file: 'ECADEMY_EPIRB_TRAINING.html', crumb: 'GMDSS · LSA ·' },
 sart: { title: 'SART Training', src: 'app-sart', file: 'ECADEMY_SART_TRAINING.html', crumb: 'GMDSS · LSA ·' },
-wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' }, dock: { title: 'Ship Handling · Berthing with Two Tugs', src: 'app-dock', crumb: 'Master · Ship Handling ·' }, apem: { title: 'Passage Planning · APEM Voyage Planning Trainer', src: 'app-apem', crumb: 'Second Officer · Passage Planning ·' }, appr: { title: 'Passage Planning · Appraisal (APEM Stage 1)', src: 'app-appr', crumb: 'Second Officer · Passage Planning ·' }, plan: { title: 'Passage Planning · Planning (APEM Stage 2)', src: 'app-plan', crumb: 'Second Officer · Passage Planning ·' }, navdesk: { title: 'Bridge PC · Weekly Chart & Publication Updates', src: 'app-navdesk', crumb: 'Second Officer · Charts & Publications ·' }, anchor: { title: 'Anchoring Trainer · 5 scenarios', src: 'app-anchor', crumb: 'Master · Ship Handling ·' } };
+wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 'ECADEMY_WEATHER_FAX.html', crumb: 'Second Officer · Navigational Equipment ·' }, draft: { title: 'Manual Draft Survey Trainer', src: 'app-draft', file: 'ECADEMY_DRAFT_SURVEY_TRAINER.html', crumb: 'Chief Officer · Draft Survey ·' }, stab: { title: 'Trim & Stability · Righting Lever (GZ) Trainer', src: 'app-stab', crumb: 'Chief Officer · Stability ·' }, mgbk: { title: 'MGBK · What Happens to M, G, B and K', src: 'app-mgbk', crumb: 'Chief Officer · Stability ·' }, dock: { title: 'Ship Handling · Berthing with Two Tugs', src: 'app-dock', crumb: 'Master · Ship Handling ·' }, apem: { title: 'Passage Planning · APEM Voyage Planning Trainer', src: 'app-apem', crumb: 'Second Officer · Passage Planning ·' }, appr: { title: 'Passage Planning · Appraisal (APEM Stage 1)', src: 'app-appr', crumb: 'Second Officer · Passage Planning ·' }, plan: { title: 'Passage Planning · Planning (APEM Stage 2)', src: 'app-plan', crumb: 'Second Officer · Passage Planning ·' }, navdesk: { title: 'Bridge PC · Weekly Chart & Publication Updates', src: 'app-navdesk', crumb: 'Second Officer · Charts & Publications ·' }, fireplan: { title: 'Fire Control & Safety Plan · MV ECADEMY', src: 'app-fireplan', crumb: 'Third Officer · FFE ·' }, anchor: { title: 'Anchoring Trainer · 5 scenarios', src: 'app-anchor', crumb: 'Master · Ship Handling ·' } };
     const overlay = document.getElementById('appOverlay'), frame = document.getElementById('appFrame');
     const appUrls = {}; let currentApp = null;
     document.getElementById('appTab').addEventListener('click', () => {
@@ -1695,7 +1699,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const lessonUI = (() => {
       const OBJ = {
         radar:'Track targets, read CPA/TCPA and decide the COLREG action in time.', radardemo:'Try the radar controls: gain, sea, rain, range, EBL/VRM.',
-        ecdis:'Plan, check and monitor a Manila–Cebu route; keep charts and safety settings correct.', navdesk:'Run the weekly chart and publication update on the bridge PC.', anchor:'Anchor the ship the right way: method, scope, seabed, and know when the anchor is holding.',
+        ecdis:'Plan, check and monitor a Manila–Cebu route; keep charts and safety settings correct.', navdesk:'Run the weekly chart and publication update on the bridge PC.', fireplan:'Read the fire control plan: every symbol, where it is, and what to do in a fire.', anchor:'Anchor the ship the right way: method, scope, seabed, and know when the anchor is holding.',
         draft:'Survey the ship by hand: drafts, corrections, density and soundings, to find the cargo on board.', dock:'Berth, unberth and anchor with engine, rudder, tugs and lines.',
         flare:'Know the red hand flare and fire it the right way.', rocket:'Know the rocket parachute flare and fire it the right way.', lsa:'Inspect and use each life-saving appliance as PSC expects.',
         epirb:'Test, register and activate the EPIRB correctly.', sart:'Test the SART and recognise it on the radar.', stab:'Read the GZ curve and keep the ship stable.', mgbk:'See how M, G, B and K move as the ship loads.',
