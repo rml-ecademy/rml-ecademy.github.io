@@ -1573,7 +1573,7 @@
       <div class="app-loading" id="appLoading">Loading simulator…</div>
       <iframe class="app-frame" id="appFrame" title="Simulator" allow="fullscreen; microphone; autoplay"></iframe>
       <aside class="app-help" id="appHelpPanel" aria-label="Operating procedure" hidden>
-        <div class="ah-head"><div><div class="ah-kick">OPERATING PROCEDURE</div><h3 id="ahTitle">Help</h3></div><button type="button" class="ah-x" id="ahClose" aria-label="Close help">✕</button></div>
+        <div class="ah-head"><div><div class="ah-kick"><span class="ah-grip" title="Drag to move">⠿</span>OPERATING PROCEDURE · drag to move</div><h3 id="ahTitle">Help</h3></div><button type="button" class="ah-x" id="ahClose" aria-label="Close help">✕</button></div>
         <div class="ah-tools"><button type="button" id="ahAll">Expand all</button><span>Power on → tasks → power off</span></div>
         <div class="ah-body" id="ahBody"></div>
       </aside>
@@ -1711,10 +1711,23 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       function render(){ const h = data && data[key]; if(!h){ body.innerHTML = '<p class="ah-none">No procedure for this trainer yet.</p>'; return; }
         document.getElementById('ahTitle').textContent = h.title;
         body.innerHTML = h.sections.map((s, i) => `<details class="ah-sec"${i === 0 ? ' open' : ''}><summary><span class="ah-n">${i + 1}</span>${esc(s.h)}</summary><ol>${s.steps.map(t => `<li>${fmt(t)}</li>`).join('')}</ol></details>`).join('') + (h.tips && h.tips.length ? `<div class="ah-tips"><div class="ah-kick">TIPS</div><ul>${h.tips.map(t => `<li>${fmt(t)}</li>`).join('')}</ul></div>` : ''); }
-      function open(){ panel.hidden = false; btn.classList.add('on'); load().then(render); }
-      function close(){ panel.hidden = true; btn.classList.remove('on'); }
+      function open(){ panel.hidden = false; btn.classList.add('on'); if(panel._restore) panel._restore(); load().then(render); }
+      function close(){ if(!panel.hidden && panel.style.left){ try{ localStorage.setItem('ec_help_pos', JSON.stringify([panel.offsetLeft, panel.offsetTop, panel.offsetWidth, panel.offsetHeight])); }catch(_){} } panel.hidden = true; btn.classList.remove('on'); }
       btn.addEventListener('click', () => panel.hidden ? open() : close());
       document.getElementById('ahClose').addEventListener('click', close);
+      // drag the panel by its header anywhere inside the simulator screen
+      (() => { const head = panel.querySelector('.ah-head'); let d = null;
+        const stage = () => panel.offsetParent || panel.parentElement;
+        const clamp = (x, y) => { const st = stage(), W = st.clientWidth, H = st.clientHeight; return [Math.max(4 - panel.offsetWidth + 80, Math.min(x, W - 80)), Math.max(0, Math.min(y, H - 48))]; };
+        const place = (x, y) => { [x, y] = clamp(x, y); panel.style.left = x + 'px'; panel.style.top = y + 'px'; panel.style.right = 'auto'; panel.style.bottom = 'auto'; return [x, y]; };
+        head.addEventListener('pointerdown', e => { if(e.target.closest('button')) return; e.preventDefault(); d = { id:e.pointerId, sx:e.clientX, sy:e.clientY, x:panel.offsetLeft, y:panel.offsetTop }; panel.classList.add('dragging');
+          document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none'); try{ head.setPointerCapture(e.pointerId); }catch(_){} });
+        head.addEventListener('pointermove', e => { if(!d || e.pointerId !== d.id) return; place(d.x + e.clientX - d.sx, d.y + e.clientY - d.sy); });
+        const end = e => { if(!d) return; d = null; panel.classList.remove('dragging'); document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = ''); try{ localStorage.setItem('ec_help_pos', JSON.stringify([panel.offsetLeft, panel.offsetTop, panel.offsetWidth, panel.offsetHeight])); }catch(_){} };
+        head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+        panel._restore = () => { try{ const p = JSON.parse(localStorage.getItem('ec_help_pos') || 'null'); if(p && innerWidth > 640){ panel.style.width = p[2] + 'px'; panel.style.height = p[3] + 'px'; place(p[0], p[1]); } }catch(_){} };
+        window.addEventListener('resize', () => { if(!panel.hidden && panel.style.left) place(panel.offsetLeft, panel.offsetTop); });
+      })();
       document.getElementById('ahAll').addEventListener('click', e => { const all = [...body.querySelectorAll('details')]; const o = !all.every(d => d.open); all.forEach(d => d.open = o); e.target.textContent = o ? 'Collapse all' : 'Expand all'; });
       document.addEventListener('keydown', e => { if(e.key === 'Escape' && !panel.hidden){ e.stopImmediatePropagation(); close(); } }, true);
       const KNOWN = ['radar','radardemo','ecdis','gps','ais','log','echo','navtex','pilot','bnwas','vdr','gvm','mag','gyroerr','sextant','plotting','wefax','vhf','mfhf','satc','epirb','sart'];
@@ -2748,7 +2761,12 @@ h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:
 .ah-ob{font-style:normal;font-size:.72rem;color:#ffc857;border:1px solid #6b5520;border-radius:4px;padding:0 4px}
 .ah-tips{margin:12px 2px;padding:10px 12px;border-left:3px solid #ffc857;background:#151f2b;border-radius:6px}.ah-tips ul{margin:6px 0 0;padding-left:18px}.ah-tips li{margin:4px 0;font-size:.84rem;color:#d3e0ec}
 .ah-none{color:#A8BACB;padding:12px}
-@media (max-width:640px){.app-help{width:100%}}
+/* help panel: floating window, drag by the header, resize from the corner */
+.app-help{top:12px;right:12px;bottom:auto;height:min(80%,660px);border:1px solid #2b4560;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55);resize:both;overflow:hidden;min-width:280px;min-height:220px;max-width:calc(100% - 8px);max-height:calc(100% - 8px)}
+.ah-head{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.app-help.dragging .ah-head{cursor:grabbing}
+.ah-grip{display:inline-block;margin-right:6px;color:#55D9F5;letter-spacing:0;font-size:.85rem;opacity:.9}
+@media (max-width:640px){.app-help{width:calc(100% - 16px);left:8px;right:auto;top:8px;height:min(70%,560px)}}
 </style>
 </body>
 </html>
