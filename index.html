@@ -1975,6 +1975,9 @@ h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:
 <details class="menu-group">
 <summary>Meteorology</summary>
 <div class="subtopics">
+<button class="topic-btn has-sim" data-app="wxfront" data-start="warm">Front Passage Simulator · watch a warm, cold and occluded front cross the ship <span class="sim-tag">▶ LIVE SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="wxfront" data-start="cold">Cold front passage · squall line, violent veer, pressure jump <span class="sim-tag">▶ SIM</span></button>
+<button class="topic-btn has-sim sm" data-app="wxfront" data-start="occ">Occlusion passage · one long wet band, no warm sector <span class="sim-tag">▶ SIM</span></button>
 <button class="topic-btn has-sim sm" data-app="kupx" data-start="metsynop">Synoptic Charts &amp; Weather Analysis <span class="sim-tag">▶ LESSON</span></button>
 <button class="topic-btn has-sim sm" data-app="kupx" data-start="metbuys">Pressure Systems &amp; Buys Ballot's Law <span class="sim-tag">▶ LESSON</span></button>
 <button class="topic-btn has-sim sm" data-app="kupx" data-start="metfronts">Fronts &amp; Frontal Weather <span class="sim-tag">▶ LESSON</span></button>
@@ -2205,7 +2208,7 @@ h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:
       });
     });
 
-    const APPS = { kupx: { title: 'Deck Knowledge · KUP Lessons', src: 'app-kupx', crumb: 'Deck Officer · Knowledge, Understanding, Proficiency ·' }, radar: { title: 'Radar / ARPA Simulator', src: 'app-radar' }, radardemo: { title: 'Radar / ARPA · Free Demo (24 hours)', src: 'app-radardemo', crumb: 'Second Officer · Navigational Equipment ·' }, bridge: { title: 'Full Bridge Simulation', src: 'app-bridge', file: 'ECADEMY_FULL_BRIDGE.html', crumb: 'Master · Command ·' }, plotting: { title: 'Radar Plotting Sheet Trainer', src: 'app-plotting', file: 'ECADEMY_RADAR_PLOTTING_SHEET.html' }, ecdis: { title: 'ECDIS · Manila – Cebu Passage', src: 'app-ecdis', file: 'ECADEMY_ECDIS_MANILA_CEBU.html', crumb: 'Second Officer · Navigational Equipment ·' }, sextant: { title: 'Sextant Trainer', src: 'app-sextant', file: 'ECADEMY_SEXTANT.html', crumb: 'Second Officer · Navigational Equipment ·' }, vhf: { title: 'VHF DSC Radiotelephone', src: 'app-vhf', file: 'ECADEMY_VHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
+    const APPS = { wxfront: { title: 'Front Passage Simulator', src: 'app-wxfront', crumb: 'Master · Meteorology ·' }, kupx: { title: 'Deck Knowledge · KUP Lessons', src: 'app-kupx', crumb: 'Deck Officer · Knowledge, Understanding, Proficiency ·' }, radar: { title: 'Radar / ARPA Simulator', src: 'app-radar' }, radardemo: { title: 'Radar / ARPA · Free Demo (24 hours)', src: 'app-radardemo', crumb: 'Second Officer · Navigational Equipment ·' }, bridge: { title: 'Full Bridge Simulation', src: 'app-bridge', file: 'ECADEMY_FULL_BRIDGE.html', crumb: 'Master · Command ·' }, plotting: { title: 'Radar Plotting Sheet Trainer', src: 'app-plotting', file: 'ECADEMY_RADAR_PLOTTING_SHEET.html' }, ecdis: { title: 'ECDIS · Manila – Cebu Passage', src: 'app-ecdis', file: 'ECADEMY_ECDIS_MANILA_CEBU.html', crumb: 'Second Officer · Navigational Equipment ·' }, sextant: { title: 'Sextant Trainer', src: 'app-sextant', file: 'ECADEMY_SEXTANT.html', crumb: 'Second Officer · Navigational Equipment ·' }, vhf: { title: 'VHF DSC Radiotelephone', src: 'app-vhf', file: 'ECADEMY_VHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
   mfhf: { title: 'MF/HF DSC Radio', src: 'app-mfhf', file: 'ECADEMY_MFHF_DSC.html', crumb: 'Second Officer · GMDSS ·' },
   satc: { title: 'SAT-C Terminal (Inmarsat-C)', src: 'app-satc', file: 'ECADEMY_SATC.html', crumb: 'Second Officer · GMDSS ·' },
   gvm: { title: 'Gyro vs Magnetic Compass', src: 'app-gvm', file: 'ECADEMY_GYRO_VS_MAGNETIC.html', crumb: 'Second Officer · Navigational Equipment ·' },
@@ -2611,7 +2614,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
              ['Full Bridge','Full bridge simulation with all equipment, including heavy-weather navigation.']],
          feats:['Everything in Chief Mate','Command Deck · Master','All future modules while you have access'] }
   };
-  window.ECADEMY_FREE = ['flare', 'radardemo', 'kupx'];
+  window.ECADEMY_FREE = ['flare', 'radardemo', 'kupx', 'wxfront'];
   /* ================== */
   const $ = id => document.getElementById(id);
   const hp = new URLSearchParams(location.hash.slice(1));

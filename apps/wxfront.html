@@ -1,0 +1,548 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECADEMY · Front Passage Simulator</title>
+<style>
+:root{--bg:#070d11;--panel:#101b21;--panel2:#0c161b;--line:#22343d;--line2:#2d4350;--tx:#e9f1f4;--mut:#93a9b3;
+ --acc:#45d9a0;--hi:#f2c14e;--red:#ff5a6a;--blue:#56b8e6;--r:12px;--sh:0 10px 28px rgba(0,0,0,.42)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;color:var(--tx);display:flex;flex-direction:column;font:16px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+ background:radial-gradient(1100px 620px at 18% -8%,#16303c 0%,transparent 62%),var(--bg);overflow:hidden}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;background:linear-gradient(180deg,#0a1217,#070d11);border-bottom:1px solid var(--line);flex:none}
+header b{letter-spacing:.16em;color:var(--red)}
+header .sub{color:var(--mut);font-size:13px}
+header .sp{flex:1}
+.tab{background:none;border:1px solid var(--line2);color:var(--mut);border-radius:999px;font:700 11.5px Arial;
+ letter-spacing:.09em;padding:6px 13px;cursor:pointer;transition:all .15s}
+.tab:hover{color:var(--tx);border-color:var(--blue)}
+.tab.on{color:#04212b;background:var(--blue);border-color:var(--blue)}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px;padding:12px;min-height:0}
+@media(max-width:940px){main{grid-template-columns:1fr;overflow-y:auto}}
+.left{display:flex;flex-direction:column;gap:12px;min-height:0}
+.view{position:relative;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#06121a;box-shadow:var(--sh);flex:1;min-height:230px}
+.view canvas{display:block;width:100%;height:100%}
+.badge{position:absolute;left:12px;top:10px;background:rgba(5,14,19,.72);border:1px solid var(--line2);border-radius:8px;
+ padding:6px 11px;font:700 11px Arial;letter-spacing:.12em;color:var(--hi);backdrop-filter:blur(3px)}
+.badge small{display:block;font:400 11px/1.4 Arial;letter-spacing:0;color:#9fb3bd;margin-top:2px}
+.sect{height:168px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#f4f1e8;flex:none}
+.sect canvas{display:block;width:100%;height:100%}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--r);
+ background:linear-gradient(180deg,var(--panel),var(--panel2));padding:10px 12px;flex:none}
+.play{background:var(--acc);border:0;color:#06231a;border-radius:9px;font:800 12px Arial;letter-spacing:.1em;padding:9px 17px;cursor:pointer}
+.play:hover{filter:brightness(1.08)}
+.ctl input[type=range]{flex:1;min-width:150px;accent-color:var(--blue)}
+.clock{font:700 12.5px ui-monospace,Consolas,monospace;color:var(--hi);min-width:88px;text-align:right}
+.spd{background:none;border:1px solid var(--line2);color:var(--mut);border-radius:7px;font:700 11px Arial;padding:6px 9px;cursor:pointer}
+.spd.on{color:#04212b;background:var(--hi);border-color:var(--hi)}
+aside{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,var(--panel),var(--panel2));padding:12px 13px}
+.card h4{margin:0 0 9px;font:800 10.5px Arial;letter-spacing:.16em;color:var(--blue)}
+.inst{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ii{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:rgba(255,255,255,.025)}
+.ii span{display:block;font:700 9.5px Arial;letter-spacing:.13em;color:var(--mut)}
+.ii b{display:block;font:700 17px ui-monospace,Consolas,monospace;color:var(--tx);margin-top:2px}
+.ii b.hot{color:var(--hi)} .ii b.cold{color:var(--blue)} .ii b.bad{color:var(--red)}
+.windrose{display:flex;align-items:center;gap:11px}
+.windrose svg{flex:none}
+.baro{width:100%;height:94px;display:block;border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.22)}
+.log{font-size:13px;color:#cfdde3;max-height:188px;overflow-y:auto}
+.log div{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.055);display:flex;gap:9px}
+.log div:last-child{border-bottom:0}
+.log i{flex:none;font:700 11px ui-monospace,Consolas,monospace;color:var(--hi);font-style:normal;min-width:48px}
+.log div.now{color:#fff}
+.log div.now i{color:var(--acc)}
+.foot{text-align:center;padding:6px;color:#9b8a62;font-size:11px;background:#070d11;flex:none}
+.note{font-size:12.4px;color:#9fb3bd;margin:7px 0 0}
+</style></head><body>
+<header><b>ECADEMY</b><span class="sub">Front Passage Simulator · the weather a ship actually meets</span><span class="sp"></span>
+<button class="tab on" data-f="warm">WARM FRONT</button>
+<button class="tab" data-f="cold">COLD FRONT</button>
+<button class="tab" data-f="occ">OCCLUSION</button>
+</header>
+<main>
+ <div class="left">
+  <div class="view"><canvas id="sky"></canvas><div class="badge" id="badge"></div></div>
+  <div class="sect"><canvas id="sec"></canvas></div>
+  <div class="ctl">
+   <button class="play" id="play">▶ PLAY</button>
+   <input type="range" id="scrub" min="0" max="1000" value="0">
+   <span class="clock" id="clock"></span>
+   <button class="spd on" data-s="1">1×</button>
+   <button class="spd" data-s="3">3×</button>
+   <button class="spd" data-s="8">8×</button>
+  </div>
+ </div>
+ <aside>
+  <div class="card"><h4>ON THE BRIDGE</h4>
+   <div class="inst">
+    <div class="ii"><span>PRESSURE</span><b id="iP">—</b></div>
+    <div class="ii"><span>TENDENCY / 3 h</span><b id="iT">—</b></div>
+    <div class="ii"><span>AIR TEMP</span><b id="iA">—</b></div>
+    <div class="ii"><span>DEW POINT</span><b id="iD">—</b></div>
+    <div class="ii"><span>VISIBILITY</span><b id="iV">—</b></div>
+    <div class="ii"><span>SEA</span><b id="iS">—</b></div>
+   </div>
+   <div class="windrose" style="margin-top:10px">
+    <svg width="74" height="74" viewBox="0 0 74 74">
+     <circle cx="37" cy="37" r="31" fill="rgba(0,0,0,.25)" stroke="#2d4350"/>
+     <g font="700 8px Arial" font-size="8" fill="#7d929c" text-anchor="middle">
+      <text x="37" y="12">N</text><text x="65" y="40">E</text><text x="37" y="69">S</text><text x="9" y="40">W</text></g>
+     <g id="warr"><path d="M37 13 L32 29 L37 26 L42 29 Z" fill="#45d9a0"/><line x1="37" y1="26" x2="37" y2="58" stroke="#45d9a0" stroke-width="2.4"/></g>
+    </svg>
+    <div><div class="ii" style="border:0;padding:0;background:none"><span>WIND</span><b id="iW">—</b></div>
+    <div class="note" id="iWn" style="margin-top:4px"></div></div>
+   </div>
+  </div>
+  <div class="card"><h4>BAROGRAPH</h4><canvas class="baro" id="baro"></canvas>
+   <p class="note" id="baroN"></p></div>
+  <div class="card"><h4>WHAT IS DEVELOPING</h4><div class="log" id="log"></div></div>
+ </aside>
+</main>
+<p class="foot">TRAINING ONLY · a teaching model of a typical frontal passage, not a forecast</p>
+<script>
+const $ = i => document.getElementById(i);
+
+/* ===== models: t is hours relative to the front crossing the ship ===== */
+const MODELS = {
+warm:{
+ name:"WARM FRONT", t0:-30, t1:14, pass:0,
+ note:"A shallow slope. The sky warns you 12 hours ahead, the rain is steady, and the wind veers gently as it passes.",
+ key:[
+  {t:-30,p:1016,a:7.5,d:3.0,v:30,w:150,f:4,sea:2.5,cl:"clear",rain:0,cloud:"Fine · a few Ci high up"},
+  {t:-24,p:1015,a:7.4,d:3.2,v:28,w:152,f:4,sea:2.6,cl:"ci",rain:0,cloud:"Cirrus · thin white hooks from the west"},
+  {t:-18,p:1013,a:7.3,d:3.6,v:24,w:156,f:5,sea:3.0,cl:"cs",rain:0,cloud:"Cirrostratus · milky sky, halo round the sun"},
+  {t:-13,p:1010,a:7.2,d:4.4,v:18,w:160,f:5,sea:3.4,cl:"as",rain:0,cloud:"Altostratus · sun watery, then gone"},
+  {t:-9, p:1007,a:7.2,d:5.6,v:10,w:163,f:6,sea:3.9,cl:"as",rain:.3,cloud:"Altostratus thickening · first rain"},
+  {t:-6, p:1004,a:7.3,d:6.6,v:5, w:165,f:6,sea:4.3,cl:"ns",rain:.7,cloud:"Nimbostratus · continuous rain"},
+  {t:-3, p:1001,a:7.8,d:7.4,v:2.5,w:168,f:6,sea:4.6,cl:"ns",rain:.95,cloud:"Nimbostratus · moderate rain, low scud"},
+  {t:-0.6,p:999.4,a:8.6,d:8.2,v:1.6,w:170,f:6,sea:4.7,cl:"ns",rain:.9,cloud:"Rain easing · the front is on us"},
+  {t:0,  p:999.2,a:10.5,d:9.6,v:1.4,w:205,f:5,sea:4.6,cl:"st",rain:.5,cloud:"FRONT PASSES · wind veers, rain turns to drizzle"},
+  {t:1.5,p:999.2,a:12.6,d:11.8,v:1.2,w:218,f:5,sea:4.4,cl:"st",rain:.25,cloud:"Warm sector · low stratus, drizzle"},
+  {t:5,  p:999.4,a:13.2,d:12.6,v:.8,w:222,f:5,sea:4.2,cl:"st",rain:.15,cloud:"Warm sector · murk and drizzle, poor visibility"},
+  {t:14, p:999.6,a:13.4,d:12.9,v:.6,w:224,f:5,sea:4.1,cl:"st",rain:.1,cloud:"Warm sector holds · fog patches possible"}],
+ ev:[[-24,"Cirrus from the west. The front is 600 to 800 miles away — about 24 hours."],
+     [-18,"Halo round the sun. Cirrostratus confirms it: the warm air is already overhead."],
+     [-13,"Sun turns watery, then disappears. Altostratus. Barometer now falling steadily."],
+     [-9,"First rain. Secure the deck — this will not clear for hours."],
+     [-6,"Nimbostratus. Continuous rain, visibility down to 5 miles. Post a lookout."],
+     [-3,"Visibility 2.5 miles and falling. Radar on, fog signal ready."],
+     [0,"FRONT PASSES. Wind veers SSE to SW. The fall stops — barometer levels off."],
+     [1.5,"Warm sector. Temperature up 5 degrees, drizzle, visibility 1 mile and worse."],
+     [5,"Sea temperature is below the dew point now. Advection fog is likely."]]
+},
+cold:{
+ name:"COLD FRONT", t0:-10, t1:14, pass:0,
+ note:"Steep and fast. Little warning, a violent hour, then it clears from behind and the barometer climbs.",
+ key:[
+  {t:-10,p:999.4,a:13.3,d:12.8,v:.9,w:222,f:5,sea:4.2,cl:"st",rain:.15,cloud:"Warm sector · low stratus, drizzle, poor visibility"},
+  {t:-4, p:999.0,a:13.2,d:12.7,v:1.2,w:226,f:5,sea:4.3,cl:"st",rain:.2,cloud:"Warm sector · unchanged, nothing on deck looks wrong"},
+  {t:-1.6,p:998.4,a:13.0,d:12.6,v:2.5,w:230,f:6,sea:4.6,cl:"cbline",rain:.25,cloud:"A dark line on the western horizon · Cb building"},
+  {t:-0.7,p:997.6,a:12.8,d:12.4,v:3,  w:235,f:7,sea:5.2,cl:"cbline",rain:.4,cloud:"Squall line closing fast · wind rising"},
+  {t:-0.2,p:997.0,a:12.4,d:12.1,v:1.0,w:245,f:8,sea:6.0,cl:"cb",rain:1,cloud:"SQUALL · torrential rain, gusts well over the mean"},
+  {t:0,  p:997.2,a:10.0,d:9.0,v:.7,w:295,f:9,sea:6.4,cl:"cb",rain:1,cloud:"FRONT PASSES · violent veer SW to NW, gust Force 9"},
+  {t:0.5,p:999.0,a:8.4,d:6.6,v:3,  w:302,f:7,sea:6.0,cl:"cb",rain:.7,cloud:"Pressure jumps · temperature falling fast"},
+  {t:1.5,p:1001.5,a:7.6,d:5.0,v:9, w:305,f:6,sea:5.4,cl:"cu",rain:.35,cloud:"Clearing from the west · heavy showers between"},
+  {t:4,  p:1004.5,a:7.0,d:4.0,v:18,w:308,f:6,sea:4.8,cl:"cu",rain:.2,cloud:"Bright and hard · cumulus with showers"},
+  {t:9,  p:1008,a:6.6,d:3.2,v:28,w:310,f:5,sea:4.0,cl:"cu",rain:.1,cloud:"Polar air · very good visibility, scattered showers"},
+  {t:14, p:1010,a:6.4,d:3.0,v:35,w:312,f:5,sea:3.5,cl:"cu",rain:.05,cloud:"Clear cold air · the glass still rising"}],
+ ev:[[-4,"Nothing has changed on deck. This is the trap — the warm sector gives no warning."],
+     [-1.6,"Dark line on the horizon to the west. Cumulonimbus. Secure everything now."],
+     [-0.7,"Wind rising. Squall line about 20 minutes away. Close the deck, warn the engine room."],
+     [-0.2,"SQUALL. Torrential rain, visibility 1 mile, gusts far above the forecast mean."],
+     [0,"FRONT PASSES. Wind veers SW to NW through 60 degrees in minutes. Gust Force 9."],
+     [0.5,"Barometer jumps 2 hPa in half an hour. Temperature down 3 degrees already."],
+     [1.5,"Clearing from the west. Heavy showers, but you can see between them."],
+     [4,"Cold polar air. Visibility 18 miles. Cumulus with showers, a hard bright sky."],
+     [9,"Visibility 28 miles. The glass is still rising — the ridge is building behind."]]
+},
+occ:{
+ name:"OCCLUDED FRONT", t0:-20, t1:14, pass:0,
+ note:"The cold front has caught the warm one and lifted the warm air off the surface. One long wet band, then a slow grudging improvement.",
+ key:[
+  {t:-20,p:1008,a:9.0,d:5.0,v:22,w:140,f:5,sea:3.2,cl:"ci",rain:0,cloud:"Cirrus then Cirrostratus · the same warning as a warm front"},
+  {t:-14,p:1005,a:8.8,d:5.6,v:16,w:146,f:5,sea:3.6,cl:"cs",rain:0,cloud:"Cirrostratus thickening to Altostratus"},
+  {t:-9, p:1002,a:8.6,d:6.4,v:9, w:152,f:6,sea:4.1,cl:"as",rain:.4,cloud:"Altostratus · rain begins and does not stop"},
+  {t:-5, p:999, a:8.6,d:7.2,v:4, w:158,f:6,sea:4.6,cl:"ns",rain:.8,cloud:"Nimbostratus · a long wet band, embedded Cb"},
+  {t:-2, p:996.5,a:8.8,d:7.8,v:2, w:164,f:7,sea:5.2,cl:"nscb",rain:1,cloud:"Heaviest rain · embedded Cb, odd gusts"},
+  {t:0,  p:995.5,a:8.6,d:7.6,v:1.5,w:215,f:7,sea:5.4,cl:"nscb",rain:.95,cloud:"OCCLUSION PASSES · wind veers, rain still heavy"},
+  {t:1.5,p:996.6,a:7.8,d:6.2,v:3, w:232,f:6,sea:5.1,cl:"ns",rain:.6,cloud:"Rain easing slowly · no warm sector at all"},
+  {t:4,  p:999, a:7.2,d:5.2,v:7, w:245,f:6,sea:4.6,cl:"st",rain:.35,cloud:"Low cloud and drizzle · grudging improvement"},
+  {t:8,  p:1002,a:6.8,d:4.4,v:13,w:258,f:5,sea:4.0,cl:"cu",rain:.2,cloud:"Breaking up at last · showers"},
+  {t:14, p:1005,a:6.5,d:3.8,v:20,w:268,f:5,sea:3.4,cl:"cu",rain:.1,cloud:"Fair with showers · the glass rising"}],
+ ev:[[-20,"Cirrus first — it looks exactly like a warm front coming. You cannot tell them apart yet."],
+     [-14,"Cloud lowering. Pressure falling faster than a plain warm front would."],
+     [-9,"Rain begins. With an occlusion it will run for 10 hours or more."],
+     [-5,"Nimbostratus with cumulonimbus buried in it. Gusts arrive with no visible squall line."],
+     [-2,"Heaviest rain. Visibility 2 miles. Barometer at its lowest."],
+     [0,"OCCLUSION PASSES. The wind veers, but there is no warm sector behind it."],
+     [1.5,"Temperature falls straight away. No warm spell at all — that is the tell."],
+     [4,"Low cloud and drizzle. The improvement is slow and grudging."],
+     [8,"Breaking up. Showers, and the glass is rising."]]
+}};
+
+/* ===== state ===== */
+let M = MODELS.warm, T = MODELS.warm.t0, playing = false, speed = 1, last = 0;
+const sky = $("sky"), sec = $("sec"), baro = $("baro");
+const sx = sky.getContext("2d"), cx = sec.getContext("2d"), bx = baro.getContext("2d");
+
+function fit(c){ const r = c.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+  c.width = Math.max(2, r.width * d); c.height = Math.max(2, r.height * d);
+  c.getContext("2d").setTransform(d, 0, 0, d, 0, 0); return [r.width, r.height]; }
+
+/* interpolate the model at time t */
+function at(t){
+  const k = M.key;
+  if(t <= k[0].t) return Object.assign({}, k[0]);
+  if(t >= k[k.length-1].t) return Object.assign({}, k[k.length-1]);
+  for(let i = 0; i < k.length-1; i++){
+    if(t >= k[i].t && t <= k[i+1].t){
+      const a = k[i], b = k[i+1];
+      const u = (t - a.t) / (b.t - a.t), e = u * u * (3 - 2 * u);
+      const o = {};
+      for(const f of ["p","a","d","v","f","sea"]) o[f] = a[f] + (b[f] - a[f]) * e;
+      let w0 = a.w, w1 = b.w, dd = w1 - w0;
+      if(dd > 180) dd -= 360; if(dd < -180) dd += 360;
+      o.w = (w0 + dd * e + 360) % 360;
+      o.rain = a.rain + (b.rain - a.rain) * e;
+      o.cl = e < .5 ? a.cl : b.cl;
+      o.clA = a.cl; o.clB = b.cl; o.mix = e;
+      o.cloud = e < .55 ? a.cloud : b.cloud;
+      return o;
+    }
+  }
+  return Object.assign({}, k[k.length-1]);
+}
+const deg = d => ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(d/22.5)%16];
+
+/* ===== sky scene ===== */
+let seedN = [];
+for(let i = 0; i < 420; i++) seedN.push({ x:Math.random(), y:Math.random(), r:Math.random(), s:Math.random() });
+
+function drawSky(s, time){
+  const [W,H] = fit(sky);
+  const hz = H * .62;                                 /* horizon */
+  const dark = Math.min(1, Math.max(0, (s.rain * .85 + (1 - s.v / 30) * .5)));
+  /* sky gradient: blue when clear, grey-green when thick */
+  const g = sx.createLinearGradient(0, 0, 0, hz);
+  const topB = [88 - dark*58, 134 - dark*78, 178 - dark*98];
+  const botB = [176 - dark*96, 198 - dark*106, 214 - dark*112];
+  g.addColorStop(0, `rgb(${topB.map(Math.round)})`);
+  g.addColorStop(1, `rgb(${botB.map(Math.round)})`);
+  sx.fillStyle = g; sx.fillRect(0, 0, W, hz);
+
+  const t = time * 60;
+  /* ---- cloud layers ---- */
+  const layer = (kind, alpha) => {
+    if(alpha <= .01) return;
+    sx.save(); sx.globalAlpha = alpha;
+    if(kind === "ci"){
+      sx.strokeStyle = "rgba(255,255,255,.82)"; sx.lineWidth = 2.1;
+      for(let i = 0; i < 16; i++){ const n = seedN[i];
+        const y = hz * (.08 + n.y * .3), x = ((n.x * W + t * 9) % (W + 260)) - 130, w = 70 + n.r * 130;
+        sx.beginPath(); sx.moveTo(x, y); sx.quadraticCurveTo(x + w*.5, y - 11 - n.s*9, x + w, y + 3); sx.stroke(); }
+    } else if(kind === "cs"){
+      const q = sx.createLinearGradient(0, 0, 0, hz*.72);
+      q.addColorStop(0, "rgba(242,246,250,.72)"); q.addColorStop(1, "rgba(236,241,246,.2)");
+      sx.fillStyle = q; sx.fillRect(0, 0, W, hz*.72);
+      /* halo */
+      const hx = W*.72, hy = hz*.3;
+      const hg = sx.createRadialGradient(hx, hy, hz*.11, hx, hy, hz*.17);
+      hg.addColorStop(0, "rgba(255,255,255,0)"); hg.addColorStop(.6, "rgba(255,244,214,.55)"); hg.addColorStop(1, "rgba(255,255,255,0)");
+      sx.fillStyle = hg; sx.beginPath(); sx.arc(hx, hy, hz*.17, 0, 7); sx.fill();
+      sx.fillStyle = "rgba(255,249,228,.9)"; sx.beginPath(); sx.arc(hx, hy, 15, 0, 7); sx.fill();
+    } else if(kind === "as"){
+      for(let i = 0; i < 26; i++){ const n = seedN[i+20];
+        const y = hz * (.1 + n.y * .42), x = ((n.x * W + t * 13) % (W + 420)) - 210;
+        const w = 180 + n.r * 260, h = 16 + n.s * 20;
+        sx.fillStyle = `rgba(${150 - n.s*34},${158 - n.s*34},${168 - n.s*32},.6)`;
+        sx.beginPath(); sx.ellipse(x, y, w, h, 0, 0, 7); sx.fill(); }
+    } else if(kind === "ns"){
+      const q = sx.createLinearGradient(0, 0, 0, hz);
+      q.addColorStop(0, "rgba(84,92,100,.96)"); q.addColorStop(1, "rgba(108,116,124,.98)");
+      sx.fillStyle = q; sx.fillRect(0, 0, W, hz);
+      for(let i = 0; i < 20; i++){ const n = seedN[i+60];
+        const y = hz * (.52 + n.y * .42), x = ((n.x * W + t * 34) % (W + 360)) - 180;
+        sx.fillStyle = `rgba(${58 + n.s*22},${64 + n.s*22},${70 + n.s*22},.75)`;
+        sx.beginPath(); sx.ellipse(x, y, 120 + n.r*120, 13 + n.s*13, 0, 0, 7); sx.fill(); }
+    } else if(kind === "st"){
+      const q = sx.createLinearGradient(0, 0, 0, hz);
+      q.addColorStop(0, "rgba(126,134,140,.92)"); q.addColorStop(1, "rgba(158,166,172,.96)");
+      sx.fillStyle = q; sx.fillRect(0, 0, W, hz);
+      for(let i = 0; i < 14; i++){ const n = seedN[i+90];
+        const y = hz * (.66 + n.y * .3), x = ((n.x * W + t * 26) % (W + 420)) - 210;
+        sx.fillStyle = `rgba(${176 + n.s*18},${182 + n.s*16},${186 + n.s*16},.5)`;
+        sx.beginPath(); sx.ellipse(x, y, 150 + n.r*150, 11 + n.s*10, 0, 0, 7); sx.fill(); }
+    } else if(kind === "cu"){
+      for(let i = 0; i < 9; i++){ const n = seedN[i+120];
+        const y = hz * (.3 + n.y * .3), x = ((n.x * W + t * 20) % (W + 340)) - 170, r = 24 + n.r * 30;
+        sx.fillStyle = "rgba(252,252,252,.95)";
+        sx.beginPath();
+        sx.arc(x, y, r, Math.PI, 0); sx.arc(x + r*.8, y - r*.12, r*.8, Math.PI, 0);
+        sx.arc(x + r*1.5, y, r*.72, Math.PI, 0); sx.rect(x - r, y, r*2.5, r*.5); sx.fill();
+        sx.fillStyle = "rgba(146,156,166,.55)";
+        sx.beginPath(); sx.ellipse(x + r*.3, y + r*.42, r*1.3, r*.2, 0, 0, 7); sx.fill(); }
+    } else if(kind === "cbline" || kind === "cb" || kind === "nscb"){
+      if(kind === "nscb"){ layer("ns", 1); }
+      const prog = kind === "cbline" ? .22 : 1;
+      const cxp = kind === "cbline" ? W * (1.02 - prog * .55) : W * .42;
+      const base = hz * .92, topY = hz * (kind === "cbline" ? .3 : .02);
+      const q = sx.createLinearGradient(0, topY, 0, base);
+      q.addColorStop(0, "rgba(96,104,112,.98)"); q.addColorStop(.55, "rgba(64,70,78,.99)"); q.addColorStop(1, "rgba(38,42,48,1)");
+      sx.fillStyle = q;
+      sx.beginPath();
+      sx.moveTo(cxp - W*.62, base);
+      sx.bezierCurveTo(cxp - W*.4, topY + hz*.16, cxp - W*.12, topY, cxp + W*.02, topY + hz*.03);
+      sx.bezierCurveTo(cxp + W*.2, topY - hz*.02, cxp + W*.42, topY + hz*.2, cxp + W*.5, base);
+      sx.closePath(); sx.fill();
+      /* anvil */
+      sx.fillStyle = "rgba(188,194,200,.72)";
+      sx.beginPath(); sx.ellipse(cxp + W*.02, topY + hz*.03, W*.3, hz*.05, 0, 0, 7); sx.fill();
+      if(kind !== "cbline" && Math.sin(time * 9) > .986){
+        sx.strokeStyle = "rgba(255,255,230,.95)"; sx.lineWidth = 2.2;
+        sx.beginPath(); let lx = cxp - W*.1, ly = topY + hz*.2;
+        for(let i = 0; i < 5; i++){ lx += (Math.random() - .5) * 34; ly += hz*.14; sx.lineTo(lx, ly); } sx.stroke();
+      }
+    }
+    sx.restore();
+  };
+  /* blend the two neighbouring cloud states */
+  layer(s.clA, 1 - s.mix); layer(s.clB, s.mix);
+
+  /* ---- sea ---- */
+  const sg = sx.createLinearGradient(0, hz, 0, H);
+  sg.addColorStop(0, `rgb(${Math.round(56-dark*20)},${Math.round(78-dark*28)},${Math.round(92-dark*30)})`);
+  sg.addColorStop(1, `rgb(${Math.round(20-dark*7)},${Math.round(32-dark*10)},${Math.round(40-dark*12)})`);
+  sx.fillStyle = sg; sx.fillRect(0, hz, W, H - hz);
+  const amp = .8 + s.sea * 1.25;
+  for(let r = 1; r <= 11; r++){
+    const u = r / 11;
+    const y = hz + (H - hz) * Math.pow(u, 1.9);
+    const sc = .18 + u;                                  /* perspective scale */
+    /* filled swell band, lighter crest on top */
+    sx.beginPath(); sx.moveTo(-10, y + 40 * sc);
+    for(let x = -10; x <= W + 10; x += 7){
+      const yy = y + Math.sin(x * .009 / sc + t * (.6 + sc * .5) + r) * amp * sc * 1.7
+                   + Math.sin(x * .025 / sc - t * (1 + sc) + r * 2.1) * amp * sc * .8;
+      sx.lineTo(x, yy);
+    }
+    sx.lineTo(W + 10, y + 40 * sc); sx.closePath();
+    sx.fillStyle = `rgba(${16 + u*22},${28 + u*30},${38 + u*34},${.5 + u*.35})`; sx.fill();
+    sx.strokeStyle = `rgba(206,224,236,${.07 + u * .13})`; sx.lineWidth = .7 + sc * 1.3;
+    sx.beginPath();
+    for(let x = -10; x <= W + 10; x += 7){
+      const yy = y + Math.sin(x * .009 / sc + t * (.6 + sc * .5) + r) * amp * sc * 1.7
+                   + Math.sin(x * .025 / sc - t * (1 + sc) + r * 2.1) * amp * sc * .8;
+      x === -10 ? sx.moveTo(x, yy) : sx.lineTo(x, yy);
+    } sx.stroke();
+  }
+  /* breaking crests grow with the sea state */
+  if(s.f >= 5){
+    const n = Math.round((s.f - 4) * 9);
+    for(let i = 0; i < n; i++){
+      const q = seedN[(i * 11) % seedN.length];
+      const u = ((q.y + t * .018 + i * .07) % 1);
+      const ry = hz + (H - hz) * Math.pow(u, 1.9);
+      const rx = ((q.x * W + t * (14 + q.r * 26)) % (W + 120)) - 60;
+      const sc = .18 + u, w = (10 + q.r * 26) * sc * 2.4, h = (1 + q.s * 2) * sc * 2.2;
+      sx.fillStyle = `rgba(246,250,252,${.22 + u * .4})`;
+      sx.beginPath(); sx.ellipse(rx, ry, w, h, 0, 0, 7); sx.fill();
+      sx.fillStyle = `rgba(246,250,252,${.12 + u * .2})`;
+      sx.beginPath(); sx.ellipse(rx + w * .4, ry + h, w * .7, h * .7, 0, 0, 7); sx.fill();
+    }
+  }
+  /* ---- rain / spray ---- */
+  if(s.rain > .04){
+    sx.strokeStyle = `rgba(190,214,232,${.16 + s.rain * .42})`;
+    sx.lineWidth = s.rain > .8 ? 1.5 : 1;
+    const n = Math.round(s.rain * 320), slant = (s.f - 3) * 5;
+    for(let i = 0; i < n; i++){
+      const q = seedN[i % seedN.length];
+      const x = (q.x * W * 1.3 + (t * (210 + s.rain*260) * .5 + i*13)) % (W + 160) - 80;
+      const y = (q.y * H + t * (420 + s.rain * 520)) % H;
+      const L = 9 + s.rain * 26;
+      sx.beginPath(); sx.moveTo(x, y); sx.lineTo(x - slant, y + L); sx.stroke();
+    }
+  }
+  /* visibility haze — thickest at the horizon, thinning both ways */
+  if(s.v < 14){
+    const hazeA = Math.min(.8, (14 - s.v) / 14 * .92);
+    const hg = sx.createLinearGradient(0, hz - H * .3, 0, H);
+    hg.addColorStop(0,   `rgba(198,206,212,0)`);
+    hg.addColorStop(.42, `rgba(198,206,212,${hazeA * .72})`);
+    hg.addColorStop(.52, `rgba(196,204,210,${hazeA})`);
+    hg.addColorStop(.72, `rgba(190,198,206,${hazeA * .4})`);
+    hg.addColorStop(1,   `rgba(186,196,204,${hazeA * .1})`);
+    sx.fillStyle = hg; sx.fillRect(0, hz - H * .3, W, H - hz + H * .3);
+  }
+  /* ---- own ship: bow and rail, pitching ---- */
+  const pitch = Math.sin(t * .9) * (1 + s.sea * .8), roll = Math.sin(t * .62 + 1) * (.6 + s.sea * .5);
+  sx.save(); sx.translate(W/2, H + pitch * 3); sx.rotate(roll * .006);
+  sx.fillStyle = "#1a2a33"; sx.beginPath();
+  sx.moveTo(-W*.5, 0); sx.lineTo(-W*.22, -H*.13); sx.quadraticCurveTo(0, -H*.2, W*.22, -H*.13); sx.lineTo(W*.5, 0); sx.closePath(); sx.fill();
+  sx.fillStyle = "#24363f"; sx.beginPath();
+  sx.moveTo(-W*.3, -H*.11); sx.quadraticCurveTo(0, -H*.185, W*.3, -H*.11); sx.lineTo(W*.3, -H*.085); sx.quadraticCurveTo(0, -H*.158, -W*.3, -H*.085); sx.closePath(); sx.fill();
+  sx.strokeStyle = "#415764"; sx.lineWidth = 2;
+  sx.beginPath(); sx.moveTo(-W*.3, -H*.145); sx.quadraticCurveTo(0, -H*.215, W*.3, -H*.145); sx.stroke();
+  sx.restore();
+}
+
+/* ===== section view: the front sliding over the ship ===== */
+function drawSec(s, t){
+  const [W,H] = fit(sec);
+  cx.fillStyle = "#f4f1e8"; cx.fillRect(0, 0, W, H);
+  const gnd = H - 32, top = 38;
+  const shipX = W * .5;
+  /* the system comes from the WEST (left) and travels east.
+     front is left of the ship before passage, right of it after. */
+  const k = (W * .80) / (M.t1 - M.t0);
+  const frontX = shipX + t * k;
+  const isCold = M === MODELS.cold, isOcc = M === MODELS.occ;
+  const col = isCold ? "#0b63b5" : (isOcc ? "#7b3fa0" : "#c22a2a");
+  /* warm air fills the box, then the cold wedge is laid over it */
+  cx.fillStyle = "#f6ddcc"; cx.fillRect(0, top, W, gnd - top);
+  /* cold wedge: COLD FRONT -> cold air to the WEST (left), steep.
+                 WARM FRONT -> cold air ahead, to the EAST (right), shallow. */
+  const slopeRun = isCold ? (gnd - top) * 1.15 : (gnd - top) * 4.2;
+  cx.fillStyle = "#cfe0ef"; cx.beginPath();
+  if(isCold){ cx.moveTo(frontX, gnd); cx.lineTo(frontX - slopeRun, top); cx.lineTo(-20, top); cx.lineTo(-20, gnd); }
+  else { cx.moveTo(frontX, gnd); cx.lineTo(frontX + slopeRun, top); cx.lineTo(W + 20, top); cx.lineTo(W + 20, gnd); }
+  cx.closePath(); cx.fill();
+  /* frontal surface */
+  cx.lineWidth = 2.8; cx.strokeStyle = col; cx.beginPath();
+  cx.moveTo(frontX, gnd);
+  cx.lineTo(isCold ? frontX - slopeRun : frontX + slopeRun, top);
+  cx.stroke();
+  /* sea */
+  cx.fillStyle = "#cfd9e0"; cx.fillRect(0, gnd, W, H - gnd);
+  cx.strokeStyle = "#8b8470"; cx.lineWidth = 1.2;
+  cx.beginPath(); cx.moveTo(0, gnd); cx.lineTo(W, gnd); cx.stroke();
+  /* rain under the active part */
+  cx.strokeStyle = isCold ? "rgba(63,111,153,.6)" : "rgba(95,135,168,.5)";
+  cx.lineWidth = isCold ? 1.6 : 1;
+  const rw = isCold ? 46 : 230, rc = isCold ? frontX - 16 : frontX + 150;
+  if(s.rain > .08) for(let i = 0; i < (isCold ? 8 : 20); i++){
+    const x = rc - rw/2 + Math.random() * rw;
+    if(x < 0 || x > W) continue;
+    const y0 = top + 24 + Math.random() * 24;
+    cx.beginPath(); cx.moveTo(x, y0); cx.lineTo(x - 4, gnd - 2); cx.stroke();
+  }
+  /* own ship */
+  cx.fillStyle = "#1d3c55";
+  cx.beginPath(); cx.moveTo(shipX - 9, gnd); cx.lineTo(shipX + 9, gnd); cx.lineTo(shipX, gnd - 16); cx.closePath(); cx.fill();
+  cx.font = "700 10px Arial"; cx.textAlign = "center"; cx.fillStyle = "#1d3c55";
+  cx.fillText("OWN SHIP", shipX, gnd + 20);
+  /* movement arrow */
+  cx.strokeStyle = "#1d3c55"; cx.lineWidth = 1.6;
+  cx.beginPath(); cx.moveTo(W - 112, 22); cx.lineTo(W - 62, 22); cx.stroke();
+  cx.beginPath(); cx.moveTo(W - 62, 22); cx.lineTo(W - 70, 18); cx.lineTo(W - 70, 26); cx.closePath(); cx.fill();
+  /* labels */
+  cx.textAlign = "left"; cx.font = "700 10.5px Arial"; cx.fillStyle = col;
+  cx.fillText(M.name, 10, 17);
+  cx.fillStyle = "#44525c"; cx.font = "10px Arial";
+  cx.fillText(isCold ? "cold air behind undercuts the warm air — steep surface, short violent spell"
+            : isOcc ? "warm air already lifted off the surface — one long wet band"
+                    : "warm air rides up over the cold air ahead — shallow surface, hours of rain", 10, 31);
+  cx.fillStyle = "#1d3c55"; cx.font = "9.5px Arial";
+  cx.fillText("WEST", 10, gnd + 20); cx.textAlign = "right"; cx.fillText("EAST", W - 10, gnd + 20);
+  cx.font = "700 10px Arial"; cx.fillStyle = col;
+  cx.fillText(t < 0 ? `front ${Math.abs(t).toFixed(1)} h away` : `front passed ${t.toFixed(1)} h ago`, W - 122, 26);
+  cx.textAlign = "left";
+  /* air-mass captions */
+  cx.font = "700 9.5px Arial"; cx.fillStyle = "#1d5a8c";
+  if(isCold){ if(frontX > 70) cx.fillText("COLD AIR", 12, top + 18); }
+  else { if(frontX < W - 80){ cx.textAlign = "right"; cx.fillText("COLD AIR", W - 12, top + 18); cx.textAlign = "left"; } }
+  cx.fillStyle = "#9d5a2b";
+  const wmX = isCold ? Math.min(W - 70, frontX + 24) : Math.max(12, frontX - 86);
+  cx.fillText("WARM AIR", wmX, top + 18);
+}
+
+/* ===== barograph ===== */
+function drawBaro(now){
+  const [W,H] = fit(baro);
+  bx.clearRect(0, 0, W, H);
+  const k = M.key, lo = Math.min(...k.map(x=>x.p)) - 2, hi = Math.max(...k.map(x=>x.p)) + 2;
+  const X = t => (t - M.t0) / (M.t1 - M.t0) * (W - 8) + 4;
+  const Y = p => H - 8 - (p - lo) / (hi - lo) * (H - 18);
+  bx.strokeStyle = "rgba(255,255,255,.08)"; bx.lineWidth = 1;
+  for(let p = Math.ceil(lo/5)*5; p < hi; p += 5){ bx.beginPath(); bx.moveTo(0, Y(p)); bx.lineTo(W, Y(p)); bx.stroke(); }
+  bx.strokeStyle = "rgba(242,193,78,.35)"; bx.setLineDash([3,3]);
+  bx.beginPath(); bx.moveTo(X(0), 0); bx.lineTo(X(0), H); bx.stroke(); bx.setLineDash([]);
+  /* full trace faint, past trace bright */
+  const trace = (from, to, col, wd) => {
+    bx.strokeStyle = col; bx.lineWidth = wd; bx.beginPath();
+    for(let t = from; t <= to; t += .25){ const p = at(t).p; const x = X(t), y = Y(p); t === from ? bx.moveTo(x,y) : bx.lineTo(x,y); }
+    bx.stroke();
+  };
+  trace(M.t0, M.t1, "rgba(86,184,230,.22)", 1.4);
+  trace(M.t0, now, "#56b8e6", 2.2);
+  const s = at(now);
+  bx.fillStyle = "#f2c14e"; bx.beginPath(); bx.arc(X(now), Y(s.p), 3.6, 0, 7); bx.fill();
+  bx.fillStyle = "#7d929c"; bx.font = "9px Arial";
+  bx.fillText(hi.toFixed(0), 4, 10); bx.fillText(lo.toFixed(0), 4, H - 2);
+}
+
+/* ===== render ===== */
+function paint(){
+  const s = at(T);
+  drawSky(s, performance.now() / 1000);
+  drawSec(s, T);
+  drawBaro(T);
+  $("iP").textContent = s.p.toFixed(1) + " hPa";
+  const t3 = s.p - at(T - 3).p;
+  const iT = $("iT");
+  iT.textContent = (t3 >= 0 ? "+" : "") + t3.toFixed(1) + " hPa";
+  iT.className = t3 <= -3 ? "bad" : t3 >= 1.5 ? "cold" : "";
+  const iA = $("iA"); iA.textContent = s.a.toFixed(1) + " °C";
+  iA.className = s.a >= 12 ? "hot" : s.a <= 8 ? "cold" : "";
+  $("iD").textContent = s.d.toFixed(1) + " °C";
+  const iV = $("iV");
+  iV.textContent = s.v < 1 ? (s.v*10).toFixed(0)/10 + " nm" : s.v.toFixed(s.v < 10 ? 1 : 0) + " nm";
+  iV.className = s.v < 2 ? "bad" : s.v < 5 ? "hot" : "";
+  $("iS").textContent = s.sea.toFixed(1) + " m";
+  $("iW").textContent = deg(s.w) + " " + Math.round(s.w) + "° · F" + s.f.toFixed(0);
+  $("warr").setAttribute("transform", `rotate(${(s.w + 180) % 360} 37 37)`);
+  const w0 = at(T - 2).w; let dw = s.w - w0; if(dw > 180) dw -= 360; if(dw < -180) dw += 360;
+  $("iWn").textContent = Math.abs(dw) < 1.5 ? "steady" : (dw > 0 ? "VEERING " : "BACKING ") + Math.abs(dw).toFixed(0) + "° in 2 h";
+  $("iWn").style.color = dw > 4 ? "#f2c14e" : dw < -4 ? "#56b8e6" : "#9fb3bd";
+  $("badge").innerHTML = (T < 0 ? "T − " + Math.abs(T).toFixed(1) + " h" : "T + " + T.toFixed(1) + " h")
+    + "<small>" + s.cloud + "</small>";
+  $("baroN").textContent = t3 <= -3 ? "Falling 3 hPa or more in 3 hours — this is significant."
+    : t3 >= 2 ? "Rising sharply behind the front." : t3 > -1 && t3 < 1 ? "Steady." : "Falling.";
+  $("clock").textContent = (T < 0 ? "−" : "+") + Math.abs(T).toFixed(1) + " h";
+  $("scrub").value = Math.round((T - M.t0) / (M.t1 - M.t0) * 1000);
+  renderLog();
+}
+function renderLog(){
+  const h = M.ev.map(([t, txt]) => {
+    const on = T >= t, nowish = on && T < t + 2.2;
+    return `<div class="${nowish ? "now" : ""}" style="opacity:${on ? 1 : .32}"><i>${t < 0 ? "−" : "+"}${Math.abs(t).toFixed(1)}h</i><span>${txt}</span></div>`;
+  }).join("");
+  if($("log").innerHTML !== h){ $("log").innerHTML = h;
+    const n = $("log").querySelector(".now"); if(n) n.scrollIntoView({ block:"nearest" }); }
+}
+function loop(ts){
+  if(playing){
+    const dt = Math.min(.05, (ts - last) / 1000); last = ts;
+    T += dt * speed * 1.15;
+    if(T >= M.t1){ T = M.t1; playing = false; $("play").textContent = "▶ REPLAY"; }
+  } else last = ts;
+  paint();
+  requestAnimationFrame(loop);
+}
+/* ===== controls ===== */
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+  M = MODELS[b.dataset.f]; T = M.t0; playing = false; $("play").textContent = "▶ PLAY";
+});
+$("play").onclick = () => {
+  if(T >= M.t1) T = M.t0;
+  playing = !playing; $("play").textContent = playing ? "❚❚ PAUSE" : "▶ PLAY";
+};
+$("scrub").oninput = e => { T = M.t0 + (+e.target.value / 1000) * (M.t1 - M.t0); };
+document.querySelectorAll(".spd").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".spd").forEach(x => x.classList.toggle("on", x === b)); speed = +b.dataset.s;
+});
+addEventListener("resize", paint);
+const hs = decodeURIComponent(location.hash.slice(1));
+if(MODELS[hs]){ M = MODELS[hs]; T = M.t0;
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x.dataset.f === hs)); }
+requestAnimationFrame(loop);
+</script></body></html>
