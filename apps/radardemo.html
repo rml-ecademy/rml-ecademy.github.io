@@ -610,7 +610,7 @@
 <div class="group">
 <h3>PRESENTATION</h3>
 <div class="buttons">
-<button id="orient">NORTH UP</button><button id="stabilize">GROUND STAB</button><button id="vector">REL VECTOR</button><button id="trail">TRAILS ON</button><button id="offc" title="Shift own ship on the PPI: press, then click where own ship should be">OFF CENTRE</button><button class="active" id="ringsbtn" title="Range rings: 6 · 4 · 8 · off">RINGS 6</button><button class="active" id="bandbtn" title="X-band 3 cm / S-band 10 cm">X-BAND</button><button class="active" id="guard">GUARD ON</button><button id="setguard">SET GUARD</button><button id="menu2">MENU</button><button id="reset">RESET</button>
+<button id="orient">NORTH UP</button><button id="stabilize">GROUND STAB</button><button id="vector">REL VECTOR</button><button id="trail">TRAILS ON</button><button id="offc" title="Shift own ship on the PPI: press, then click where own ship should be">OFF CENTRE</button><button class="active" id="ringsbtn" title="Range rings: 6 · 4 · 8 · off">RINGS 6</button><button class="active" id="bandbtn" title="X-band 3 cm / S-band 10 cm">X-BAND</button><button id="guard">GUARD OFF</button><button id="setguard">SET GUARD</button><button id="menu2">MENU</button><button id="reset">RESET</button>
 </div>
 </div>
 </div>
@@ -628,7 +628,7 @@
 <div class="side sideR">
 <div class="read tr">
           EBL <span id="re">OFF</span><br/>VRM <span id="rv">OFF</span><br/><span id="rvec">REL</span> VECT 12
-          MIN<br/><span id="displaymode">NORTH UP · RM</span><br/><span id="stabstatus">GROUND · GPS</span><br/>GZ <span id="gzstat">ON</span>
+          MIN<br/><span id="displaymode">NORTH UP · RM</span><br/><span id="stabstatus">GROUND · GPS</span><br/>GZ <span id="gzstat">OFF</span>
 <span id="gzbrg">315°–045° R</span>
 </div>
 <div class="group">
@@ -714,7 +714,7 @@
 <div class="meter">TX USED <span id="txused">00:00:00</span></div>
 <p class="small">Total = initial magnetron hours + this page's TX time. Real elapsed time, not accelerated scenario time. Session counters restart on reload.</p>
 <div class="title mt">GUARD ZONE</div>
-<div class="menu-row"><button id="mguard">GUARD ZONE 1: ON</button><button id="msetguard">SET BY CURSOR</button></div>
+<div class="menu-row"><button id="mguard">GUARD ZONE 1: OFF</button><button id="msetguard">SET BY CURSOR</button></div>
 <div class="menu-row"><label>GUARD START ° REL<input id="gzstart" max="359" min="0" type="number" value="315"/></label><label>GUARD END ° REL<input id="gzend" max="359" min="0" type="number" value="45"/></label></div>
 <div class="menu-row"><label>ARC WIDTH °<input id="gzarc" max="360" min="1" type="number" value="90"/></label></div>
 <div class="title mt">TARGET / ARPA</div>
@@ -797,7 +797,7 @@
         stabilization = "GROUND",
         vector = "REL",
         showTrails = true,
-        guardOn = true,
+        guardOn = false,   // off until the OOW sets it
         guardDraw = false,
         guardDrag = false,
         guard = { start: 315, end: 45, inner: 1, outer: 5 },
