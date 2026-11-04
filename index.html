@@ -2629,8 +2629,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   <form class="enroll-box login-box" id="otpForm">
     <button class="x" id="otpClose" type="button" aria-label="Close">×</button>
     <div class="tier" style="color:var(--cyan)">RESET PASSWORD</div>
-    <h3 id="otpH">Enter the code we e-mailed you</h3>
-    <p id="otpP">We sent a 6-digit code to <b id="otpEmail"></b>. Check the inbox and the spam folder. <span id="otpTimer"></span></p>
+    <h3 id="otpH">Check your e-mail</h3>
+    <p id="otpP">We sent a reset e-mail to <b id="otpEmail"></b> (check spam too). If it shows a <b>6-digit code</b>, type it below. If it shows a <b>Reset password</b> link, click the link instead — it brings you back here to set your new password. <span id="otpTimer"></span></p>
     <label for="otpCode">6-digit code</label><input id="otpCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" placeholder="123456" style="letter-spacing:.3em;font-size:1.3rem;text-align:center">
     <div class="pay-grid"><div><label for="otpPw1">New password</label><input id="otpPw1" type="password" minlength="8" required autocomplete="new-password" placeholder="At least 8 characters"></div>
     <div><label for="otpPw2">Repeat password</label><input id="otpPw2" type="password" minlength="8" required autocomplete="new-password"></div></div>
@@ -2865,7 +2865,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     btn.disabled = true; btn.textContent = 'Checking…';
     try {
       const { error } = await sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'recovery' });
-      if(error) throw new Error(/expired|invalid|not found/i.test(error.message) ? 'That code is wrong or has expired. Check the latest e-mail, or press "Resend code".' : error.message);
+      if(error) throw new Error(/expired|invalid|not found/i.test(error.message) ? 'That code is wrong or has expired. Check the latest e-mail, or press "Resend code". If your e-mail has a link instead of a code, click the link.' : error.message);
       const { error: e2 } = await sb.auth.updateUser({ password: a });
       if(e2) throw new Error(e2.message);
       clearInterval(otpTick); show(null);
@@ -2893,7 +2893,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(a && a.pay && !pkg) openPay(a.pay);
   }
   sb.auth.onAuthStateChange((ev) => {
-    if(ev === 'PASSWORD_RECOVERY') openSetPw('recovery');
+    if(ev === 'PASSWORD_RECOVERY'){ clearInterval(otpTick); openSetPw('recovery'); }
     if(ev === 'SIGNED_IN' && FROM_LINK){                                  // back from Google (or an emailed link)
       FROM_LINK = false; history.replaceState(null, '', location.pathname + location.search);
       try { afterLogin = JSON.parse(sessionStorage.getItem('ecademy.after') || 'null'); sessionStorage.removeItem('ecademy.after'); } catch(_){}
