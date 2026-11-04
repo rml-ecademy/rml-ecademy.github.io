@@ -82,6 +82,11 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
       <button class="btn ghost full" id="csv" type="button" style="margin-top:12px">Download list (CSV)</button>
     </section>
     <section class="card">
+      <h2>Accounts without access yet <span class="badge" id="ln" style="background:var(--mute)">0</span></h2>
+      <p class="sub">Signed up but not yet paid (or payment still under review). Follow them up — name, e-mail and mobile are here.</p>
+      <div class="hist" id="leads"></div>
+    </section>
+    <section class="card">
       <h2>Recent decisions</h2>
       <div class="hist" id="hist"></div>
     </section>
@@ -135,7 +140,22 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
     $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
-  let members = [];
+  let members = [], accounts = [];
+  function leadMsg(name){ const first = (name || 'Officer').trim().split(' ')[0]; return 'Hi ' + first + ', this is ECADEMY Maritime. We saw your account on ecademymaritime.com — your decks and simulators open as soon as your GCash payment is confirmed. Log in → Get Access → send via GCash → type the reference number, and we activate it right away. Questions? Just reply here.'; }
+  function renderLeads(){
+    const leads = accounts.filter(a => !a.is_admin && (!a.package || a.revoked || (a.expires_at && new Date(a.expires_at) < new Date())));
+    $('ln').textContent = leads.length;
+    $('leads').innerHTML = leads.map(a => '<div data-lead="' + esc(a.user_id) + '"><b style="color:var(--ink)">' + esc(a.name || '(no name yet)') + '</b> &nbsp;<span class="' + (a.pending ? 'ok-t' : 'no-t') + '">' + (a.pending ? 'PAYMENT UNDER REVIEW' : a.package ? (a.revoked ? 'PAUSED' : 'EXPIRED') : 'NO PAYMENT YET') + '</span><br>' + esc(a.email) + (a.phone ? ' · <b>' + esc(a.phone) + '</b>' : ' · <i>no phone</i>') + '<br><span style="font-size:.8rem">signed up ' + fmt(a.created_at) + (a.last_sign_in_at ? ' · last login ' + ago(a.last_sign_in_at) : '') + ' · via ' + esc(a.provider) + '</span>' +
+      '<div style="margin-top:6px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-l="msg">Follow-up message</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-l="del">Delete</button></div></div>').join('') || '<div>No pending sign-ups.</div>';
+  }
+  $('leads').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-l]'); if(!b) return;
+    const uid = b.closest('[data-lead]').dataset.lead, a = accounts.find(x => x.user_id === uid); if(!a) return;
+    if(b.dataset.l === 'msg'){ showMsg('Follow-up for ' + (a.name || a.email), leadMsg(a.name)); return; }
+    const typed = prompt('DELETE the account ' + a.email + '?\n\nType DELETE to confirm:'); if(typed !== 'DELETE') return;
+    try { b.disabled = true; await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); await load(); } catch(err){ alert(err.message); b.disabled = false; }
+  });
+  async function loadAccounts(){ const { data } = await sb.rpc('admin_accounts'); accounts = (data && data.accounts) || []; renderLeads(); }
   const VALNAME = v => (VAL.find(x => x[0] === v) || [,''])[1];
   function approvedMsg(name, pkg, exp){
     const first = (name || 'Officer').trim().split(' ')[0];
@@ -155,6 +175,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '')).toLowerCase().includes(q));
     $('students').innerHTML = list.map(m => { const live = !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
       const pay = pays.find(p => p.user_id === m.user_id && p.status === 'approved');
+      const acc = accounts.find(a => a.user_id === m.user_id); if(!m.phone_no && acc && acc.phone) m.phone_no = acc.phone;
       const row = (k, v) => v ? '<tr><td style="color:var(--mute);padding:2px 10px 2px 0;white-space:nowrap">' + k + '</td><td style="padding:2px 0;color:var(--ink)">' + v + '</td></tr>' : '';
       return '<div data-uid="' + esc(m.user_id) + '" style="padding:12px 0"><b style="color:var(--ink);font-size:1rem">' + esc(m.name || '(no name given)') + '</b> &nbsp;<span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'PAUSED' : !m.expires_at ? 'LIFETIME' : (live ? 'ACTIVE' : 'EXPIRED')) + '</span>' +
         '<table style="border-collapse:collapse;margin-top:6px;font-size:.86rem">' +
@@ -183,7 +204,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const csv = ['name,email,phone,package,valid_until,status,amount,ref,enrolled'].concat(members.map(m => [m.name, m.email, m.phone_no, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.created_at].map(c).join(','))).join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
   };
-  async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' })]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+  async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   $('list').addEventListener('click', async e => {
     const c = e.target.closest('button[data-copy]'); if(c){ navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Reference number copied.')); return; }
     const b = e.target.closest('button[data-p]'); if(!b) return;
@@ -226,7 +247,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ view('loginView'); return; }
     $('who').textContent = session.user.email;
-    try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' })]); pays = p.payments; members = m.members; view('app'); render(); renderStudents(); }
+    try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; view('app'); render(); renderStudents(); }
     catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   }
   boot();

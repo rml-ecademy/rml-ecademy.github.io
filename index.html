@@ -2600,7 +2600,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="acc-tabs"><button type="button" id="tabIn" class="on">Log in</button><button type="button" id="tabUp">Create account</button></div>
     <button type="button" class="gbtn" id="googleBtn"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span id="googleLbl">Continue with Google</span></button>
     <div class="or-line">or with e-mail</div>
-    <div id="nameRow" hidden><label for="loginName">Your name</label><input id="loginName" type="text" placeholder="Rank and name, e.g. 2/O Juan Dela Cruz" autocomplete="name" maxlength="120"></div>
+    <div id="nameRow" hidden><label for="loginName">Full name (as in your Seaman's Book)</label><input id="loginName" type="text" placeholder="e.g. Juan P. Dela Cruz" autocomplete="name" minlength="5" maxlength="120">
+    <label for="loginPhone">Mobile number</label><input id="loginPhone" type="tel" inputmode="tel" placeholder="09XX XXX XXXX" autocomplete="tel" minlength="7" maxlength="40"></div>
     <label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@gmail.com" autocomplete="email">
     <label for="loginPw">Password</label><input id="loginPw" type="password" required placeholder="At least 8 characters" minlength="8" autocomplete="current-password">
     <input class="hp" id="website" name="website" tabindex="-1" autocomplete="off">
@@ -2637,6 +2638,19 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="err" id="otpErr" role="alert"></div>
     <div class="row"><button class="cta" id="otpBtn" type="submit">Set new password</button><button type="button" class="ghost" id="otpResend" disabled>Resend code</button></div>
     <p class="hint">No e-mail after a few minutes? <a href="#" id="otpHelp" target="_blank" rel="noopener">Message ECADEMY</a> and we will reset it for you.</p>
+  </form>
+</div>
+
+<!-- COMPLETE PROFILE (after Google sign-in, or accounts without name/phone) -->
+<div class="enroll-modal" id="profModal" role="dialog" aria-modal="true" aria-labelledby="profH">
+  <form class="enroll-box login-box" id="profForm">
+    <div class="tier" style="color:var(--green)">ONE LAST STEP</div>
+    <h3 id="profH">Complete your profile</h3>
+    <p>So we can match your payment and reach you if needed.</p>
+    <label for="profName">Full name (as in your Seaman's Book)</label><input id="profName" required minlength="5" maxlength="120" placeholder="e.g. Juan P. Dela Cruz" autocomplete="name">
+    <label for="profPhone">Mobile number</label><input id="profPhone" type="tel" inputmode="tel" required minlength="7" maxlength="40" placeholder="09XX XXX XXXX" autocomplete="tel">
+    <div class="err" id="profErr" role="alert"></div>
+    <div class="row"><button class="cta" id="profBtn" type="submit">Save and continue</button></div>
   </form>
 </div>
 
@@ -2783,7 +2797,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   /* ---------- state ---------- */
   let session = null, member = null, pending = null, rejected = null, isAdmin = false, pkg = null, valid = false;
   let afterLogin = null;                     // e.g. { pay: 'A' } → open the payment form once logged in
-  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal'), otp: $('otpModal') };
+  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal'), otp: $('otpModal'), prof: $('profModal') };
   const show = m => { Object.values(modals).forEach(x => x.classList.remove('open')); if(m) m.classList.add('open'); };
   Object.values(modals).forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); }));
   ['loginClose','enrollClose','payClose','devClose','otpClose'].forEach(id => $(id).onclick = () => show(null));
@@ -2793,7 +2807,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   function setMode(m, notice){
     mode = m; const up = m === 'up';
     $('tabIn').classList.toggle('on', !up); $('tabUp').classList.toggle('on', up);
-    $('nameRow').hidden = !up; $('loginName').required = up; $('signupHint').hidden = !up; $('loginAlt').hidden = up;
+    $('nameRow').hidden = !up; $('loginName').required = up; $('loginPhone').required = up; $('signupHint').hidden = !up; $('loginAlt').hidden = up;
     $('loginBtn').textContent = up ? 'Create account' : 'Log in';
     $('googleLbl').textContent = up ? 'Sign up with Google' : 'Continue with Google';
     $('loginPw').autocomplete = up ? 'new-password' : 'current-password';
@@ -2817,7 +2831,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     btn.disabled = true; btn.textContent = mode === 'up' ? 'Creating…' : 'Checking…';
     try {
       if(mode === 'up'){
-        const r = await sb.functions.invoke('account', { body: { action: 'signup', email, password, name: $('loginName').value.trim(), website: $('website').value } });
+        const r = await sb.functions.invoke('account', { body: { action: 'signup', email, password, name: $('loginName').value.trim(), phone: $('loginPhone').value.trim(), website: $('website').value } });
         if(r.error){ let msg = 'Could not create the account. Please try again.'; try { const j = await r.error.context.json(); if(j.message) msg = j.message; } catch(_){} throw new Error(msg); }
       }
       const { error } = await sb.auth.signInWithPassword({ email, password });
@@ -2887,9 +2901,27 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     toast('Password saved. Next time, log in with your email and this password.', 5000);
     show(null); await refresh();
   });
+  const meta = () => (session && session.user.user_metadata) || {};
+  const profileOk = () => !!((meta().name || (member && member.name)) && meta().phone);
+  let profNext = null;
+  function openProfile(next){
+    profNext = next || null;
+    $('profName').value = meta().name || (member && member.name) || (meta().full_name) || '';
+    $('profPhone').value = meta().phone || '';
+    $('profErr').textContent = ''; show(modals.prof); setTimeout(() => $(($('profName').value ? 'profPhone' : 'profName')).focus(), 50);
+  }
+  $('profForm').addEventListener('submit', async e => {
+    e.preventDefault(); const btn = $('profBtn'); btn.disabled = true;
+    const { error } = await sb.auth.updateUser({ data: { name: $('profName').value.trim(), phone: $('profPhone').value.trim() } });
+    btn.disabled = false;
+    if(error){ $('profErr').textContent = error.message; return; }
+    ({ data:{ session } } = await sb.auth.getSession());
+    show(null); render(); const n = profNext; profNext = null; if(n) n();
+  });
   function runAfterLogin(){
     const a = afterLogin; afterLogin = null;
     if(!session) return;
+    if(!profileOk()){ openProfile(() => { if(a && a.pay && !pkg) openPay(a.pay); }); return; }
     if(a && a.pay && !pkg) openPay(a.pay);
   }
   sb.auth.onAuthStateChange((ev) => {
@@ -3073,6 +3105,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   /* ---------- Get Access → account first, then GCash ---------- */
   function getAccess(code){
     if(!session){ afterLogin = { pay: code }; openLogin('', 'up', 'Step 1 of 2 — create your free ECADEMY account (or log in). Step 2 is the GCash payment for the ' + PACKAGES[code].name + ' package.'); return; }
+    if(!profileOk()){ openProfile(() => openPay(code)); return; }
     openPay(code);
   }
   function gcashBlock(){
@@ -3086,14 +3119,14 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       body.innerHTML = '<div class="pay-ok"><b>Thank you — your payment is being checked.</b><br>Package: ' + p.name + '<br>GCash reference: <b>' + esc(pending.ref_no) + '</b>' + (pending.amount ? '<br>Amount: ₱' + esc(pending.amount) : '') + '<br>Submitted: ' + fmt(pending.created_at) + '<br><br>Your decks open here automatically once it is confirmed (usually within a few hours, at most 24 h). You can close this page; just log in again later. Questions? <a href="' + MESSENGER + '" target="_blank" rel="noopener">Message ECADEMY</a>.</div>';
       show(modals.pay); return;
     }
-    const name = (session.user.user_metadata && session.user.user_metadata.name) || (member && member.name) || '';
+    const name = meta().name || (member && member.name) || '', phone = meta().phone || '';
     body.innerHTML =
       (rejected ? '<div class="notice" style="border-color:rgba(192,57,43,.35);background:rgba(192,57,43,.08)"><b>Your previous payment could not be confirmed.</b> ' + esc(rejected.note || '') + ' Please check and submit again.</div>' : '') +
       '<div class="pay-steps">' + gcashBlock() +
       '<div class="pay-step"><b class="n">2</b><div>' + (o.amount ? 'Amount: <span class="big">₱' + Number(o.amount).toLocaleString('en-PH') + '</span><br>' + esc(o.label) : esc(o.label) + ' — send the amount quoted to you on Messenger.') + '</div></div>' +
       '<div class="pay-step"><b class="n">3</b><div>Enter the <b>GCash reference number</b> below (from the GCash receipt) and submit. We check it and open your decks — no waiting for a link.</div></div></div>' +
       '<div class="pay-grid"><div><label for="payName">Full name (as in your Seaman\'s Book)</label><input id="payName" required minlength="5" maxlength="120" value="' + esc(name) + '" placeholder="e.g. Juan P. Dela Cruz"></div>' +
-      '<div><label for="payPhone">Mobile number</label><input id="payPhone" required minlength="7" maxlength="40" inputmode="tel" placeholder="09XX XXX XXXX"></div>' +
+      '<div><label for="payPhone">Mobile number</label><input id="payPhone" required minlength="7" maxlength="40" inputmode="tel" value="' + esc(phone) + '" placeholder="09XX XXX XXXX"></div>' +
       '<div><label for="payAmount">Amount sent (₱)</label><input id="payAmount" required inputmode="decimal" maxlength="12" value="' + esc(o.amount || '') + '" placeholder="e.g. 1899"></div>' +
       '<div><label for="payRef">GCash reference no.</label><input id="payRef" required minlength="4" maxlength="40" placeholder="13-digit ref no." style="letter-spacing:.05em"></div></div>' +
       '<label for="payProof">GCash receipt screenshot (optional, speeds up checking)</label><input id="payProof" type="file" accept="image/*">' +
