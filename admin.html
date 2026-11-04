@@ -117,7 +117,7 @@ td small{display:block;color:var(--muted)}
     <section class="card">
       <h2>Students</h2>
       <div class="count" id="count">Loading…</div>
-      <div class="tools"><input id="q" placeholder="Search name, email or package"><button class="ghost small" id="refresh" type="button">Refresh</button><button class="ghost small" id="csv" type="button">Export CSV</button><button class="ghost small" id="out1" type="button">Log out</button></div>
+      <div class="tools"><input id="q" placeholder="Search name, email, phone or package"><button class="ghost small" id="refresh" type="button">Refresh</button><button class="ghost small" id="csv" type="button">Export CSV</button><button class="ghost small" id="out1" type="button">Log out</button></div>
       <div class="tablewrap"><table><thead><tr><th>Student</th><th>Package</th><th>Access</th><th>Devices</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
     </section>
     <section class="card" style="grid-column:1/-1">
@@ -194,11 +194,11 @@ td small{display:block;color:var(--muted)}
   }
   function render(){
     const q = $('q').value.trim().toLowerCase();
-    const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + NAMES[m.package]).toLowerCase().includes(q));
+    const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '') + ' ' + NAMES[m.package]).toLowerCase().includes(q));
     const active = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date())).length;
     $('count').textContent = members.length + ' students · ' + active + ' active · ' + members.filter(m=>m.package==='J').length + ' Junior · ' + members.filter(m=>m.package==='C').length + ' Chief Mate · ' + members.filter(m=>m.package==='A').length + ' All Access';
     $('rows').innerHTML = list.map(m => `<tr>
-      <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}${m.aff_code ? '<small>via <b>' + esc(m.aff_code) + '</b>' + (m.commission != null ? ' · commission ' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="st-ok">paid</span>' : '<span class="st-soon">unpaid</span>') : '') + '</small>' : ''}</td>
+      <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}${m.phone_no ? ' · ' + esc(m.phone_no) : ''}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}${m.aff_code ? '<small>via <b>' + esc(m.aff_code) + '</b>' + (m.commission != null ? ' · commission ' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="st-ok">paid</span>' : '<span class="st-soon">unpaid</span>') : '') + '</small>' : ''}</td>
       <td><span class="pk">${esc(NAMES[m.package])}</span></td>
       <td>${status(m)}</td>
       <td>Phones ${m.phone || 0}/2 · Tablet ${m.tablet || 0}/1 · Laptops ${m.computer || 0}/2${m.active ? '<small>logged in on: <b>' + esc(m.active.kind === 'computer' ? 'laptop/PC' : m.active.kind) + '</b> · ' + fmt(m.active.at) + '</small>' : '<small>not logged in</small>'}${m.last_seen ? '<small>last used ' + fmt(m.last_seen) + '</small>' : ''}</td>
@@ -301,7 +301,7 @@ td small{display:block;color:var(--muted)}
   });
   $('csv').onclick = () => {
     const c = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
-    const csv = ['name,email,package,expires,status,amount,ref,devices,enrolled,affiliate,commission,commission_paid'].concat(members.map(m => [m.name, m.email, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.devices, m.created_at, m.aff_code, m.commission, m.commission_paid_at].map(c).join(','))).join('\n');
+    const csv = ['name,email,phone,package,expires,status,amount,ref,devices,enrolled,affiliate,commission,commission_paid'].concat(members.map(m => [m.name, m.email, m.phone_no, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.devices, m.created_at, m.aff_code, m.commission, m.commission_paid_at].map(c).join(','))).join('\n');
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
   };
 

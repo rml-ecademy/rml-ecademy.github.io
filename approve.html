@@ -76,6 +76,12 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
       <div id="list"></div>
     </section>
     <section class="card">
+      <h2>Students with access <span class="badge" id="sn" style="background:var(--green)">0</span></h2>
+      <input id="sq" placeholder="Search name, email, phone" style="margin-bottom:10px">
+      <div class="hist" id="students"></div>
+      <button class="btn ghost full" id="csv" type="button" style="margin-top:12px">Download list (CSV)</button>
+    </section>
+    <section class="card">
       <h2>Recent decisions</h2>
       <div class="hist" id="hist"></div>
     </section>
@@ -121,7 +127,22 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
     $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
-  async function load(){ try { pays = (await call({ action:'pay_list' })).payments; render(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+  let members = [];
+  function renderStudents(){
+    const q = $('sq').value.trim().toLowerCase();
+    const act = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date()));
+    $('sn').textContent = act.length;
+    const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '')).toLowerCase().includes(q));
+    $('students').innerHTML = list.map(m => { const live = !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
+      return '<div><b style="color:var(--ink)">' + esc(m.name || '—') + '</b><br>' + esc(m.email) + (m.phone_no ? ' · <b>' + esc(m.phone_no) + '</b>' : '') + '<br>' + esc(NAMES[m.package]) + ' · <span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'paused' : !m.expires_at ? 'lifetime' : (live ? 'until ' : 'expired ') + fmt(m.expires_at)) + '</span></div>'; }).join('') || '<div>No students yet.</div>';
+  }
+  $('sq').addEventListener('input', renderStudents);
+  $('csv').onclick = () => {
+    const c = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    const csv = ['name,email,phone,package,valid_until,status,amount,ref,enrolled'].concat(members.map(m => [m.name, m.email, m.phone_no, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.created_at].map(c).join(','))).join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+  };
+  async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' })]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   $('list').addEventListener('click', async e => {
     const c = e.target.closest('button[data-copy]'); if(c){ navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Reference number copied.')); return; }
     const b = e.target.closest('button[data-p]'); if(!b) return;
@@ -162,7 +183,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ view('loginView'); return; }
     $('who').textContent = session.user.email;
-    try { pays = (await call({ action:'pay_list' })).payments; view('app'); render(); }
+    try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' })]); pays = p.payments; members = m.members; view('app'); render(); renderStudents(); }
     catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   }
   boot();
