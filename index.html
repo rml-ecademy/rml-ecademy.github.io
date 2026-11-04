@@ -2965,7 +2965,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       card.classList.toggle('locked', !open);
       card.querySelectorAll('.lock-badge, .demo-btn').forEach(x => x.remove());
       const b = document.createElement('span'); b.className = 'lock-badge' + (open ? ' ok' : ''); b.innerHTML = open ? okSvg + 'Unlocked' : lockSvg + 'Locked'; card.appendChild(b);
-      card.querySelectorAll('.topic-btn.has-sim').forEach(t => {
+      const panel = document.querySelector('.rank-panel[data-rank="' + r + '"]');            // an open deck moves its menu into this panel
+      const btns = [...card.querySelectorAll('.topic-btn.has-sim'), ...(panel ? panel.querySelectorAll('.topic-btn.has-sim') : []), ...(card._menu && !card._menu.isConnected ? card._menu.querySelectorAll('.topic-btn.has-sim') : [])];
+      if(panel) panel.querySelectorAll('.demo-btn').forEach(x => x.remove());
+      btns.forEach(t => {
         const s = t.querySelector('.sim-tag'); if(s && !s.dataset.orig) s.dataset.orig = s.textContent;
         const free = ECADEMY_FREE.includes(t.dataset.app);
         t.classList.toggle('locked', !open && !free);
