@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#12304F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ECADEMY Pay">
+<link rel="manifest" href="assets/approve.webmanifest">
+<link rel="apple-touch-icon" href="assets/approve-icon-180.png">
+<link rel="icon" href="assets/approve-icon-180.png">
+<title>ECADEMY · Payments</title>
+<style>
+:root{--ink:#0C2D48;--ink2:#2B4659;--mute:#5E7587;--rule:#D3E2E9;--bg:#F2F6F9;--card:#fff;--brand:#12304F;--amber:#B9821A;--amber-bg:#FBF1DD;--green:#138A86;--green-bg:#E1F2F0;--red:#B3261E;--red-bg:#FBE9E7}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Albert Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
+header .t{flex:1;font-weight:700;letter-spacing:.02em}header .t small{display:block;font-weight:400;opacity:.75;font-size:.78rem}
+header button{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:9px 12px;font:600 .85rem inherit;cursor:pointer}
+main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:860px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(12,45,72,.05)}
+h2{margin:0 0 6px;font-size:1.05rem}
+.sub{color:var(--mute);font-size:.86rem;margin:0 0 12px}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--ink2);margin:12px 0 5px}
+input,select{width:100%;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid var(--rule);background:#fff;color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;border:0;background:var(--brand);color:#fff;font:700 .95rem inherit;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px}
+.btn.ok{background:var(--green)}.btn.no{background:#fff;color:var(--red);border:1px solid var(--rule)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.btn:disabled{opacity:.5}
+.err{min-height:20px;color:var(--amber);font-size:.9rem;margin-top:8px}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:var(--amber);color:#fff;font-size:.82rem;font-weight:700;margin-left:6px}
+.pay{border:1px solid var(--rule);border-radius:14px;padding:14px;margin-top:12px;background:#fff}
+.pay .who{font-weight:700;font-size:1.02rem}.pay .meta{color:var(--mute);font-size:.84rem}
+.pay .pk{display:inline-block;margin:8px 8px 0 0;padding:4px 10px;border-radius:999px;background:#E3EFF4;color:var(--ink);font-size:.8rem;font-weight:700}
+.pay .amt{display:inline-block;margin-top:8px;font-weight:700}
+.ref{margin:12px 0 4px;padding:12px;border-radius:12px;background:var(--amber-bg);border:1px dashed #EBD3A0;display:flex;align-items:center;gap:10px}
+.ref b{font:700 1.35rem/1.1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;color:#7A5208;flex:1;word-break:break-all}
+.ref button{background:#fff;border:1px solid #EBD3A0;border-radius:8px;padding:7px 10px;font:600 .78rem inherit;color:#7A5208;cursor:pointer}
+.proof{display:block;margin-top:10px}.proof img{max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--rule)}
+.acts{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:12px;align-items:center}
+.acts select{min-height:46px}
+@media (max-width:480px){.acts{grid-template-columns:1fr 1fr}.acts select{grid-column:1/-1}}
+.hist{font-size:.86rem;color:var(--mute)}.hist div{padding:8px 0;border-bottom:1px solid var(--rule)}.hist div:last-child{border-bottom:0}
+.ok-t{color:var(--green);font-weight:700}.no-t{color:var(--red);font-weight:700}
+.empty{padding:22px;text-align:center;color:var(--mute);border:1px dashed var(--rule);border-radius:12px;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--brand);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:92vw;text-align:center}
+.toast.show{opacity:1}
+.tip{background:var(--green-bg);border:1px solid #BFE3DF;border-radius:12px;padding:10px 12px;font-size:.86rem;color:var(--ink2)}
+.tip b{color:var(--ink)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="t">ECADEMY · Payments<small id="who">Confirm GCash payments and open access</small></div><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
+<main>
+  <section class="card" id="loginView">
+    <h2>Owner login</h2>
+    <p class="sub">Same e-mail and password as on the hub.</p>
+    <form id="lf">
+      <label for="le">Email</label><input id="le" type="email" required autocomplete="email" inputmode="email">
+      <label for="lp">Password</label><input id="lp" type="password" required autocomplete="current-password">
+      <button class="btn full" id="lb" type="submit">Log in</button>
+    </form>
+    <div class="err" id="lerr"></div>
+  </section>
+
+  <section class="card hidden" id="denied"><h2>Not an admin account</h2><p class="sub">You are logged in as <b id="deniedEmail"></b>, which is not on the ECADEMY admin list.</p></section>
+
+  <div id="app" class="hidden">
+    <section class="card">
+      <h2>Waiting for your approval <span class="badge" id="n">0</span></h2>
+      <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds.</p>
+      <div id="list"></div>
+    </section>
+    <section class="card">
+      <h2>Recent decisions</h2>
+      <div class="hist" id="hist"></div>
+    </section>
+    <section class="card tip" id="homeTip">
+      <b>Tip for your tablet or phone:</b> open this page in Safari (iPad/iPhone) or Chrome (Android) → Share / menu → <b>Add to Home Screen</b>. It becomes an app icon called <b>ECADEMY Pay</b> that opens full-screen.
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="assets/supabase-2.117.2.js"></script>
+<script>
+(function(){
+  const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
+  const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
+  const HUB = location.origin + '/';
+  const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
+  const VAL = [['m1','1 month'],['m3','3 months'],['m6','6 months'],['y1','1 year'],['life','Lifetime']];
+  const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit' } });
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const peso = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? '₱' + n.toLocaleString('en-PH') : 'amount not given'; };
+  const fmt = d => d ? new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : '';
+  const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+  let pays = [], toastT;
+  function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3000); }
+  async function call(body){
+    const { data, error } = await sb.functions.invoke('admin', { body:{ ...body, hub: HUB } });
+    if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} throw new Error(m); }
+    return data;
+  }
+  function view(id){ ['loginView','denied','app'].forEach(v => $(v).classList.toggle('hidden', v !== id)); $('logout').classList.toggle('hidden', id === 'loginView'); $('reload').classList.toggle('hidden', id !== 'app'); }
+
+  function render(){
+    const pend = pays.filter(p => p.status === 'pending'), done = pays.filter(p => p.status !== 'pending').slice(0, 15);
+    $('n').textContent = pend.length; document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY · Payments';
+    $('list').innerHTML = pend.map(p => `<div class="pay" data-id="${p.id}">
+      <div class="who">${esc(p.name || p.email)}</div>
+      <div class="meta">${esc(p.email)}${p.phone ? ' · ' + esc(p.phone) : ''} · submitted ${ago(p.created_at)}${p.aff_code ? ' · referred by <b>' + esc(p.aff_code) + '</b>' : ''}</div>
+      <span class="pk">${esc(NAMES[p.package])}</span><span class="amt">${peso(p.amount)}</span>
+      <div class="ref"><span style="font-size:.78rem;color:#7A5208">GCash<br>Ref No.</span><b>${esc(p.ref_no || '—')}</b><button type="button" data-copy="${esc(p.ref_no || '')}">Copy</button></div>
+      ${p.proof_url ? '<a class="proof" href="' + p.proof_url + '" target="_blank" rel="noopener"><img src="' + p.proof_url + '" alt="GCash receipt"></a>' : '<div class="meta">No screenshot attached.</div>'}
+      <div class="acts"><select data-val>${VAL.map(v => '<option value="' + v[0] + '"' + (v[0] === 'm6' ? ' selected' : '') + '>Access for ' + v[1] + '</option>').join('')}</select><button class="btn ok" data-p="ok">Approve</button><button class="btn no" data-p="no">Reject</button></div>
+    </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
+    $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
+  }
+  async function load(){ try { pays = (await call({ action:'pay_list' })).payments; render(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+  $('list').addEventListener('click', async e => {
+    const c = e.target.closest('button[data-copy]'); if(c){ navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Reference number copied.')); return; }
+    const b = e.target.closest('button[data-p]'); if(!b) return;
+    const row = b.closest('.pay'), p = pays.find(x => String(x.id) === row.dataset.id); if(!p) return;
+    const who = p.name || p.email;
+    try {
+      if(b.dataset.p === 'ok'){
+        const validity = row.querySelector('[data-val]').value, label = VAL.find(v => v[0] === validity)[1];
+        if(!confirm('Approve ' + who + ' — ' + NAMES[p.package] + ' for ' + label + '?')) return;
+        row.querySelectorAll('button').forEach(x => x.disabled = true);
+        await call({ action:'pay_approve', id:p.id, validity, extend:true });
+        toast('Approved. ' + who + ' now has access.');
+      } else {
+        const note = prompt('Reason shown to ' + who + ':', 'We could not find this reference number in GCash. Please check the receipt and submit again, or message ECADEMY.');
+        if(note === null) return;
+        row.querySelectorAll('button').forEach(x => x.disabled = true);
+        await call({ action:'pay_reject', id:p.id, note });
+        toast('Rejected. The student can submit again.');
+      }
+      await load();
+    } catch(err){ alert(err.message); row.querySelectorAll('button').forEach(x => x.disabled = false); }
+  });
+
+  $('lf').addEventListener('submit', async e => {
+    e.preventDefault(); $('lb').disabled = true; $('lerr').textContent = '';
+    const { error } = await sb.auth.signInWithPassword({ email: $('le').value.trim().toLowerCase(), password: $('lp').value });
+    $('lb').disabled = false;
+    if(error){ $('lerr').textContent = /invalid/i.test(error.message) ? 'Wrong email or password.' : error.message; return; }
+    boot();
+  });
+  $('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  $('reload').onclick = load;
+  setInterval(() => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); }, 45000);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); });
+  if(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('homeTip').classList.add('hidden');
+
+  async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ view('loginView'); return; }
+    $('who').textContent = session.user.email;
+    try { pays = (await call({ action:'pay_list' })).payments; view('app'); render(); }
+    catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
