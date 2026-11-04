@@ -206,7 +206,7 @@ td small{display:block;color:var(--muted)}
         <button class="small" data-a="renew" data-id="${m.user_id}">Renew</button>
         <button class="small ghost" data-a="link" data-id="${m.user_id}">New link</button>
         <button class="small ghost" data-a="dev" data-id="${m.user_id}">Reset devices</button>
-        <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button>${m.aff_code && m.commission != null ? `<button class="small ghost" data-a="paid" data-id="${m.user_id}">${m.commission_paid_at ? 'Undo paid' : 'Commission paid'}</button>` : ''}
+        <button class="small ghost" data-a="pause" data-id="${m.user_id}">${m.revoked ? 'Resume' : 'Pause'}</button><button class="small ghost" data-a="del" data-id="${m.user_id}" style="color:var(--red)">Delete</button>${m.aff_code && m.commission != null ? `<button class="small ghost" data-a="paid" data-id="${m.user_id}">${m.commission_paid_at ? 'Undo paid' : 'Commission paid'}</button>` : ''}
       </div></td></tr>`).join('') || '<tr><td colspan="5" style="color:var(--muted)">No students yet. Enroll the first one on the left.</td></tr>';
   }
   async function load(){ try { members = (await call({ action:'list' })).members; render(); } catch(e){ $('count').textContent = 'Could not load students: ' + e.message; } }
@@ -219,6 +219,7 @@ td small{display:block;color:var(--muted)}
       if(b.dataset.a === 'link'){ const r = await call({ action:'link', email:m.email }); showOut('New set-password link for ' + (m.name || m.email), message(m.name, m.package, m.expires_at, r.link), r.link); }
       if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? All their registered devices (2 phones, 1 tablet, 2 laptops/PCs) are cleared and they are signed out everywhere; the next devices they use will be registered.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
       if(b.dataset.a === 'paid'){ await call({ action:'aff_paid', user_id:m.user_id, paid:!m.commission_paid_at }); await load(); await loadAff(); }
+      if(b.dataset.a === 'del'){ const typed = prompt('DELETE ' + (m.name || m.email) + '?\n\nThis removes the account, package, devices and payment records for good. They can no longer log in.\n\nType DELETE to confirm:'); if(typed === 'DELETE'){ await call({ action:'delete_user', user_id:m.user_id }); await load(); await loadAff(); } }
       if(b.dataset.a === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + (m.name || m.email) + '?')){ await call({ action:'revoke', user_id:m.user_id, revoked:!m.revoked }); await load(); } }
     } catch(err){ alert(err.message); }
     b.disabled = false;

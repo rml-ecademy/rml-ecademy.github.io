@@ -134,9 +134,20 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     $('sn').textContent = act.length;
     const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '')).toLowerCase().includes(q));
     $('students').innerHTML = list.map(m => { const live = !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
-      return '<div><b style="color:var(--ink)">' + esc(m.name || '—') + '</b><br>' + esc(m.email) + (m.phone_no ? ' · <b>' + esc(m.phone_no) + '</b>' : '') + '<br>' + esc(NAMES[m.package]) + ' · <span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'paused' : !m.expires_at ? 'lifetime' : (live ? 'until ' : 'expired ') + fmt(m.expires_at)) + '</span></div>'; }).join('') || '<div>No students yet.</div>';
+      return '<div data-uid="' + esc(m.user_id) + '"><b style="color:var(--ink)">' + esc(m.name || '—') + '</b><br>' + esc(m.email) + (m.phone_no ? ' · <b>' + esc(m.phone_no) + '</b>' : '') + '<br>' + esc(NAMES[m.package]) + ' · <span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'paused' : !m.expires_at ? 'lifetime' : (live ? 'until ' : 'expired ') + fmt(m.expires_at)) + '</span>' +
+        '<div style="margin-top:6px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
   }
   $('sq').addEventListener('input', renderStudents);
+  $('students').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-s]'); if(!b) return;
+    const uid = b.closest('[data-uid]').dataset.uid, m = members.find(x => x.user_id === uid); if(!m) return;
+    const who = m.name || m.email;
+    try {
+      if(b.dataset.s === 'pause'){ if(!confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')) return; b.disabled = true; await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); toast(m.revoked ? 'Access resumed.' : 'Access paused.'); }
+      if(b.dataset.s === 'del'){ const typed = prompt('DELETE ' + who + '?\n\nThis removes the account, package, devices and payment records for good. They can no longer log in.\n\nType DELETE to confirm:'); if(typed !== 'DELETE') return; b.disabled = true; await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); }
+      await load();
+    } catch(err){ alert(err.message); b.disabled = false; }
+  });
   $('csv').onclick = () => {
     const c = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
     const csv = ['name,email,phone,package,valid_until,status,amount,ref,enrolled'].concat(members.map(m => [m.name, m.email, m.phone_no, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.created_at].map(c).join(','))).join('\n');
