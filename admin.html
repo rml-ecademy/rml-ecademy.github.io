@@ -143,7 +143,7 @@ td small{display:block;color:var(--muted)}
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
   const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
   const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
-  const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit' } });
+  const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit', storageKey:'ecademy-admin-auth' } });   // own session store: logging in as a student on the hub must not replace the owner login here
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const peso = n => { n = Number(n || 0); return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits:2 }); };
@@ -152,7 +152,7 @@ td small{display:block;color:var(--muted)}
 
   async function call(body){
     const { data, error } = await sb.functions.invoke('admin', { body: { ...body, hub: HUB } });
-    if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} throw new Error(m); }
+    if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} if(/^login$/.test(m)){ await sb.auth.signOut(); location.reload(); return; } throw new Error(m); }
     return data;
   }
   function show(id){ ['loginView','denied','adminView'].forEach(v => $(v).hidden = v !== id); }
