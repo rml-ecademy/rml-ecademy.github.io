@@ -134,8 +134,17 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     $('sn').textContent = act.length;
     const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '')).toLowerCase().includes(q));
     $('students').innerHTML = list.map(m => { const live = !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
-      return '<div data-uid="' + esc(m.user_id) + '"><b style="color:var(--ink)">' + esc(m.name || '—') + '</b><br>' + esc(m.email) + (m.phone_no ? ' · <b>' + esc(m.phone_no) + '</b>' : '') + '<br>' + esc(NAMES[m.package]) + ' · <span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'paused' : !m.expires_at ? 'lifetime' : (live ? 'until ' : 'expired ') + fmt(m.expires_at)) + '</span>' +
-        '<div style="margin-top:6px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
+      const pay = pays.find(p => p.user_id === m.user_id && p.status === 'approved');
+      const row = (k, v) => v ? '<tr><td style="color:var(--mute);padding:2px 10px 2px 0;white-space:nowrap">' + k + '</td><td style="padding:2px 0;color:var(--ink)">' + v + '</td></tr>' : '';
+      return '<div data-uid="' + esc(m.user_id) + '" style="padding:12px 0"><b style="color:var(--ink);font-size:1rem">' + esc(m.name || '(no name given)') + '</b> &nbsp;<span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'PAUSED' : !m.expires_at ? 'LIFETIME' : (live ? 'ACTIVE' : 'EXPIRED')) + '</span>' +
+        '<table style="border-collapse:collapse;margin-top:6px;font-size:.86rem">' +
+        row('Email', esc(m.email)) + row('Phone', esc(m.phone_no)) + row('Package', esc(NAMES[m.package])) +
+        row('Valid until', m.expires_at ? fmt(m.expires_at) : 'Lifetime') +
+        row('Paid', (m.amount ? peso(m.amount) : '') + (m.ref ? ' · GCash ref <b>' + esc(m.ref) + '</b>' : '')) +
+        row('Approved', pay ? fmt(pay.reviewed_at) : fmt(m.updated_at)) +
+        row('Receipt', pay && pay.proof_url ? '<a href="' + pay.proof_url + '" target="_blank" rel="noopener">View screenshot</a>' : '') +
+        row('Referred by', esc(m.aff_code)) + row('Enrolled', fmt(m.created_at)) + '</table>' +
+        '<div style="margin-top:8px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
   }
   $('sq').addEventListener('input', renderStudents);
   $('students').addEventListener('click', async e => {
