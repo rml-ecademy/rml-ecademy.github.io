@@ -19,7 +19,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Albert S
 header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
 header .t{flex:1;font-weight:700;letter-spacing:.02em}header .t small{display:block;font-weight:400;opacity:.75;font-size:.78rem}
 header button{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:9px 12px;font:600 .85rem inherit;cursor:pointer}
-main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:860px;margin:0 auto}
+main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:1240px;margin:0 auto}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(12,45,72,.05)}
 h2{margin:0 0 6px;font-size:1.05rem}
 .sub{color:var(--mute);font-size:.86rem;margin:0 0 12px}
@@ -51,6 +51,18 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
 .tip{background:var(--green-bg);border:1px solid #BFE3DF;border-radius:12px;padding:10px 12px;font-size:.86rem;color:var(--ink2)}
 .tip b{color:var(--ink)}
 .hidden{display:none!important}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{border:1px solid var(--rule);background:#fff;color:var(--ink2);border-radius:999px;padding:7px 12px;font:600 .8rem inherit;cursor:pointer}.chips button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.twrap{overflow:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-size:.84rem;min-width:960px}
+.tbl th{position:sticky;top:0;background:#fff;text-align:left;color:var(--mute);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:middle;white-space:nowrap}
+.tbl td.wrap{white-space:normal;min-width:160px}
+.tbl tr:hover td{background:#F7FAFB}
+.st{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.74rem;font-weight:700;white-space:nowrap}
+.st.ok{background:var(--green-bg);color:var(--green)}.st.rev{background:var(--amber-bg);color:#7A5208}.st.no{background:#EEF2F5;color:var(--mute)}.st.bad{background:var(--red-bg);color:var(--red)}
+.tbl .ref{margin:0;padding:0;background:none;border:0;display:inline}.tbl .ref b{font-size:.9rem;letter-spacing:.05em}
+.tbl .mini{min-height:30px;padding:0 9px;font-size:.74rem;border-radius:8px}
+.tbl img.th{height:34px;width:34px;object-fit:cover;border-radius:6px;border:1px solid var(--rule);vertical-align:middle}
 </style>
 </head>
 <body>
@@ -75,16 +87,11 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
       <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds.</p>
       <div id="list"></div>
     </section>
-    <section class="card">
-      <h2>Students with access <span class="badge" id="sn" style="background:var(--green)">0</span></h2>
-      <input id="sq" placeholder="Search name, email, phone" style="margin-bottom:10px">
-      <div class="hist" id="students"></div>
-      <button class="btn ghost full" id="csv" type="button" style="margin-top:12px">Download list (CSV)</button>
-    </section>
-    <section class="card">
-      <h2>Accounts without access yet <span class="badge" id="ln" style="background:var(--mute)">0</span></h2>
-      <p class="sub">Signed up but not yet paid (or payment still under review). Follow them up — name, e-mail and mobile are here.</p>
-      <div class="hist" id="leads"></div>
+    <section class="card" style="padding:16px 0 10px">
+      <div style="padding:0 16px"><h2>All accounts <span class="badge" id="tn" style="background:var(--mute)">0</span></h2>
+      <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
+      <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no." style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div></div>
+      <div class="twrap"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Messenger</th><th>Package</th><th>Status</th><th>Ref No.</th><th>Proof</th><th>Valid until</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
     </section>
     <section class="card">
       <h2>Recent decisions</h2>
@@ -140,70 +147,37 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
     $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
-  let members = [], accounts = [];
+  let members = [], accounts = [], filt = '';
   function leadMsg(name){ const first = (name || 'Officer').trim().split(' ')[0]; return 'Hi ' + first + ', this is ECADEMY Maritime. We saw your account on ecademymaritime.com — your decks and simulators open as soon as your GCash payment is confirmed. Log in → Get Access → send via GCash → type the reference number, and we activate it right away. Questions? Just reply here.'; }
-  function renderLeads(){
-    const leads = accounts.filter(a => !a.is_admin && (!a.package || a.revoked || (a.expires_at && new Date(a.expires_at) < new Date())));
-    $('ln').textContent = leads.length;
-    $('leads').innerHTML = leads.map(a => '<div data-lead="' + esc(a.user_id) + '"><b style="color:var(--ink)">' + esc(a.name || '(no name yet)') + '</b> &nbsp;<span class="' + (a.pending ? 'ok-t' : 'no-t') + '">' + (a.pending ? 'PAYMENT UNDER REVIEW' : a.package ? (a.revoked ? 'PAUSED' : 'EXPIRED') : 'NO PAYMENT YET') + '</span><br>' + esc(a.email) + (a.phone ? ' · <b>' + esc(a.phone) + '</b>' : ' · <i>no phone</i>') + '<br><span style="font-size:.8rem">signed up ' + fmt(a.created_at) + (a.last_sign_in_at ? ' · last login ' + ago(a.last_sign_in_at) : '') + ' · via ' + esc(a.provider) + '</span>' +
-      '<div style="margin-top:6px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-l="msg">Follow-up message</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-l="del">Delete</button></div></div>').join('') || '<div>No pending sign-ups.</div>';
+  function statusOf(a){
+    const m = members.find(x => x.user_id === a.user_id);
+    const pend = pays.find(p => p.user_id === a.user_id && p.status === 'pending');
+    const last = pays.filter(p => p.user_id === a.user_id).sort((x, y) => new Date(y.created_at) - new Date(x.created_at))[0];
+    const live = m && !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
+    if(a.is_admin) return { key:'admin', label:'OWNER', cls:'ok', m, pay:last };
+    if(pend) return { key:'review', label:'UNDER REVIEW', cls:'rev', m, pay:pend };
+    if(live) return { key:'approved', label:'APPROVED', cls:'ok', m, pay:last };
+    if(m && m.revoked) return { key:'expired', label:'PAUSED', cls:'bad', m, pay:last };
+    if(m) return { key:'expired', label:'EXPIRED', cls:'bad', m, pay:last };
+    if(last && last.status === 'rejected') return { key:'declined', label:'DECLINED', cls:'bad', m, pay:last };
+    return { key:'unpaid', label:'NOT YET PAID', cls:'no', m, pay:last };
   }
-  $('leads').addEventListener('click', async e => {
-    const b = e.target.closest('button[data-l]'); if(!b) return;
-    const uid = b.closest('[data-lead]').dataset.lead, a = accounts.find(x => x.user_id === uid); if(!a) return;
-    if(b.dataset.l === 'msg'){ showMsg('Follow-up for ' + (a.name || a.email), leadMsg(a.name)); return; }
-    const typed = prompt('DELETE the account ' + a.email + '?\n\nType DELETE to confirm:'); if(typed !== 'DELETE') return;
-    try { b.disabled = true; await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); await load(); } catch(err){ alert(err.message); b.disabled = false; }
-  });
-  async function loadAccounts(){ const { data } = await sb.rpc('admin_accounts'); accounts = (data && data.accounts) || []; renderLeads(); }
-  const VALNAME = v => (VAL.find(x => x[0] === v) || [,''])[1];
-  function approvedMsg(name, pkg, exp){
-    const first = (name || 'Officer').trim().split(' ')[0];
-    return 'Hi ' + first + ', welcome aboard ECADEMY! ✅\n\nYour payment is confirmed and your access is now ACTIVE.\n\nPackage: ' + NAMES[pkg] + '\nValid until: ' + (exp ? fmt(exp) : 'Lifetime') + '\n\nLog in anytime at https://ecademymaritime.com with your e-mail and password (or Continue with Google). Your decks and simulators are already open.\n\nTip: use Chrome or Safari, not the Messenger browser. Up to 5 devices, one logged in at a time.\n\nFair winds,\nECADEMY Maritime';
-  }
-  function rejectedMsg(name, note){
-    const first = (name || 'Officer').trim().split(' ')[0];
-    return 'Hi ' + first + ', we checked your ECADEMY payment submission but could not confirm it.\n\n' + note + '\n\nLog in at https://ecademymaritime.com → Get Access → submit the correct GCash reference number (and a screenshot of the receipt if possible). We will activate your access as soon as it matches.\n\nECADEMY Maritime';
-  }
-  function showMsg(title, text){ $('msgTitle').textContent = title; $('msgText').value = text; $('msgModal').classList.remove('hidden'); }
-  $('msgClose').onclick = () => $('msgModal').classList.add('hidden');
-  $('msgCopy').onclick = () => { navigator.clipboard.writeText($('msgText').value).then(() => toast('Message copied.'), () => { $('msgText').select(); document.execCommand('copy'); toast('Message copied.'); }); };
-  function renderStudents(){
+  function renderTable(){
     const q = $('sq').value.trim().toLowerCase();
-    const act = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date()));
-    $('sn').textContent = act.length;
-    const list = members.filter(m => !q || (m.name + ' ' + m.email + ' ' + (m.phone_no || '')).toLowerCase().includes(q));
-    $('students').innerHTML = list.map(m => { const live = !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
-      const pay = pays.find(p => p.user_id === m.user_id && p.status === 'approved');
-      const acc = accounts.find(a => a.user_id === m.user_id); if(!m.phone_no && acc && acc.phone) m.phone_no = acc.phone;
-      const row = (k, v) => v ? '<tr><td style="color:var(--mute);padding:2px 10px 2px 0;white-space:nowrap">' + k + '</td><td style="padding:2px 0;color:var(--ink)">' + v + '</td></tr>' : '';
-      return '<div data-uid="' + esc(m.user_id) + '" style="padding:12px 0"><b style="color:var(--ink);font-size:1rem">' + esc(m.name || '(no name given)') + '</b> &nbsp;<span class="' + (live ? 'ok-t' : 'no-t') + '">' + (m.revoked ? 'PAUSED' : !m.expires_at ? 'LIFETIME' : (live ? 'ACTIVE' : 'EXPIRED')) + '</span>' +
-        '<table style="border-collapse:collapse;margin-top:6px;font-size:.86rem">' +
-        row('Email', esc(m.email)) + row('Phone', esc(m.phone_no)) + row('Package', esc(NAMES[m.package])) +
-        row('Valid until', m.expires_at ? fmt(m.expires_at) : 'Lifetime') +
-        row('Paid', (m.amount ? peso(m.amount) : '') + (m.ref ? ' · GCash ref <b>' + esc(m.ref) + '</b>' : '')) +
-        row('Approved', pay ? fmt(pay.reviewed_at) : fmt(m.updated_at)) +
-        row('Receipt', pay && pay.proof_url ? '<a href="' + pay.proof_url + '" target="_blank" rel="noopener">View screenshot</a>' : '') +
-        row('Referred by', esc(m.aff_code)) + row('Enrolled', fmt(m.created_at)) + '</table>' +
-        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="msg">Message</button><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
+    const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || r.s.key === filt).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref].join(' ').toLowerCase().includes(q));
+    $('tn').textContent = accounts.filter(a => !a.is_admin).length;
+    $('rows').innerHTML = rows.map(({ a, s }) => {
+      const ref = (s.pay && s.pay.ref_no) || (s.m && s.m.ref) || '';
+      const proof = s.pay && s.pay.proof_url;
+      const pkg = (s.m && s.m.package) || (s.pay && s.pay.package) || '';
+      const fb = a.fb ? '<a href="https://m.me/' + encodeURIComponent(a.fb.replace(/\s+/g, '')) + '" target="_blank" rel="noopener">' + esc(a.fb) + '</a>' : '<span style="color:var(--mute)">—</span>';
+      return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b></td><td>' + esc(a.email) + '</td><td>' + (a.phone ? esc(a.phone) : '<span style="color:var(--mute)">—</span>') + '</td><td>' + fb + '</td><td>' + (pkg ? esc(NAMES[pkg]) : '—') + '</td><td><span class="st ' + s.cls + '">' + s.label + '</span></td><td>' + (ref ? '<span class="ref"><b>' + esc(ref) + '</b></span>' : '—') + '</td><td>' + (proof ? '<a href="' + proof + '" target="_blank" rel="noopener"><img class="th" src="' + proof + '" alt="receipt"></a>' : '—') + '</td><td>' + (s.m ? (s.m.expires_at ? fmt(s.m.expires_at) : 'Lifetime') : '—') + '</td><td>' +
+        (a.is_admin ? '' : '<div style="display:flex;gap:4px">' + (s.key === 'approved' || s.key === 'expired' ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="pause">' + (s.m && s.m.revoked ? 'Resume' : 'Pause') + '</button>' : '<button class="btn ghost mini" data-s="lead">Follow up</button>') + '<button class="btn no mini" data-s="del">Delete</button></div>') + '</td></tr>';
+    }).join('') || '<tr><td colspan="10" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
   }
-  $('sq').addEventListener('input', renderStudents);
-  $('students').addEventListener('click', async e => {
-    const b = e.target.closest('button[data-s]'); if(!b) return;
-    const uid = b.closest('[data-uid]').dataset.uid, m = members.find(x => x.user_id === uid); if(!m) return;
-    const who = m.name || m.email;
-    try {
-      if(b.dataset.s === 'msg'){ showMsg('Message for ' + who, approvedMsg(m.name, m.package, m.expires_at)); return; }
-      if(b.dataset.s === 'pause'){ if(!confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')) return; b.disabled = true; await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); toast(m.revoked ? 'Access resumed.' : 'Access paused.'); }
-      if(b.dataset.s === 'del'){ const typed = prompt('DELETE ' + who + '?\n\nThis removes the account, package, devices and payment records for good. They can no longer log in.\n\nType DELETE to confirm:'); if(typed !== 'DELETE') return; b.disabled = true; await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); }
-      await load();
-    } catch(err){ alert(err.message); b.disabled = false; }
-  });
-  $('csv').onclick = () => {
-    const c = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-    const csv = ['name,email,phone,package,valid_until,status,amount,ref,enrolled'].concat(members.map(m => [m.name, m.email, m.phone_no, NAMES[m.package], m.expires_at || 'lifetime', m.revoked ? 'paused' : 'active', m.amount, m.ref, m.created_at].map(c).join(','))).join('\n');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type:'text/csv' })); a.download = 'ECADEMY_students_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
-  };
+  const renderStudents = renderTable, renderLeads = () => {};
+  $('sq').addEventListener('input', renderTable);
+  $('chips').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if(!b) return; filt = b.dataset.f; [...$('chips').children].forEach(x => x.classList.toggle('on', x === b)); renderTable(); });
   async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   $('list').addEventListener('click', async e => {
     const c = e.target.closest('button[data-copy]'); if(c){ navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Reference number copied.')); return; }
