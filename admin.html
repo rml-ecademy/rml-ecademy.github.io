@@ -47,6 +47,16 @@ td small{display:block;color:var(--muted)}
 .affform{display:grid;grid-template-columns:1.6fr 1fr .7fr 1.3fr auto;gap:10px;align-items:start}
 .affform label{margin-top:0}
 .money{font-variant-numeric:tabular-nums}
+.pay-card{grid-column:1/-1;border-color:rgba(255,200,87,.45)}
+.pay-card h2 .badge{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:999px;background:var(--amber);color:#061622;font-size:.8rem;vertical-align:middle}
+.pay-item{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.pay-item:last-child{border-bottom:0}
+.pay-item .ref{font:700 1.05rem ui-monospace,Consolas,monospace;letter-spacing:.06em;color:var(--amber)}
+.pay-item img{max-height:72px;border-radius:8px;border:1px solid var(--line);cursor:zoom-in}
+.pay-item select{min-height:34px;width:auto;font-size:.82rem}
+.pay-item .acts{align-items:center}
+.pay-hist{color:var(--muted);font-size:.82rem;margin-top:10px}
+@media (max-width:900px){.pay-item{grid-template-columns:1fr}}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.affform{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -63,7 +73,7 @@ td small{display:block;color:var(--muted)}
       <button class="full" id="lb" type="submit">Log in</button>
     </form>
     <div class="err" id="lerr" role="alert"></div>
-    <p class="note">First time? <a href="#" id="signup">Create the admin account</a> with your admin email, then confirm it from the email Supabase sends you. &nbsp;·&nbsp; <a href="#" id="forgot">Forgot password</a></p>
+    <p class="note">Log in with the owner account (same e-mail and password as on the hub). <a href="#" id="signup" hidden>Create the admin account</a> &nbsp;·&nbsp; <a href="#" id="forgot">Forgot password</a></p>
   </section>
 
   <section class="card login" id="denied" hidden>
@@ -74,8 +84,14 @@ td small{display:block;color:var(--muted)}
 
   <!-- admin -->
   <div class="grid" id="adminView" hidden>
+    <section class="card pay-card">
+      <h2>Payments to confirm <span class="badge" id="payBadge">0</span></h2>
+      <p class="note" style="margin-top:0">Students submit their GCash reference on the hub. Check the reference in your GCash app, pick the validity, press <b>Approve</b> — their decks open on their screen within 30 seconds, no link needed.</p>
+      <div id="payList" class="count">Loading…</div>
+      <div class="pay-hist" id="payHist"></div>
+    </section>
     <section class="card">
-      <h2>Enroll or renew a student</h2>
+      <h2>Enroll or renew a student (manual)</h2>
       <form id="ef">
         <label for="email">Student email</label><input id="email" type="email" required placeholder="juan.delacruz@gmail.com" autocomplete="off">
         <label for="name">Name (shown in the hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
@@ -207,6 +223,39 @@ td small{display:block;color:var(--muted)}
     } catch(err){ alert(err.message); }
     b.disabled = false;
   });
+  /* ---------- payments submitted on the hub ---------- */
+  let pays = [];
+  const VAL_OPTS = '<option value="m1">1 month</option><option value="m3">3 months</option><option value="m6" selected>6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option>';
+  function renderPays(){
+    const pend = pays.filter(p => p.status === 'pending'), done = pays.filter(p => p.status !== 'pending').slice(0, 8);
+    $('payBadge').textContent = pend.length;
+    document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY Admin';
+    $('payList').innerHTML = pend.map(p => `<div class="pay-item" data-id="${p.id}">
+      <div><b>${esc(p.name || '—')}</b><small>${esc(p.email)}${p.phone ? ' · ' + esc(p.phone) : ''}</small><small>Submitted ${fmt(p.created_at)}${p.aff_code ? ' · referred by <b>' + esc(p.aff_code) + '</b>' : ''}</small></div>
+      <div><span class="pk">${esc(NAMES[p.package])}</span> &nbsp;<b>${p.amount ? peso(p.amount) : 'amount not given'}</b><br><span class="ref">${esc(p.ref_no || '—')}</span><br>${p.proof_url ? '<a href="' + p.proof_url + '" target="_blank" rel="noopener"><img src="' + p.proof_url + '" alt="GCash receipt"></a>' : '<small>no screenshot</small>'}</div>
+      <div class="acts"><select data-val>${VAL_OPTS}</select><button class="small" data-p="ok">Approve</button><button class="small ghost" data-p="no">Reject</button></div>
+    </div>`).join('') || '<span style="color:var(--muted)">No payments waiting. New submissions appear here automatically.</span>';
+    $('payHist').innerHTML = done.length ? 'Recent: ' + done.map(p => esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · <span class="' + (p.status === 'approved' ? 'st-ok' : 'st-bad') + '">' + p.status + '</span> ' + fmt(p.reviewed_at)).join(' &nbsp;|&nbsp; ') : '';
+  }
+  async function loadPays(){ try { pays = (await call({ action:'pay_list' })).payments; renderPays(); } catch(e){ $('payList').textContent = 'Could not load payments: ' + e.message; } }
+  $('payList').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-p]'); if(!b) return; const row = b.closest('.pay-item'); const p = pays.find(x => String(x.id) === row.dataset.id); if(!p) return;
+    b.disabled = true;
+    try {
+      if(b.dataset.p === 'ok'){
+        const validity = row.querySelector('[data-val]').value;
+        await call({ action:'pay_approve', id:p.id, validity, extend:true });
+        b.textContent = 'Approved';
+      } else {
+        const note = prompt('Reason shown to the student (optional):', 'We could not find this reference number in GCash. Please check the receipt and submit again, or message ECADEMY.');
+        if(note === null){ b.disabled = false; return; }
+        await call({ action:'pay_reject', id:p.id, note });
+      }
+      await loadPays(); await load(); await loadAff();
+    } catch(err){ alert(err.message); b.disabled = false; }
+  });
+  setInterval(() => { if(!document.hidden && !$('adminView').hidden) loadPays(); }, 60000);
+
   /* ---------- affiliates ---------- */
   let affs = [];
   const affLink = a => 'https://ecademymaritime.com/?ref=' + a.code;
@@ -276,7 +325,7 @@ td small{display:block;color:var(--muted)}
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ show('loginView'); $('who').textContent = ''; return; }
     $('who').textContent = session.user.email;
-    try { members = (await call({ action:'list' })).members; show('adminView'); render(); loadAff(); }
+    try { members = (await call({ action:'list' })).members; show('adminView'); render(); loadAff(); loadPays(); }
     catch(e){ if(/admin/i.test(e.message) || /forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; show('denied'); } else { show('adminView'); $('count').textContent = 'Could not load students: ' + e.message; } }
   }
   boot();

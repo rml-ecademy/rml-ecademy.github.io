@@ -2536,23 +2536,82 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 })();
 </script>
 
-<!-- ===== ECADEMY ACCESS / PACKAGES ===== -->
+<!-- ===== ECADEMY ACCESS / PACKAGES (Access v2: self-serve accounts, GCash submit → admin approve, one-device login, device self-service) ===== -->
+<style>
+.acc-tabs{display:flex;gap:0;margin:-4px 0 10px;border-bottom:1px solid var(--rule,rgba(255,255,255,.14))}
+.acc-tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:10px 6px;font:600 .9rem "Albert Sans",system-ui,sans-serif;color:var(--mute,#9db0c0);cursor:pointer}
+.acc-tabs button.on{color:var(--ink,#fff);border-bottom-color:var(--brass,#ffd77a)}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--shoal-2,rgba(255,255,255,.2));background:#fff;color:#1f1f1f;font:600 .95rem "Albert Sans",system-ui,sans-serif;cursor:pointer;margin:6px 0 2px}
+.gbtn:hover{border-color:var(--sounding,#1E6FA8);box-shadow:0 6px 18px rgba(12,45,72,.12)}
+.gbtn svg{width:18px;height:18px}
+.or-line{display:flex;align-items:center;gap:10px;margin:12px 0 2px;color:var(--mute,#9db0c0);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em}
+.or-line:before,.or-line:after{content:"";flex:1;height:1px;background:var(--rule,rgba(255,255,255,.14))}
+.login-box .hint{font-size:.82rem;color:var(--mute,#9db0c0);margin:6px 0 0;line-height:1.5}
+.login-box .notice{margin:0 0 8px;padding:10px 12px;border-radius:10px;background:var(--lagoon-soft,rgba(94,230,168,.12));color:var(--ink,#fff);font-size:.88rem;line-height:1.5;border:1px solid rgba(19,138,134,.25)}
+.login-box .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.pay-box{width:min(580px,100%)}
+.pay-steps{display:grid;grid-template-columns:1fr;gap:10px;margin:4px 0 14px}
+.pay-step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04))}
+.pay-step b.n{flex:0 0 26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--ink,#fff);color:#fff;font-size:.8rem}
+.pay-step div{font-size:.9rem;line-height:1.5;color:var(--ink-2,#d6e2ea)}
+.pay-step .big{font:700 1.15rem/1.2 "Albert Sans",system-ui,sans-serif;color:var(--ink,#fff);letter-spacing:.02em}
+.pay-step .copy{margin-left:8px;font-size:.72rem;padding:3px 8px;border-radius:8px;border:1px solid var(--rule,rgba(255,255,255,.2));background:transparent;color:var(--ink,#fff);cursor:pointer}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:520px){.pay-grid{grid-template-columns:1fr}}
+.login-box input[type=file]{padding:9px;font-size:.85rem}
+.login-box select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--shoal-2,rgba(255,255,255,.14));background:#fff;color:var(--ink,#0C2D48);font-size:1rem}
+.pay-ok{padding:14px 16px;border-radius:12px;background:var(--lagoon-soft,rgba(94,230,168,.12));border:1px solid rgba(19,138,134,.3);color:var(--ink,#fff);line-height:1.55}
+.dev-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
+.dev-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04))}
+.dev-row .ic{flex:0 0 34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--shoal,rgba(255,255,255,.08))}
+.dev-row .ic svg{width:18px;height:18px;fill:var(--ink,#fff)}
+.dev-row .t{flex:1;min-width:0}.dev-row .t b{display:block;font-size:.9rem;color:var(--ink,#fff)}.dev-row .t span{font-size:.76rem;color:var(--mute,#9db0c0)}
+.dev-row .tag{font-size:.68rem;font-weight:700;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:var(--lagoon-soft,rgba(94,230,168,.14));color:var(--lagoon,#5ee6a8)}
+.dev-row button{font-size:.78rem;padding:7px 10px;border-radius:9px;border:1px solid var(--rule,rgba(255,255,255,.2));background:transparent;color:var(--ink,#fff);cursor:pointer}
+.dev-row button:hover{border-color:#c0392b;color:#c0392b}
+.webview-bar{position:fixed;left:0;right:0;top:0;z-index:200;background:#12304F;color:#fff;padding:12px 16px;display:none;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font:500 .88rem/1.4 "Albert Sans",system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.webview-bar.show{display:flex}
+.webview-bar button,.webview-bar a{background:#fff;color:#12304F;border:0;border-radius:9px;padding:8px 12px;font-weight:700;cursor:pointer;text-decoration:none;font-size:.84rem}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(20px);z-index:300;background:#12304F;color:#fff;padding:12px 18px;border-radius:12px;font:600 .9rem "Albert Sans",system-ui,sans-serif;box-shadow:0 14px 34px rgba(0,0,0,.3);opacity:0;transition:all .3s;pointer-events:none;max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.member-bar a.dev{border-left:1px solid rgba(255,255,255,.15);padding-left:10px}
+.member-bar.pending{border-color:rgba(255,200,87,.5);color:var(--amber,#ffd77a)}
+/* the account modals are always a white card: pin their palette so page themes cannot wash the text out */
+.enroll-modal .enroll-box{--ink:#0C2D48;--ink-2:#2B4659;--mute:#5E7587;--rule:#D3E2E9;--shoal:#E3EFF4;--shoal-2:#CFE2EA;--chart:#F7FAFB;--lagoon:#138A86;--lagoon-soft:#E1F2F0;--brass:#B9821A;--sounding:#1E6FA8;--green:#138A86;--amber:#B9821A;--cyan:#1E6FA8;background:#fff;color:var(--ink)}
+.enroll-modal .enroll-box h3{color:#0C2D48!important}
+.enroll-modal .enroll-box p,.enroll-modal .login-box label{color:#2B4659}
+.enroll-modal .login-box input,.enroll-modal .login-box select{background:#fff;color:#0C2D48;border:1px solid #CFE2EA}
+.enroll-modal .enroll-box .ghost{color:#0C2D48;border:1px solid #CFE2EA}
+.enroll-modal .enroll-box a{color:#1E6FA8}
+.enroll-modal .login-box .err{color:#B9821A}
+</style>
 
-
+<div class="webview-bar" id="webviewBar"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="member-bar" id="memberBar"></div>
+
+<!-- LOGIN / CREATE ACCOUNT -->
 <div class="enroll-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginH">
   <form class="enroll-box login-box" id="loginForm" autocomplete="on">
     <button class="x" id="loginClose" type="button" aria-label="Close">×</button>
-    <div class="tier" style="color:var(--cyan)">MEMBER LOGIN</div>
-    <h3 id="loginH">Log in to ECADEMY</h3>
-    <p id="loginP">Use the email you got access with and your password.</p>
-    <label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@example.com" autocomplete="email">
-    <label for="loginPw">Password</label><input id="loginPw" type="password" required placeholder="Your password" autocomplete="current-password">
+    <div class="tier" style="color:var(--cyan)">ECADEMY ACCOUNT</div>
+    <h3 id="loginH">Welcome aboard</h3>
+    <div class="notice" id="loginNotice" hidden></div>
+    <div class="acc-tabs"><button type="button" id="tabIn" class="on">Log in</button><button type="button" id="tabUp">Create account</button></div>
+    <button type="button" class="gbtn" id="googleBtn"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span id="googleLbl">Continue with Google</span></button>
+    <div class="or-line">or with e-mail</div>
+    <div id="nameRow" hidden><label for="loginName">Your name</label><input id="loginName" type="text" placeholder="Rank and name, e.g. 2/O Juan Dela Cruz" autocomplete="name" maxlength="120"></div>
+    <label for="loginEmail">Email</label><input id="loginEmail" type="email" required placeholder="you@gmail.com" autocomplete="email">
+    <label for="loginPw">Password</label><input id="loginPw" type="password" required placeholder="At least 8 characters" minlength="8" autocomplete="current-password">
+    <input class="hp" id="website" name="website" tabindex="-1" autocomplete="off">
     <div class="err" id="loginErr" role="alert"></div>
-    <div class="row"><button class="cta" id="loginBtn" type="submit">Log in</button><a class="ghost" href="#plans" id="loginEnroll">No access yet? Get Access</a></div>
-    <div class="alt"><a href="#" id="forgotPw">Forgot password? Send me a reset link</a></div>
+    <div class="row"><button class="cta" id="loginBtn" type="submit">Log in</button></div>
+    <div class="alt" id="loginAlt"><a href="#" id="forgotPw">Forgot password?</a></div>
+    <p class="hint" id="signupHint" hidden>Your e-mail is your username. Creating an account is free; the decks open after your payment is confirmed.</p>
   </form>
 </div>
+
+<!-- SET PASSWORD (recovery / invite links) -->
 <div class="enroll-modal" id="pwModal" role="dialog" aria-modal="true" aria-labelledby="pwH">
   <form class="enroll-box login-box" id="pwForm">
     <div class="tier" style="color:var(--green)">WELCOME ABOARD</div>
@@ -2564,6 +2623,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="row"><button class="cta" id="pwBtn" type="submit">Save password</button></div>
   </form>
 </div>
+
+<!-- LOCKED DECK -->
 <div class="enroll-modal" id="enrollModal" role="dialog" aria-modal="true">
   <div class="enroll-box">
     <button class="x" id="enrollClose" aria-label="Close">×</button>
@@ -2573,15 +2634,45 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <div class="row"><a class="cta" id="enrollGo" href="#plans">Get Access</a><a class="ghost" id="enrollLogin" href="#">Already have access? Log in</a></div>
   </div>
 </div>
+
+<!-- GET ACCESS: GCash payment -->
+<div class="enroll-modal" id="payModal" role="dialog" aria-modal="true" aria-labelledby="payH">
+  <form class="enroll-box login-box pay-box" id="payForm">
+    <button class="x" id="payClose" type="button" aria-label="Close">×</button>
+    <div class="tier" id="payTier">GET ACCESS</div>
+    <h3 id="payH">Pay with GCash</h3>
+    <div id="payBody"></div>
+  </form>
+</div>
+
+<!-- MY DEVICES -->
+<div class="enroll-modal" id="devModal" role="dialog" aria-modal="true" aria-labelledby="devH">
+  <div class="enroll-box login-box">
+    <button class="x" id="devClose" type="button" aria-label="Close">×</button>
+    <div class="tier">YOUR ACCOUNT</div>
+    <h3 id="devH">My devices</h3>
+    <p>Up to 5 devices (2 phones, 1 tablet, 2 laptops/PCs). Only one device is logged in at a time: the latest device that opens ECADEMY stays, the previous one is signed out. You can remove one device every 7 days.</p>
+    <div class="dev-list" id="devList">Loading…</div>
+    <div class="err" id="devErr" role="alert"></div>
+  </div>
+</div>
+
 <script src="assets/supabase-2.117.2.js"></script>
 <script id="ecademy-access">
 (function(){
   /* ===== CONFIG ===== */
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';   // publishable key: safe in the browser, data protected by RLS
-  const HUB = location.origin + '/';   // works on rml-ecademy.github.io and ecademymaritime.com
-  const MESSENGER = 'https://m.me/ecademymaritime';   // ECADEMY Maritime Facebook page (Messenger)
-  const CONTACT = MESSENGER;
+  const HUB = location.origin + '/';
+  const MESSENGER = 'https://m.me/ecademymaritime';
+  /* GCash account shown to students. Fill in number + name; leave empty to send students to Messenger for the details. */
+  const GCASH = { number: '', name: '' };
+  /* Current offer per package. amount '' = student types what was quoted on Messenger. */
+  const OFFER = {
+    A: { label: 'All Access · 6 months (pre-launch offer)', amount: '1899', validity: '6 months' },
+    C: { label: 'Chief Mate package', amount: '', validity: '' },
+    J: { label: 'Junior Officers package', amount: '', validity: '' }
+  };
   /* ===== AFFILIATE: ?ref=CODE is remembered 60 days (last link clicked wins) ===== */
   let AFF_NEW = false;
   const AFF_CODE = (function(){ try {
@@ -2590,24 +2681,20 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       const u = new URL(location.href); u.searchParams.delete('ref'); history.replaceState(null, '', u.pathname + u.search + u.hash); return c; }
     const s = JSON.parse(localStorage.getItem('ecad_ref') || 'null'); if (s && Date.now() - s.t < 60 * 864e5) return s.c;
   } catch (_) {} return ''; })();
-  const enrollLink = (p, upgrade) => MESSENGER + '?text=' + encodeURIComponent(
-    `Hi ECADEMY, I'd like to ${upgrade ? 'upgrade to' : 'get access to'} the ${p.name} package (${p.who}).${AFF_CODE ? '\nReferral code: ' + AFF_CODE : ''}\n\n` +
-    `Name: \nPhone #: \nEmail: \n\n` +
-    `*** IMPORTANT: Your email will be your USERNAME to log in to ECADEMY. Please make sure it is correct. ***`);
   const PACKAGES = {
-    J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'], url:'',
+    J: { code:'J', name:'Junior Officers', tier:'Package A', who:'Third Officer and Second Officer', ranks:['Third Officer','Second Officer'],
          img:['sales/img/lsa.jpg','sales/img/radar.jpg','sales/img/ecdis.jpg'],
          hl:[['LSA / FFE','Lifeboats, liferafts, flares, EPIRB, SART and fire-fighting equipment, inspected the way PSC checks them.'],
              ['Radar / ARPA','Target tracking, CPA and TCPA, plotting and COLREG crossing, head-on and overtaking situations.'],
              ['ECDIS','Passage planning with APEM and route monitoring on a realistic Manila to Cebu passage.']],
          feats:['Deck 01 · Third Officer','Deck 02 · Second Officer, navigation equipment and GMDSS'] },
-    C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'], url:'', featured:true,
+    C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'], featured:true,
          img:['sales/img/draft.jpg','assets/img3.webp'],
          hl:[['Draft Survey','Manual draft survey step by step, with 7 narrated video lessons, tank soundings and the hydrometer.'],
              ['Trim & Stability','Righting lever (GZ) trainer: K-B-G-M, the loading computer printout, free surface, angle of loll, shear force and bending moment, and how to prove it all on the ship.'],
              ['Deck Maintenance','Planned maintenance, defect control, permits and inspections run by the Chief Officer.']],
          feats:['Everything in Junior Officers','Deck 03 · Chief Officer, cargo, stability and ballast'] },
-    A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'], url:'',
+    A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'],
          img:['sales/img/bridge.jpg','assets/img4.webp'],
          hl:[['Ship Manoeuvring','Ship handling, pilotage and emergency manoeuvres from the Master\'s position.'],
              ['PSC','Port State, Flag and Class preparation and the Master\'s compliance strategy.'],
@@ -2620,25 +2707,48 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const hp = new URLSearchParams(location.hash.slice(1));
   const linkType = hp.get('type');                          // 'invite' | 'recovery' from an emailed / admin link
   const linkError = hp.get('error_description');
+  let FROM_LINK = hp.has('access_token');                    // arrived from Google / an emailed link (supabase-js clears the hash itself)
   const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' } });
   if (AFF_NEW) { try { let v = localStorage.getItem('ecad_vis'); if (!v) { v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); localStorage.setItem('ecad_vis', v); } sb.rpc('aff_click', { p_code: AFF_CODE, p_visitor: v }).then(() => {}, () => {}); } catch (_) {} }
   window.ECADEMY_SB = sb;
 
   const lockSvg = '<svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2zm-7-2a2 2 0 0 1 4 0v2h-4V7z"/></svg>';
   const okSvg = '<svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
+  const clockSvg = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.2 3.1.8-1.2-4.5-2.7V7z"/></svg>';
   const fmt = d => new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' });
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const neededFor = r => Object.values(PACKAGES).find(p => p.ranks.includes(r));
+  const toastEl = $('toast'); let toastT;
+  function toast(msg, ms){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), ms || 3200); }
+
+  /* ---------- in-app browsers (Messenger, Facebook, Instagram…) break logins and waste a device slot ---------- */
+  const UA = navigator.userAgent || '';
+  const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\/|MicroMessenger|Twitter|TikTok|Snapchat/i.test(UA);
+  const ANDROID = /Android/i.test(UA), IOS = /iPhone|iPad|iPod/i.test(UA);
+  if (IN_APP) {
+    const bar = $('webviewBar');
+    const here = location.href.split('#')[0];
+    const intent = 'intent://' + here.replace(/^https?:\/\//, '') + '#Intent;scheme=https;action=android.intent.action.VIEW;end';
+    bar.innerHTML = '<span>You are viewing ECADEMY inside an app. To log in and open the simulators, open this page in <b>Chrome</b> or <b>Safari</b>.</span>' +
+      (ANDROID ? '<a href="' + intent + '">Open in browser</a>' : '') +
+      '<button type="button" id="copyHub">Copy link</button>' +
+      (IOS ? '<span style="font-size:.78rem;opacity:.85">iPhone: tap <b>···</b> or the share icon, then <b>Open in Safari</b>.</span>' : '');
+    bar.classList.add('show');
+    document.body.style.paddingTop = (bar.offsetHeight || 56) + 'px';
+    $('copyHub').onclick = () => { (navigator.clipboard ? navigator.clipboard.writeText(here) : Promise.reject()).then(() => toast('Link copied. Paste it in Chrome or Safari.'), () => prompt('Copy this link and open it in your browser:', here)); };
+  }
 
   /* ---------- protected simulators: key from the server, file decrypted in the browser ---------- */
   function deviceId(){ let d = null; try { d = localStorage.getItem('ecademy.device'); } catch(_){}
     if(!d){ d = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)); try { localStorage.setItem('ecademy.device', d); } catch(_){} } return d; }
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   window.ecademyGetHtml = async function(app){
+    if (IN_APP) throw new Error('Open ECADEMY in Chrome or Safari to use the simulators (in-app browsers cannot run them).');
     const { data:{ session } } = await sb.auth.getSession();
     if(!session) throw new Error('Please log in to open this simulator.');
     const [bin, res] = await Promise.all([
       fetch('apps/' + app + '.bin', { cache:'no-cache' }),
-      sb.functions.invoke('sim', { body:{ app, device: deviceId(), label: navigator.userAgent.slice(0,120) } })
+      sb.functions.invoke('sim', { body:{ app, device: deviceId(), label: UA.slice(0,120) } })
     ]);
     if(res.error){ let msg = 'This simulator could not be opened. Please try again.'; try { const j = await res.error.context.json(); if(j.message) msg = j.message; } catch(_){} throw new Error(msg); }
     if(!bin.ok) throw new Error('The simulator file could not be downloaded. Check your connection.');
@@ -2654,32 +2764,63 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     return URL.createObjectURL(new Blob([html], { type:'text/html' }));
   };
 
-  /* ---------- modals ---------- */
-  const lm = $('loginModal'), pm = $('pwModal'), modal = $('enrollModal');
-  function openLogin(msg){ $('loginErr').textContent = msg || ''; $('loginErr').style.color = ''; lm.classList.add('open'); setTimeout(() => $('loginEmail').focus(), 50); }
+  /* ---------- state ---------- */
+  let session = null, member = null, pending = null, rejected = null, isAdmin = false, pkg = null, valid = false;
+  let afterLogin = null;                     // e.g. { pay: 'A' } → open the payment form once logged in
+  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal') };
+  const show = m => { Object.values(modals).forEach(x => x.classList.remove('open')); if(m) m.classList.add('open'); };
+  Object.values(modals).forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); }));
+  ['loginClose','enrollClose','payClose','devClose'].forEach(id => $(id).onclick = () => show(null));
+
+  /* ---------- login / create account ---------- */
+  let mode = 'in';
+  function setMode(m, notice){
+    mode = m; const up = m === 'up';
+    $('tabIn').classList.toggle('on', !up); $('tabUp').classList.toggle('on', up);
+    $('nameRow').hidden = !up; $('loginName').required = up; $('signupHint').hidden = !up; $('loginAlt').hidden = up;
+    $('loginBtn').textContent = up ? 'Create account' : 'Log in';
+    $('googleLbl').textContent = up ? 'Sign up with Google' : 'Continue with Google';
+    $('loginPw').autocomplete = up ? 'new-password' : 'current-password';
+    $('loginH').textContent = up ? 'Create your free account' : 'Welcome aboard';
+    const n = $('loginNotice'); n.hidden = !notice; n.textContent = notice || '';
+    $('loginErr').textContent = ''; $('loginErr').style.color = '';
+  }
+  $('tabIn').onclick = () => setMode('in'); $('tabUp').onclick = () => setMode('up');
+  function openLogin(msg, m, notice){ setMode(m || 'in', notice); if(msg){ $('loginErr').textContent = msg; } show(modals.login); setTimeout(() => $(m === 'up' ? 'loginName' : 'loginEmail').focus(), 50); }
   window.ecademyLogin = openLogin;
-  $('loginClose').onclick = () => lm.classList.remove('open');
-  lm.addEventListener('click', e => { if(e.target === lm) lm.classList.remove('open'); });
-  $('loginEnroll').onclick = () => lm.classList.remove('open');
+
+  $('googleBtn').onclick = async () => {
+    try { sessionStorage.setItem('ecademy.after', JSON.stringify(afterLogin || {})); } catch(_){}
+    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: HUB, queryParams: { prompt: 'select_account' } } });
+    if(error) $('loginErr').textContent = /not enabled|unsupported provider/i.test(error.message) ? 'Google sign-in is not available yet. Please use your e-mail and password.' : error.message;
+  };
+
   $('loginForm').addEventListener('submit', async e => {
-    e.preventDefault(); const btn = $('loginBtn'); btn.disabled = true; btn.textContent = 'Checking…';
-    const { error } = await sb.auth.signInWithPassword({ email: $('loginEmail').value.trim().toLowerCase(), password: $('loginPw').value });
-    btn.disabled = false; btn.textContent = 'Log in';
-    if(error){ $('loginErr').textContent = /invalid/i.test(error.message) ? 'Wrong email or password. Use "Forgot password" if you need a new one.' : error.message; return; }
-    $('loginErr').style.color = 'var(--green)'; $('loginErr').textContent = 'Welcome aboard. Opening your decks…';
-    setTimeout(() => location.reload(), 600);
+    e.preventDefault(); const btn = $('loginBtn'), err = $('loginErr'); err.style.color = ''; err.textContent = '';
+    const email = $('loginEmail').value.trim().toLowerCase(), password = $('loginPw').value;
+    btn.disabled = true; btn.textContent = mode === 'up' ? 'Creating…' : 'Checking…';
+    try {
+      if(mode === 'up'){
+        const r = await sb.functions.invoke('account', { body: { action: 'signup', email, password, name: $('loginName').value.trim(), website: $('website').value } });
+        if(r.error){ let msg = 'Could not create the account. Please try again.'; try { const j = await r.error.context.json(); if(j.message) msg = j.message; } catch(_){} throw new Error(msg); }
+      }
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw new Error(/invalid/i.test(error.message) ? 'Wrong email or password. Use "Forgot password?" if you need a new one.' : /confirm/i.test(error.message) ? 'This account is not confirmed yet. Message ECADEMY and we will activate it.' : error.message);
+      err.style.color = 'var(--green)'; err.textContent = mode === 'up' ? 'Account created. Welcome aboard!' : 'Welcome aboard.';
+      await refresh();
+      show(null); $('loginPw').value = '';
+      runAfterLogin();
+    } catch(ex){ err.textContent = ex.message; }
+    finally { btn.disabled = false; btn.textContent = mode === 'up' ? 'Create account' : 'Log in'; }
   });
   $('forgotPw').onclick = async e => {
     e.preventDefault(); const email = $('loginEmail').value.trim().toLowerCase();
-    if(!email.includes('@')){ $('loginErr').textContent = 'Type your email above first, then press "Forgot password".'; return; }
+    if(!email.includes('@')){ $('loginErr').textContent = 'Type your email above first, then press "Forgot password?".'; return; }
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HUB });
     $('loginErr').style.color = error ? '' : 'var(--green)';
-    $('loginErr').textContent = error ? ('Could not send the email: ' + error.message + '. Message ECADEMY for a reset link.') : 'Check your email for a link to set a new password.';
+    $('loginErr').textContent = error ? ('Could not send the email: ' + error.message + '. Message ECADEMY for a reset link.') : 'Check your inbox (and spam) for a link to set a new password. No email? Message ECADEMY and we will send you one.';
   };
-  function openSetPw(kind){
-    $('pwH').textContent = kind === 'recovery' ? 'Set a new password' : 'Welcome aboard. Set your password';
-    pm.classList.add('open'); setTimeout(() => $('pw1').focus(), 50);
-  }
+  function openSetPw(kind){ $('pwH').textContent = kind === 'recovery' ? 'Set a new password' : 'Welcome aboard. Set your password'; show(modals.pw); setTimeout(() => $('pw1').focus(), 50); }
   $('pwForm').addEventListener('submit', async e => {
     e.preventDefault(); const a = $('pw1').value, b = $('pw2').value, err = $('pwErr');
     if(a.length < 8){ err.textContent = 'Use at least 8 characters.'; return; }
@@ -2688,103 +2829,137 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const { error } = await sb.auth.updateUser({ password: a });
     $('pwBtn').disabled = false;
     if(error){ err.textContent = error.message; return; }
-    err.style.color = 'var(--green)'; err.textContent = 'Password saved. Next time, log in with your email and this password.';
-    history.replaceState(null, '', location.pathname); setTimeout(() => location.reload(), 900);
+    history.replaceState(null, '', location.pathname);
+    toast('Password saved. Next time, log in with your email and this password.', 5000);
+    show(null); await refresh();
   });
-  sb.auth.onAuthStateChange(ev => { if(ev === 'PASSWORD_RECOVERY') openSetPw('recovery'); });
+  function runAfterLogin(){
+    const a = afterLogin; afterLogin = null;
+    if(!session) return;
+    if(a && a.pay && !pkg) openPay(a.pay);
+  }
+  sb.auth.onAuthStateChange((ev) => {
+    if(ev === 'PASSWORD_RECOVERY') openSetPw('recovery');
+    if(ev === 'SIGNED_IN' && FROM_LINK){                                  // back from Google (or an emailed link)
+      FROM_LINK = false; history.replaceState(null, '', location.pathname + location.search);
+      try { afterLogin = JSON.parse(sessionStorage.getItem('ecademy.after') || 'null'); sessionStorage.removeItem('ecademy.after'); } catch(_){}
+      refresh().then(() => { if(linkType === 'invite' || linkType === 'recovery') openSetPw(linkType); else { toast('Welcome aboard, ' + displayName() + '.'); runAfterLogin(); } });
+    }
+  });
+  async function logout(){ stopWatch(); await sb.auth.signOut(); await refresh(); toast('Logged out.'); }
 
-  function logout(){ sb.auth.signOut().finally(() => location.reload()); }
-
-  /* ---------- one device at a time ----------
-     Each account may register up to 5 devices (2 phones, 1 tablet, 2 laptops/PCs), but only one
-     may be logged in at a time. Opening ECADEMY on a device claims the account for that device;
-     the hub polls and signs out any other device that was logged in before. Admins are exempt. */
+  /* ---------- one device at a time ---------- */
   const KICK_MSG = 'You were signed out because your ECADEMY account was opened on another device. Only one device can be logged in at a time; log in here again to continue on this device.';
+  let watchT = null;
   async function claimThisDevice(){
+    if (IN_APP) return true;                                   // do not burn a device slot inside Messenger/Facebook
     try {
-      const { data, error } = await sb.rpc('claim_device', { p_device: deviceId(), p_label: navigator.userAgent.slice(0, 120) });
+      const { data, error } = await sb.rpc('claim_device', { p_device: deviceId(), p_label: UA.slice(0, 120) });
       if(error) return null;
-      if(data && data.ok === false){ await sb.auth.signOut(); $('loginErr') && openLogin(data.message); return false; }
+      if(data && data.ok === false){ await sb.auth.signOut(); openLogin(data.message); return false; }
       return true;
     } catch(_) { return null; }
   }
-  function watchActiveDevice(){
-    let busy = false;
-    const check = async () => {
-      if(busy || document.hidden) return; busy = true;
-      try {
-        const { data: active, error } = await sb.rpc('my_active_device');
-        if(!error && active && active !== deviceId()){
-          await sb.auth.signOut();
-          try { sessionStorage.setItem('ecademy.kicked', '1'); } catch(_){}
-          location.reload();
-        }
-      } catch(_){} finally { busy = false; }
-    };
-    setInterval(check, 20000);
-    document.addEventListener('visibilitychange', () => { if(!document.hidden) check(); });
-    window.addEventListener('focus', check);
+  function stopWatch(){ if(watchT){ clearInterval(watchT); watchT = null; } }
+  let busyCheck = false;
+  async function checkActive(){
+    if(busyCheck || document.hidden || !session || isAdmin || !watchT) return; busyCheck = true;
+    try {
+      const { data: active, error } = await sb.rpc('my_active_device');
+      if(!error && active && active !== deviceId()){ stopWatch(); await sb.auth.signOut(); await refresh(); openLogin(KICK_MSG); }
+    } catch(_){} finally { busyCheck = false; }
+  }
+  function watchActiveDevice(){ stopWatch(); watchT = setInterval(checkActive, 20000); }
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) checkActive(); });
+  window.addEventListener('focus', checkActive);
+
+  /* ---------- status: who is logged in, which package, any payment under review ---------- */
+  function displayName(){ const n = (member && member.name) || (session && (session.user.user_metadata?.name || session.user.email.split('@')[0])) || ''; return n.split(' ').slice(-1)[0] || n; }
+  async function refresh(){
+    ({ data:{ session } } = await sb.auth.getSession());
+    member = null; pending = null; rejected = null; isAdmin = false;
+    if(session){
+      const ok = await claimThisDevice(); if(ok === false) session = null;
+      else { const { data } = await sb.rpc('my_status'); if(data){ member = data.member; pending = data.pending; rejected = data.rejected; isAdmin = !!data.admin; } watchActiveDevice(); }
+    } else stopWatch();
+    valid = isAdmin || (!!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date()));
+    pkg = valid ? (isAdmin ? PACKAGES.A : PACKAGES[member.package]) : null;
+    render();
+    schedulePendingPoll();
+  }
+  let pollT = null;
+  function schedulePendingPoll(){
+    clearTimeout(pollT);
+    if(session && pending && !pkg) pollT = setTimeout(async () => { const before = !!pkg; await refresh(); if(!before && pkg) toast('Your payment is confirmed. Welcome aboard — your decks are open!', 6000); }, 30000);
+    if(session && member && member.expires_at && valid){ const ms = new Date(member.expires_at) - Date.now(); if(ms < 36e5) setTimeout(() => refresh().then(() => toast('Your ECADEMY access has expired. Renew to continue.', 6000)), Math.max(1000, ms)); }
   }
 
-  /* ---------- page state ---------- */
-  (async function boot(){
-    let { data:{ session } } = await sb.auth.getSession();
-    if(session){ const ok = await claimThisDevice(); if(ok === false) session = null; else watchActiveDevice(); }
-    try { if(sessionStorage.getItem('ecademy.kicked')){ sessionStorage.removeItem('ecademy.kicked'); setTimeout(() => openLogin(KICK_MSG), 400); } } catch(_){}
-    let member = null;
-    if(session){ const { data } = await sb.from('members').select('*').maybeSingle(); member = data; }
-    const valid = !!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date());
-    const pkg = valid ? PACKAGES[member.package] : null;
+  /* ---------- render ---------- */
+  const DEMO_KEY = 'ecademy.radarDemo.start', DEMO_MS = 24 * 60 * 60 * 1000;
+  function demoLeft(){ try{ const t0 = +localStorage.getItem(DEMO_KEY); return t0 ? DEMO_MS - (Date.now() - t0) : DEMO_MS; }catch(_){ return DEMO_MS; } }
+  function demoButton(){
+    const d = document.createElement('button'); d.type = 'button'; d.className = 'topic-btn has-sim demo-btn';
+    const paint = () => { const left = demoLeft(); d.innerHTML = 'Radar / ARPA — free demo for visitors <span class="sim-tag">' + (left <= 0 ? 'DEMO ENDED' : left >= DEMO_MS ? '▶ TRY FREE · 24 HOURS' : '▶ ' + (left >= 3600000 ? Math.ceil(left / 3600000) + ' H LEFT' : Math.ceil(left / 60000) + ' MIN LEFT')) + '</span>'; d.classList.toggle('ended', left <= 0); };
+    paint(); setInterval(paint, 30000);
+    d.addEventListener('click', e => { e.stopPropagation(); if(demoLeft() <= 0){ showEnroll('Second Officer'); return; } window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); setTimeout(paint, 1500); });
+    return d;
+  }
+  function render(){
     const allowed = new Set(pkg ? pkg.ranks : []);
-
-    const DEMO_KEY = 'ecademy.radarDemo.start', DEMO_MS = 24 * 60 * 60 * 1000;
-    function demoLeft(){ try{ const t0 = +localStorage.getItem(DEMO_KEY); return t0 ? DEMO_MS - (Date.now() - t0) : DEMO_MS; }catch(_){ return DEMO_MS; } }
-    function demoButton(){
-      const d = document.createElement('button'); d.type = 'button'; d.className = 'topic-btn has-sim demo-btn';
-      const paint = () => { const left = demoLeft(); d.innerHTML = 'Radar / ARPA — free demo for visitors <span class="sim-tag">' + (left <= 0 ? 'DEMO ENDED' : left >= DEMO_MS ? '▶ TRY FREE · 24 HOURS' : '▶ ' + (left >= 3600000 ? Math.ceil(left / 3600000) + ' H LEFT' : Math.ceil(left / 60000) + ' MIN LEFT')) + '</span>'; d.classList.toggle('ended', left <= 0); };
-      paint(); setInterval(paint, 30000);
-      d.addEventListener('click', e => { e.stopPropagation(); if(demoLeft() <= 0){ showEnroll('Second Officer'); return; } window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); setTimeout(paint, 1500); });
-      return d;
-    }
-    if(location.hash === '#radar-demo' && !pkg){ history.replaceState(null, '', location.pathname); setTimeout(() => { if(demoLeft() > 0) window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); else showEnroll('Second Officer'); }, 300); }
-
     document.querySelectorAll('.rank-card').forEach(card => {
       const r = card.dataset.rank, open = allowed.has(r);
       card.classList.toggle('locked', !open);
+      card.querySelectorAll('.lock-badge, .demo-btn').forEach(x => x.remove());
       const b = document.createElement('span'); b.className = 'lock-badge' + (open ? ' ok' : ''); b.innerHTML = open ? okSvg + 'Unlocked' : lockSvg + 'Locked'; card.appendChild(b);
-      if(!open) card.querySelectorAll('.topic-btn.has-sim').forEach(t => {
-        if(ECADEMY_FREE.includes(t.dataset.app)){ const s = t.querySelector('.sim-tag'); if(s) s.textContent = '▶ FREE DEMO'; return; }
-        t.classList.add('locked'); const s = t.querySelector('.sim-tag'); if(s) s.textContent = 'LOCKED';
-        if(t.dataset.app === 'radar' && r === 'Second Officer' && !t.nextElementSibling?.classList.contains('demo-btn')) t.after(demoButton());
+      card.querySelectorAll('.topic-btn.has-sim').forEach(t => {
+        const s = t.querySelector('.sim-tag'); if(s && !s.dataset.orig) s.dataset.orig = s.textContent;
+        const free = ECADEMY_FREE.includes(t.dataset.app);
+        t.classList.toggle('locked', !open && !free);
+        if(s) s.textContent = open ? s.dataset.orig : free ? '▶ FREE DEMO' : 'LOCKED';
+        if(!open && t.dataset.app === 'radar' && r === 'Second Officer') t.after(demoButton());
       });
     });
-
-    function showEnroll(rank){
-      const need = neededFor(rank) || PACKAGES.A;
-      $('enrollTier').textContent = need.tier + ' · ' + need.name;
-      $('enrollTitle').textContent = rank + ' deck is locked';
-      $('enrollText').textContent = pkg
-        ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
-        : member && !valid
-          ? (member.revoked ? 'Your access is paused. Please message ECADEMY.' : 'Your package expired on ' + fmt(member.expires_at) + '. Renew to open the simulators again.')
-          : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Get access, set your password from the link we send you, then log in here.';
-      const go = $('enrollGo'); go.href = need.url || '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : 'Get Access · ' + need.name; go.classList.toggle('cta-nudge', !pkg); go.target = need.url ? '_blank' : '';
-      go.onclick = () => modal.classList.remove('open');
-      const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already have access? Log in';
-      lg.onclick = e => { e.preventDefault(); modal.classList.remove('open'); if(session) logout(); else openLogin(); };
-      modal.classList.add('open');
-    }
-    $('enrollClose').onclick = () => modal.classList.remove('open');
-    modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
-    document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card,.rank-panel').dataset.rank); }, true);
-
     const pill = $('loginPill');
     if(session){
-      const who = (member && member.name) || session.user.email.split('@')[0];
-      pill.innerHTML = (pkg ? okSvg : lockSvg) + '<span>' + who.split(' ')[0] + ' · ' + (pkg ? pkg.name : 'No active package') + '</span><a href="#" id="pillOut">Log out</a>';
-      pill.classList.toggle('ok', !!pkg); $('pillOut').onclick = e => { e.preventDefault(); logout(); };
-    } else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.onclick = () => openLogin(); }
+      const who = displayName();
+      const state = pkg ? pkg.name : pending ? 'Payment under review' : 'No active package';
+      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a><a href="#" id="pillOut">Log out</a>';
+      pill.classList.toggle('ok', !!pkg); pill.onclick = null;
+      $('pillOut').onclick = e => { e.preventDefault(); e.stopPropagation(); logout(); };
+      $('pillDev').onclick = e => { e.preventDefault(); e.stopPropagation(); openDevices(); };
+    } else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.classList.remove('ok'); pill.onclick = () => openLogin(); }
+    renderPlans();
+    const bar = $('memberBar'); bar.className = 'member-bar';
+    if(pkg){
+      const until = isAdmin ? 'owner' : member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>');
+      bar.classList.add('show');
+    } else if(session && pending){
+      bar.innerHTML = clockSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' PAYMENT UNDER REVIEW · ' + PACKAGES[pending.package].name.toUpperCase() + ' · REF ' + esc(pending.ref_no) + ' <a href="#" id="barPay">Details</a>';
+      bar.classList.add('show', 'pending'); $('barPay').onclick = e => { e.preventDefault(); openPay(pending.package); };
+    } else bar.innerHTML = '';
+  }
 
+  function showEnroll(rank){
+    const need = neededFor(rank) || PACKAGES.A;
+    $('enrollTier').textContent = need.tier + ' · ' + need.name;
+    $('enrollTitle').textContent = rank + ' deck is locked';
+    $('enrollText').textContent = pkg
+      ? 'Your package (' + pkg.name + ') does not include the ' + rank + ' deck. Upgrade to ' + need.name + ' to open these simulators.'
+      : pending ? 'Your payment for the ' + PACKAGES[pending.package].name + ' package is being checked. The decks open here automatically as soon as it is confirmed.'
+      : member && !valid
+        ? (member.revoked ? 'Your access is paused. Please message ECADEMY.' : 'Your package expired on ' + fmt(member.expires_at) + '. Renew to open the simulators again.')
+        : 'The ' + rank + ' deck opens with the ' + need.name + ' package. Create your free account, pay with GCash, and the decks open here once your payment is confirmed.';
+    const go = $('enrollGo'); go.href = '#plans'; go.textContent = pkg ? 'Upgrade to ' + need.name : pending ? 'View payment' : 'Get Access · ' + need.name; go.classList.toggle('cta-nudge', !pkg);
+    go.onclick = e => { e.preventDefault(); show(null); if(pending && !pkg) openPay(pending.package); else getAccess(need.code); };
+    const lg = $('enrollLogin'); lg.textContent = session ? 'Log out' : 'Already have an account? Log in';
+    lg.onclick = e => { e.preventDefault(); show(null); if(session) logout(); else openLogin(); };
+    show(modals.enroll);
+  }
+  document.addEventListener('click', e => { const t = e.target.closest('.topic-btn.locked'); if(!t) return; e.stopPropagation(); e.preventDefault(); showEnroll(t.closest('.rank-card,.rank-panel').dataset.rank); }, true);
+
+  /* ---------- packages carousel ---------- */
+  function renderPlans(){
     const P = Object.values(PACKAGES);
     $('planGrid').innerHTML = `
       <div class="pkg-track" id="pkgTrack" tabindex="0">${P.map((p, i) => `
@@ -2802,8 +2977,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
               ${pkg && pkg.ranks.length >= p.ranks.length
                 ? `<span class="cta owned">✓ ${pkg === p ? 'Your current package' : 'Already included in your ' + pkg.name + ' package'}</span>
               <span class="fine">These decks are already open in your account.</span>`
-                : `<a class="cta${pkg ? '' : ' cta-nudge'}" href="${p.url || enrollLink(p, !!pkg)}" target="_blank" rel="noopener">${pkg ? 'Upgrade to ' + p.name : 'Get Access'}</a>
-              <span class="fine">Opens Messenger. Fill in your name, phone and email. <b style="color:var(--amber)">Your email will be your username.</b></span>`}
+                : pending && pending.package === p.code
+                ? `<button type="button" class="cta" data-pay="${p.code}">Payment under review</button>
+              <span class="fine">We are checking your GCash payment. The decks open here automatically once confirmed.</span>`
+                : `<button type="button" class="cta${pkg ? '' : ' cta-nudge'}" data-get="${p.code}">${pkg ? 'Upgrade to ' + p.name : 'Get Access'}</button>
+              <span class="fine">Create your free account, pay with GCash, and your decks open here once confirmed. <b>Questions? <a href="${MESSENGER}" target="_blank" rel="noopener" style="color:inherit">Message us</a>.</b></span>`}
             </div>
           </div>
         </article>`).join('')}
@@ -2813,6 +2991,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
         <div class="pkg-dots">${P.map((p, i) => `<button type="button" data-i="${i}" aria-label="${p.name}">${p.name.split(' ·')[0]}</button>`).join('')}</div>
         <button type="button" class="pkg-arrow" id="pkgNext" aria-label="Next package">›</button>
       </div>`;
+    $('planGrid').querySelectorAll('[data-get]').forEach(b => b.onclick = () => getAccess(b.dataset.get));
+    $('planGrid').querySelectorAll('[data-pay]').forEach(b => b.onclick = () => openPay(b.dataset.pay));
     (function carousel(){
       const track = $('pkgTrack'), slides = [...track.children], dots = [...document.querySelectorAll('.pkg-dots button')];
       let cur = 0;
@@ -2829,17 +3009,94 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       let x0 = null, y0 = null;
       track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
       track.addEventListener('touchend', e => { if(x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) go(cur + (dx < 0 ? 1 : -1)); x0 = null; }, { passive: true });
-      go(pkg ? Math.max(0, P.indexOf(pkg)) : Math.max(0, P.findIndex(p => p.featured)), true);
+      go(pkg ? Math.max(0, P.indexOf(pkg)) : pending ? Math.max(0, P.findIndex(p => p.code === pending.package)) : Math.max(0, P.findIndex(p => p.featured)), true);
     })();
+  }
 
-    if(pkg){ const bar = $('memberBar'); const until = member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
-      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + ((member.name || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>');
-      bar.classList.add('show');
-      if(member.expires_at){ const ms = new Date(member.expires_at) - Date.now(); if(ms < 36e5) setTimeout(() => { alert('Your ECADEMY access has expired. Renew to continue.'); location.reload(); }, Math.max(1000, ms)); }
+  /* ---------- Get Access → account first, then GCash ---------- */
+  function getAccess(code){
+    if(!session){ afterLogin = { pay: code }; openLogin('', 'up', 'Step 1 of 2 — create your free ECADEMY account (or log in). Step 2 is the GCash payment for the ' + PACKAGES[code].name + ' package.'); return; }
+    openPay(code);
+  }
+  function gcashBlock(){
+    if(GCASH.number) return '<div class="pay-step"><b class="n">1</b><div>Send the amount via <b>GCash</b> to<br><span class="big">' + esc(GCASH.number) + '</span><button type="button" class="copy" data-copy="' + esc(GCASH.number) + '">Copy</button><br>Account name: <b>' + esc(GCASH.name) + '</b></div></div>';
+    return '<div class="pay-step"><b class="n">1</b><div>Message us on <a href="' + MESSENGER + '?text=' + encodeURIComponent('Hi ECADEMY, I want to pay via GCash. Please send me the GCash number.') + '" target="_blank" rel="noopener"><b>Messenger</b></a> to get the GCash number, then send the amount.</div></div>';
+  }
+  function openPay(code){
+    const p = PACKAGES[code], o = OFFER[code] || {}; const body = $('payBody');
+    $('payTier').textContent = p.tier + ' · ' + p.name; $('payH').textContent = pending && pending.package === code ? 'Payment under review' : 'Pay with GCash';
+    if(pending && pending.package === code){
+      body.innerHTML = '<div class="pay-ok"><b>Thank you — your payment is being checked.</b><br>Package: ' + p.name + '<br>GCash reference: <b>' + esc(pending.ref_no) + '</b>' + (pending.amount ? '<br>Amount: ₱' + esc(pending.amount) : '') + '<br>Submitted: ' + fmt(pending.created_at) + '<br><br>Your decks open here automatically once it is confirmed (usually within a few hours, at most 24 h). You can close this page; just log in again later. Questions? <a href="' + MESSENGER + '" target="_blank" rel="noopener">Message ECADEMY</a>.</div>';
+      show(modals.pay); return;
     }
+    const name = (session.user.user_metadata && session.user.user_metadata.name) || (member && member.name) || '';
+    body.innerHTML =
+      (rejected ? '<div class="notice" style="border-color:rgba(192,57,43,.35);background:rgba(192,57,43,.08)"><b>Your previous payment could not be confirmed.</b> ' + esc(rejected.note || '') + ' Please check and submit again.</div>' : '') +
+      '<div class="pay-steps">' + gcashBlock() +
+      '<div class="pay-step"><b class="n">2</b><div>' + (o.amount ? 'Amount: <span class="big">₱' + Number(o.amount).toLocaleString('en-PH') + '</span><br>' + esc(o.label) : esc(o.label) + ' — send the amount quoted to you on Messenger.') + '</div></div>' +
+      '<div class="pay-step"><b class="n">3</b><div>Enter the <b>GCash reference number</b> below (from the GCash receipt) and submit. We check it and open your decks — no waiting for a link.</div></div></div>' +
+      '<div class="pay-grid"><div><label for="payName">Your name</label><input id="payName" required maxlength="120" value="' + esc(name) + '" placeholder="Rank and name"></div>' +
+      '<div><label for="payPhone">Mobile number</label><input id="payPhone" maxlength="40" inputmode="tel" placeholder="09XX XXX XXXX"></div>' +
+      '<div><label for="payAmount">Amount sent (₱)</label><input id="payAmount" required inputmode="decimal" maxlength="12" value="' + esc(o.amount || '') + '" placeholder="e.g. 1899"></div>' +
+      '<div><label for="payRef">GCash reference no.</label><input id="payRef" required minlength="4" maxlength="40" placeholder="13-digit ref no." style="letter-spacing:.05em"></div></div>' +
+      '<label for="payProof">GCash receipt screenshot (optional, speeds up checking)</label><input id="payProof" type="file" accept="image/*">' +
+      (AFF_CODE ? '<p class="hint">Referral code applied: <b>' + esc(AFF_CODE) + '</b></p>' : '<label for="payAff">Referral code (optional)</label><input id="payAff" maxlength="20" placeholder="If someone referred you" style="text-transform:uppercase">') +
+      '<div class="err" id="payErr" role="alert"></div>' +
+      '<div class="row"><button class="cta" id="payBtn" type="submit">Submit payment</button><a class="ghost" href="' + MESSENGER + '" target="_blank" rel="noopener">Need help? Message us</a></div>';
+    body.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy).then(() => toast('GCash number copied.')));
+    $('payForm').dataset.pkg = code;
+    show(modals.pay); setTimeout(() => $('payRef').focus(), 80);
+  }
+  $('payForm').addEventListener('submit', async e => {
+    e.preventDefault(); const btn = $('payBtn'), err = $('payErr'); if(!btn) return; err.textContent = '';
+    const code = $('payForm').dataset.pkg; btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      let proof = null; const f = $('payProof').files && $('payProof').files[0];
+      if(f){
+        if(f.size > 5 * 1024 * 1024) throw new Error('The screenshot is larger than 5 MB. Please choose a smaller image.');
+        const ext = (f.type === 'image/png') ? 'png' : (f.type === 'image/webp') ? 'webp' : 'jpg';
+        proof = session.user.id + '/' + Date.now() + '.' + ext;
+        const { error: upErr } = await sb.storage.from('payproofs').upload(proof, f, { contentType: f.type || 'image/jpeg', upsert: false });
+        if(upErr){ proof = null; console.warn('proof upload failed', upErr); }
+      }
+      const { data, error } = await sb.rpc('submit_payment', { p_package: code, p_name: $('payName').value, p_phone: $('payPhone').value, p_amount: $('payAmount').value, p_ref: $('payRef').value, p_proof: proof, p_aff: AFF_CODE || ($('payAff') ? $('payAff').value : '') || null });
+      if(error) throw new Error(error.message);
+      if(!data.ok) throw new Error(data.message);
+      await refresh();
+      openPay(code);
+      toast('Payment submitted. We will confirm it shortly.', 5000);
+    } catch(ex){ err.textContent = ex.message; btn.disabled = false; btn.textContent = 'Submit payment'; }
+  });
 
+  /* ---------- my devices ---------- */
+  const devSvg = { phone:'<svg viewBox="0 0 24 24"><path d="M16 1H8a3 3 0 0 0-3 3v16a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3zm1 19a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16zm-5-2.5a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/></svg>', tablet:'<svg viewBox="0 0 24 24"><path d="M19 2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3zm1 17a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14zm-8-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>', computer:'<svg viewBox="0 0 24 24"><path d="M20 3H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h6l-1 2H7v2h10v-2h-2l-1-2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 13H4V5h16v11z"/></svg>' };
+  function devName(label, kind){
+    const l = label || ''; const os = /iPhone/.test(l) ? 'iPhone' : /iPad/.test(l) ? 'iPad' : /Android/.test(l) ? 'Android' : /Windows/.test(l) ? 'Windows PC' : /Macintosh/.test(l) ? 'Mac' : /Linux/.test(l) ? 'Linux' : (kind || 'Device');
+    const br = /EdgA?\//.test(l) ? 'Edge' : /OPR\//.test(l) ? 'Opera' : /SamsungBrowser/.test(l) ? 'Samsung Internet' : /Firefox/.test(l) ? 'Firefox' : /CriOS|Chrome/.test(l) ? 'Chrome' : /Safari/.test(l) ? 'Safari' : 'Browser';
+    return os + ' · ' + br;
+  }
+  async function openDevices(){
+    const list = $('devList'), err = $('devErr'); err.textContent = ''; list.textContent = 'Loading…'; show(modals.dev);
+    const { data, error } = await sb.rpc('my_devices');
+    if(error){ list.textContent = ''; err.textContent = error.message; return; }
+    const me = deviceId();
+    list.innerHTML = (data.devices || []).map(d => '<div class="dev-row"><span class="ic">' + (devSvg[d.kind] || devSvg.computer) + '</span><span class="t"><b>' + esc(devName(d.label, d.kind)) + (d.device_id === me ? ' <span class="tag">THIS DEVICE</span>' : d.device_id === data.active ? ' <span class="tag">LOGGED IN</span>' : '') + '</b><span>' + d.kind + ' · last used ' + fmt(d.last_seen) + '</span></span>' + (d.device_id === me ? '' : '<button type="button" data-rm="' + esc(d.device_id) + '">Remove</button>') + '</div>').join('') || '<p class="hint">No devices registered yet.</p>';
+    if(data.next_reset && new Date(data.next_reset) > new Date()) list.insertAdjacentHTML('beforeend', '<p class="hint">Next device removal available: ' + fmt(data.next_reset) + '.</p>');
+    list.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
+      if(!confirm('Remove this device from your account? You can remove one device every 7 days.')) return;
+      b.disabled = true; const { data: r, error: e2 } = await sb.rpc('remove_my_device', { p_device: b.dataset.rm });
+      if(e2 || !r.ok){ err.textContent = (e2 && e2.message) || r.message; b.disabled = false; return; }
+      toast('Device removed.'); openDevices();
+    });
+  }
+
+  /* ---------- boot ---------- */
+  (async function boot(){
+    await refresh();
+    if(location.hash === '#radar-demo' && !pkg){ history.replaceState(null, '', location.pathname); setTimeout(() => { if(demoLeft() > 0) window.ecademyOpenApp && window.ecademyOpenApp('radardemo'); else showEnroll('Second Officer'); }, 300); }
+    if(location.hash === '#get-access'){ history.replaceState(null, '', location.pathname); if(!pkg) getAccess('A'); }
     if(linkError){ openLogin('That link is no longer valid (' + linkError + '). Ask ECADEMY for a new one.'); history.replaceState(null, '', location.pathname); }
-    else if(session && (linkType === 'invite' || linkType === 'recovery')) openSetPw(linkType);
+    else if(session && (linkType === 'invite' || linkType === 'recovery') && !FROM_LINK) openSetPw(linkType);
   })();
 })();
 </script>
