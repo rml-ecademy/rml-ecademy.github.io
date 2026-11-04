@@ -68,7 +68,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
 </style>
 </head>
 <body>
-<header><div class="t">ECADEMY · Payments<small id="who">Confirm GCash payments and open access</small></div><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
+<header><div class="t">ECADEMY · Payments<small id="who">Confirm GCash payments and open access</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
 <main>
   <section class="card" id="loginView">
     <h2>Owner login</h2>
@@ -127,16 +127,35 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
   const peso = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? '₱' + n.toLocaleString('en-PH') : 'amount not given'; };
   const fmt = d => d ? new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : '';
   const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
-  let pays = [], toastT;
+  let pays = [], toastT, seenIds = null, alertsOn = false;
+  const beep = () => { try { const ac = new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.connect(g); g.connect(ac.destination); o.frequency.value = 880; g.gain.value = .25; o.start(); setTimeout(() => { o.frequency.value = 1175; }, 180); setTimeout(() => { o.stop(); ac.close(); }, 420); } catch(_){} };
+  function paintBell(){ const b = $('bell'); const on = alertsOn && Notification.permission === 'granted'; b.textContent = on ? '🔔 Alerts on' : '🔔 Alerts off'; b.style.background = on ? 'var(--green)' : ''; }
+  $('bell').onclick = async () => {
+    if(!('Notification' in window)){ toast('This browser cannot show notifications.'); return; }
+    if(Notification.permission !== 'granted'){ const r = await Notification.requestPermission(); if(r !== 'granted'){ toast('Notifications were not allowed.'); return; } }
+    alertsOn = !alertsOn; try { localStorage.setItem('ecademy.alerts', alertsOn ? '1' : '0'); } catch(_){}
+    if(alertsOn){ beep(); new Notification('ECADEMY alerts are on', { body: 'You will hear a sound and see this when a new payment arrives.', icon: 'assets/approve-icon-180.png' }); }
+    paintBell();
+  };
+  try { alertsOn = localStorage.getItem('ecademy.alerts') === '1'; } catch(_){}
+  function alertNew(){
+    const pend = pays.filter(p => p.status === 'pending');
+    if(seenIds === null){ seenIds = new Set(pend.map(p => p.id)); return; }
+    const fresh = pend.filter(p => !seenIds.has(p.id)); pend.forEach(p => seenIds.add(p.id));
+    if(!fresh.length) return;
+    beep(); toast(fresh.length + ' new payment' + (fresh.length > 1 ? 's' : '') + ' to confirm.');
+    if(alertsOn && 'Notification' in window && Notification.permission === 'granted') fresh.forEach(p => { try { new Notification('New GCash payment to confirm', { body: (p.name || p.email) + ' · ' + NAMES[p.package] + (p.amount ? ' · ' + peso(p.amount) : '') + ' · ref ' + (p.ref_no || ''), icon: 'assets/approve-icon-180.png', tag: 'pay-' + p.id }); } catch(_){} });
+  }
   function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3000); }
   async function call(body){
     const { data, error } = await sb.functions.invoke('admin', { body:{ ...body, hub: HUB } });
     if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} if(/^login$/.test(m)){ await sb.auth.signOut(); location.reload(); return; } throw new Error(m); }
     return data;
   }
-  function view(id){ ['loginView','denied','app'].forEach(v => $(v).classList.toggle('hidden', v !== id)); $('logout').classList.toggle('hidden', id === 'loginView'); $('reload').classList.toggle('hidden', id !== 'app'); }
+  function view(id){ ['loginView','denied','app'].forEach(v => $(v).classList.toggle('hidden', v !== id)); $('logout').classList.toggle('hidden', id === 'loginView'); $('reload').classList.toggle('hidden', id !== 'app'); $('bell').classList.toggle('hidden', id !== 'app'); paintBell(); }
 
   function render(){
+    alertNew();
     const pend = pays.filter(p => p.status === 'pending'), done = pays.filter(p => p.status !== 'pending').slice(0, 15);
     $('n').textContent = pend.length; document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY · Payments';
     $('list').innerHTML = pend.map(p => `<div class="pay" data-id="${p.id}">
@@ -215,7 +234,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
   });
   $('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
   $('reload').onclick = load;
-  setInterval(() => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); }, 45000);
+  setInterval(() => { if(!$('app').classList.contains('hidden')) load(); }, 30000);
   document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); });
   if(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('homeTip').classList.add('hidden');
 
