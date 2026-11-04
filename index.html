@@ -2624,6 +2624,22 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   </form>
 </div>
 
+<!-- FORGOT PASSWORD: 6-digit code -->
+<div class="enroll-modal" id="otpModal" role="dialog" aria-modal="true" aria-labelledby="otpH">
+  <form class="enroll-box login-box" id="otpForm">
+    <button class="x" id="otpClose" type="button" aria-label="Close">×</button>
+    <div class="tier" style="color:var(--cyan)">RESET PASSWORD</div>
+    <h3 id="otpH">Enter the code we e-mailed you</h3>
+    <p id="otpP">We sent a 6-digit code to <b id="otpEmail"></b>. Check the inbox and the spam folder. <span id="otpTimer"></span></p>
+    <label for="otpCode">6-digit code</label><input id="otpCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" placeholder="123456" style="letter-spacing:.3em;font-size:1.3rem;text-align:center">
+    <div class="pay-grid"><div><label for="otpPw1">New password</label><input id="otpPw1" type="password" minlength="8" required autocomplete="new-password" placeholder="At least 8 characters"></div>
+    <div><label for="otpPw2">Repeat password</label><input id="otpPw2" type="password" minlength="8" required autocomplete="new-password"></div></div>
+    <div class="err" id="otpErr" role="alert"></div>
+    <div class="row"><button class="cta" id="otpBtn" type="submit">Set new password</button><button type="button" class="ghost" id="otpResend" disabled>Resend code</button></div>
+    <p class="hint">No e-mail after a few minutes? <a href="#" id="otpHelp" target="_blank" rel="noopener">Message ECADEMY</a> and we will reset it for you.</p>
+  </form>
+</div>
+
 <!-- LOCKED DECK -->
 <div class="enroll-modal" id="enrollModal" role="dialog" aria-modal="true">
   <div class="enroll-box">
@@ -2767,10 +2783,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   /* ---------- state ---------- */
   let session = null, member = null, pending = null, rejected = null, isAdmin = false, pkg = null, valid = false;
   let afterLogin = null;                     // e.g. { pay: 'A' } → open the payment form once logged in
-  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal') };
+  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal'), otp: $('otpModal') };
   const show = m => { Object.values(modals).forEach(x => x.classList.remove('open')); if(m) m.classList.add('open'); };
   Object.values(modals).forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); }));
-  ['loginClose','enrollClose','payClose','devClose'].forEach(id => $(id).onclick = () => show(null));
+  ['loginClose','enrollClose','payClose','devClose','otpClose'].forEach(id => $(id).onclick = () => show(null));
 
   /* ---------- login / create account ---------- */
   let mode = 'in';
@@ -2813,13 +2829,51 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     } catch(ex){ err.textContent = ex.message; }
     finally { btn.disabled = false; btn.textContent = mode === 'up' ? 'Create account' : 'Log in'; }
   });
-  $('forgotPw').onclick = async e => {
-    e.preventDefault(); const email = $('loginEmail').value.trim().toLowerCase();
-    if(!email.includes('@')){ $('loginErr').textContent = 'Type your email above first, then press "Forgot password?".'; return; }
+  /* ---------- forgot password: 6-digit code (valid 10 minutes), typed on the page — no link that mail scanners can burn ---------- */
+  const OTP_MS = 10 * 60 * 1000, RESEND_S = 60;
+  let otpEmail = '', otpSent = 0, otpTick = null;
+  function otpCountdown(){
+    clearInterval(otpTick);
+    const paint = () => {
+      const left = otpSent + OTP_MS - Date.now(), since = (Date.now() - otpSent) / 1000;
+      $('otpTimer').textContent = left > 0 ? 'The code expires in ' + Math.floor(left / 60000) + ':' + String(Math.floor(left % 60000 / 1000)).padStart(2, '0') + '.' : 'The code has expired — press "Resend code".';
+      const rb = $('otpResend'); rb.disabled = since < RESEND_S; rb.textContent = since < RESEND_S ? 'Resend code (' + Math.ceil(RESEND_S - since) + 's)' : 'Resend code';
+    };
+    paint(); otpTick = setInterval(paint, 1000);
+  }
+  async function sendOtp(email){
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HUB });
-    $('loginErr').style.color = error ? '' : 'var(--green)';
-    $('loginErr').textContent = error ? ('Could not send the email: ' + error.message + '. Message ECADEMY for a reset link.') : 'Check your inbox (and spam) for a link to set a new password. No email? Message ECADEMY and we will send you one.';
+    if(error) throw new Error(/rate|limit|seconds/i.test(error.message) ? 'Too many requests. Please wait a minute and try again.' : error.message);
+    otpEmail = email; otpSent = Date.now();
+    $('otpEmail').textContent = email; $('otpHelp').href = MESSENGER + '?text=' + encodeURIComponent('Hi ECADEMY, I did not receive the password reset code for ' + email + '.');
+    $('otpCode').value = ''; $('otpPw1').value = ''; $('otpPw2').value = ''; $('otpErr').textContent = ''; $('otpErr').style.color = '';
+    show(modals.otp); otpCountdown(); setTimeout(() => $('otpCode').focus(), 50);
+  }
+  $('forgotPw').onclick = async e => {
+    e.preventDefault(); const email = $('loginEmail').value.trim().toLowerCase(), err = $('loginErr'); err.style.color = '';
+    if(!email.includes('@')){ err.textContent = 'Type your email above first, then press "Forgot password?".'; return; }
+    err.textContent = 'Sending the code…';
+    try { await sendOtp(email); } catch(ex){ err.textContent = ex.message + ' You can also message ECADEMY for help.'; }
   };
+  $('otpResend').onclick = async () => { $('otpErr').textContent = ''; try { await sendOtp(otpEmail); $('otpErr').style.color = 'var(--green)'; $('otpErr').textContent = 'A new code was sent.'; } catch(ex){ $('otpErr').textContent = ex.message; } };
+  $('otpForm').addEventListener('submit', async e => {
+    e.preventDefault(); const err = $('otpErr'), btn = $('otpBtn'); err.style.color = ''; err.textContent = '';
+    const code = $('otpCode').value.trim(), a = $('otpPw1').value, b = $('otpPw2').value;
+    if(!/^[0-9]{6}$/.test(code)){ err.textContent = 'Enter the 6-digit code from the e-mail.'; return; }
+    if(a.length < 8){ err.textContent = 'Use at least 8 characters for the new password.'; return; }
+    if(a !== b){ err.textContent = 'The two passwords do not match.'; return; }
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const { error } = await sb.auth.verifyOtp({ email: otpEmail, token: code, type: 'recovery' });
+      if(error) throw new Error(/expired|invalid|not found/i.test(error.message) ? 'That code is wrong or has expired. Check the latest e-mail, or press "Resend code".' : error.message);
+      const { error: e2 } = await sb.auth.updateUser({ password: a });
+      if(e2) throw new Error(e2.message);
+      clearInterval(otpTick); show(null);
+      toast('Password saved. You are logged in.', 5000);
+      await refresh(); runAfterLogin();
+    } catch(ex){ err.textContent = ex.message; }
+    finally { btn.disabled = false; btn.textContent = 'Set new password'; }
+  });
   function openSetPw(kind){ $('pwH').textContent = kind === 'recovery' ? 'Set a new password' : 'Welcome aboard. Set your password'; show(modals.pw); setTimeout(() => $('pw1').focus(), 50); }
   $('pwForm').addEventListener('submit', async e => {
     e.preventDefault(); const a = $('pw1').value, b = $('pw2').value, err = $('pwErr');
