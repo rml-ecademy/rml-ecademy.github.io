@@ -91,6 +91,14 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
   </div>
 </main>
 <div class="toast" id="toast"></div>
+<div id="msgModal" class="hidden" style="position:fixed;inset:0;z-index:20;background:rgba(12,45,72,.5);display:grid;place-items:center;padding:16px">
+  <div class="card" style="width:min(560px,100%);margin:0">
+    <h2 id="msgTitle">Message for the student</h2>
+    <p class="sub">Paste this in Messenger, Viber or SMS if they contacted you there. (E-mail notifications come automatically once the e-mail sender is set up.)</p>
+    <textarea id="msgText" style="width:100%;min-height:200px;padding:12px;border-radius:10px;border:1px solid var(--rule);font:inherit;font-size:.92rem;line-height:1.5"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn ok" id="msgCopy" style="flex:1">Copy message</button><button class="btn ghost" id="msgClose">Close</button></div>
+  </div>
+</div>
 <script src="assets/supabase-2.117.2.js"></script>
 <script>
 (function(){
@@ -128,6 +136,18 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
   let members = [];
+  const VALNAME = v => (VAL.find(x => x[0] === v) || [,''])[1];
+  function approvedMsg(name, pkg, exp){
+    const first = (name || 'Officer').trim().split(' ')[0];
+    return 'Hi ' + first + ', welcome aboard ECADEMY! ✅\n\nYour payment is confirmed and your access is now ACTIVE.\n\nPackage: ' + NAMES[pkg] + '\nValid until: ' + (exp ? fmt(exp) : 'Lifetime') + '\n\nLog in anytime at https://ecademymaritime.com with your e-mail and password (or Continue with Google). Your decks and simulators are already open.\n\nTip: use Chrome or Safari, not the Messenger browser. Up to 5 devices, one logged in at a time.\n\nFair winds,\nECADEMY Maritime';
+  }
+  function rejectedMsg(name, note){
+    const first = (name || 'Officer').trim().split(' ')[0];
+    return 'Hi ' + first + ', we checked your ECADEMY payment submission but could not confirm it.\n\n' + note + '\n\nLog in at https://ecademymaritime.com → Get Access → submit the correct GCash reference number (and a screenshot of the receipt if possible). We will activate your access as soon as it matches.\n\nECADEMY Maritime';
+  }
+  function showMsg(title, text){ $('msgTitle').textContent = title; $('msgText').value = text; $('msgModal').classList.remove('hidden'); }
+  $('msgClose').onclick = () => $('msgModal').classList.add('hidden');
+  $('msgCopy').onclick = () => { navigator.clipboard.writeText($('msgText').value).then(() => toast('Message copied.'), () => { $('msgText').select(); document.execCommand('copy'); toast('Message copied.'); }); };
   function renderStudents(){
     const q = $('sq').value.trim().toLowerCase();
     const act = members.filter(m => !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date()));
@@ -144,7 +164,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
         row('Approved', pay ? fmt(pay.reviewed_at) : fmt(m.updated_at)) +
         row('Receipt', pay && pay.proof_url ? '<a href="' + pay.proof_url + '" target="_blank" rel="noopener">View screenshot</a>' : '') +
         row('Referred by', esc(m.aff_code)) + row('Enrolled', fmt(m.created_at)) + '</table>' +
-        '<div style="margin-top:8px;display:flex;gap:6px"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
+        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="msg">Message</button><button class="btn ghost" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn no" style="min-height:34px;padding:0 12px;font-size:.8rem" data-s="del">Delete</button></div></div>'; }).join('') || '<div>No students yet.</div>';
   }
   $('sq').addEventListener('input', renderStudents);
   $('students').addEventListener('click', async e => {
@@ -152,6 +172,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const uid = b.closest('[data-uid]').dataset.uid, m = members.find(x => x.user_id === uid); if(!m) return;
     const who = m.name || m.email;
     try {
+      if(b.dataset.s === 'msg'){ showMsg('Message for ' + who, approvedMsg(m.name, m.package, m.expires_at)); return; }
       if(b.dataset.s === 'pause'){ if(!confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')) return; b.disabled = true; await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); toast(m.revoked ? 'Access resumed.' : 'Access paused.'); }
       if(b.dataset.s === 'del'){ const typed = prompt('DELETE ' + who + '?\n\nThis removes the account, package, devices and payment records for good. They can no longer log in.\n\nType DELETE to confirm:'); if(typed !== 'DELETE') return; b.disabled = true; await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); }
       await load();
@@ -173,14 +194,16 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
         const validity = row.querySelector('[data-val]').value, label = VAL.find(v => v[0] === validity)[1];
         if(!confirm('Approve ' + who + ' — ' + NAMES[p.package] + ' for ' + label + '?')) return;
         row.querySelectorAll('button').forEach(x => x.disabled = true);
-        await call({ action:'pay_approve', id:p.id, validity, extend:true });
+        const r = await call({ action:'pay_approve', id:p.id, validity, extend:true });
         toast('Approved. ' + who + ' now has access.');
+        showMsg('Approved — message for ' + who, approvedMsg(p.name, p.package, r.member && r.member.expires_at));
       } else {
         const note = prompt('Reason shown to ' + who + ':', 'We could not find this reference number in GCash. Please check the receipt and submit again, or message ECADEMY.');
         if(note === null) return;
         row.querySelectorAll('button').forEach(x => x.disabled = true);
         await call({ action:'pay_reject', id:p.id, note });
         toast('Rejected. The student can submit again.');
+        showMsg('Rejected — message for ' + who, rejectedMsg(p.name, note));
       }
       await load();
     } catch(err){ alert(err.message); row.querySelectorAll('button').forEach(x => x.disabled = false); }
