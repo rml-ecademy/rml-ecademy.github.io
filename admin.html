@@ -185,7 +185,7 @@ td small{display:block;color:var(--muted)}
       <td><b>${esc(m.name || '—')}</b><small>${esc(m.email)}</small>${m.amount || m.ref ? '<small>₱' + esc(m.amount || '') + (m.ref ? ' · ref ' + esc(m.ref) : '') + '</small>' : ''}${m.aff_code ? '<small>via <b>' + esc(m.aff_code) + '</b>' + (m.commission != null ? ' · commission ' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="st-ok">paid</span>' : '<span class="st-soon">unpaid</span>') : '') + '</small>' : ''}</td>
       <td><span class="pk">${esc(NAMES[m.package])}</span></td>
       <td>${status(m)}</td>
-      <td>Phone: ${m.phone ? '<span class="st-ok">registered</span>' : 'free'}<br>Laptop: ${m.computer ? '<span class="st-ok">registered</span>' : 'free'}${m.last_seen ? '<small>last used ' + fmt(m.last_seen) + '</small>' : ''}</td>
+      <td>Phones ${m.phone || 0}/2 · Tablet ${m.tablet || 0}/1 · Laptops ${m.computer || 0}/2${m.active ? '<small>logged in on: <b>' + esc(m.active.kind === 'computer' ? 'laptop/PC' : m.active.kind) + '</b> · ' + fmt(m.active.at) + '</small>' : '<small>not logged in</small>'}${m.last_seen ? '<small>last used ' + fmt(m.last_seen) + '</small>' : ''}</td>
       <td><div class="acts">
         <button class="small" data-a="renew" data-id="${m.user_id}">Renew</button>
         <button class="small ghost" data-a="link" data-id="${m.user_id}">New link</button>
@@ -201,7 +201,7 @@ td small{display:block;color:var(--muted)}
     b.disabled = true;
     try {
       if(b.dataset.a === 'link'){ const r = await call({ action:'link', email:m.email }); showOut('New set-password link for ' + (m.name || m.email), message(m.name, m.package, m.expires_at, r.link), r.link); }
-      if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? Their phone and laptop are cleared; the next phone and the next laptop they use will be registered.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
+      if(b.dataset.a === 'dev'){ if(confirm('Reset devices for ' + (m.name || m.email) + '? All their registered devices (2 phones, 1 tablet, 2 laptops/PCs) are cleared and they are signed out everywhere; the next devices they use will be registered.')){ await call({ action:'reset_devices', user_id:m.user_id }); await load(); } }
       if(b.dataset.a === 'paid'){ await call({ action:'aff_paid', user_id:m.user_id, paid:!m.commission_paid_at }); await load(); await loadAff(); }
       if(b.dataset.a === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + (m.name || m.email) + '?')){ await call({ action:'revoke', user_id:m.user_id, revoked:!m.revoked }); await load(); } }
     } catch(err){ alert(err.message); }

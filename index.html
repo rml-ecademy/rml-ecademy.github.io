@@ -2695,9 +2695,42 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 
   function logout(){ sb.auth.signOut().finally(() => location.reload()); }
 
+  /* ---------- one device at a time ----------
+     Each account may register up to 5 devices (2 phones, 1 tablet, 2 laptops/PCs), but only one
+     may be logged in at a time. Opening ECADEMY on a device claims the account for that device;
+     the hub polls and signs out any other device that was logged in before. Admins are exempt. */
+  const KICK_MSG = 'You were signed out because your ECADEMY account was opened on another device. Only one device can be logged in at a time; log in here again to continue on this device.';
+  async function claimThisDevice(){
+    try {
+      const { data, error } = await sb.rpc('claim_device', { p_device: deviceId(), p_label: navigator.userAgent.slice(0, 120) });
+      if(error) return null;
+      if(data && data.ok === false){ await sb.auth.signOut(); $('loginErr') && openLogin(data.message); return false; }
+      return true;
+    } catch(_) { return null; }
+  }
+  function watchActiveDevice(){
+    let busy = false;
+    const check = async () => {
+      if(busy || document.hidden) return; busy = true;
+      try {
+        const { data: active, error } = await sb.rpc('my_active_device');
+        if(!error && active && active !== deviceId()){
+          await sb.auth.signOut();
+          try { sessionStorage.setItem('ecademy.kicked', '1'); } catch(_){}
+          location.reload();
+        }
+      } catch(_){} finally { busy = false; }
+    };
+    setInterval(check, 20000);
+    document.addEventListener('visibilitychange', () => { if(!document.hidden) check(); });
+    window.addEventListener('focus', check);
+  }
+
   /* ---------- page state ---------- */
   (async function boot(){
-    const { data:{ session } } = await sb.auth.getSession();
+    let { data:{ session } } = await sb.auth.getSession();
+    if(session){ const ok = await claimThisDevice(); if(ok === false) session = null; else watchActiveDevice(); }
+    try { if(sessionStorage.getItem('ecademy.kicked')){ sessionStorage.removeItem('ecademy.kicked'); setTimeout(() => openLogin(KICK_MSG), 400); } } catch(_){}
     let member = null;
     if(session){ const { data } = await sb.from('members').select('*').maybeSingle(); member = data; }
     const valid = !!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date());
