@@ -197,6 +197,7 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     }).join('') || '<tr><td colspan="10" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
   }
   const renderStudents = renderTable, renderLeads = () => {};
+  async function loadAccounts(){ const { data, error } = await sb.rpc('admin_accounts'); if(error) throw new Error(error.message); accounts = (data && data.accounts) || []; }
   $('sq').addEventListener('input', renderTable);
   $('chips').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if(!b) return; filt = b.dataset.f; [...$('chips').children].forEach(x => x.classList.toggle('on', x === b)); renderTable(); });
   async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
