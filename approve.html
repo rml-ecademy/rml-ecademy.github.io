@@ -206,6 +206,15 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 </div>
 <script src="assets/supabase-2.117.2.js"></script>
 <script>
+/* stale-copy guard: if the browser kept an old approve.html, load the live one once under a fresh URL */
+(async () => {
+  try {
+    if (sessionStorage.getItem('ecademy.adm.fresh')) return;
+    const url = location.pathname;
+    const [cached, live] = await Promise.all([fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''), fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')]);
+    if (cached && live && cached !== live) { sessionStorage.setItem('ecademy.adm.fresh', '1'); location.replace(url + '?v=' + Date.now() + location.hash); }
+  } catch (_) {}
+})();
 (function(){
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
