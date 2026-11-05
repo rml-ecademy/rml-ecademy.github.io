@@ -2757,6 +2757,24 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const UA = navigator.userAgent || '';
   const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\/|MicroMessenger|Twitter|TikTok|Snapchat/i.test(UA);
   const ANDROID = /Android/i.test(UA), IOS = /iPhone|iPad|iPod/i.test(UA);
+  /* stale-copy guard: in-app browsers (Messenger, Facebook, the Messenger desktop app) keep an old index.html for days and
+     the user cannot hard-refresh there. Compare the copy the browser cached with the live file and, if they differ, load the
+     live one once under a fresh URL (the ?v= query defeats the webview cache; sessionStorage stops any reload loop). */
+  (async () => {
+    try {
+      if (sessionStorage.getItem('ecademy.fresh')) return;
+      const url = location.pathname;
+      const [cached, live] = await Promise.all([
+        fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''),
+        fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')
+      ]);
+      if (cached && live && cached !== live) {
+        sessionStorage.setItem('ecademy.fresh', '1');
+        const q = new URLSearchParams(location.search); q.set('v', String(Date.now()));
+        location.replace(location.pathname + '?' + q.toString() + location.hash);
+      }
+    } catch (_) {}
+  })();
   if (IN_APP) {
     const bar = $('webviewBar');
     const here = location.href.split('#')[0];
