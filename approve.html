@@ -190,9 +190,9 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
           <label for="name">Name (shown in the hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
           <div class="two">
             <div><label for="pkg">Package</label><select id="pkg"><option value="J">Junior Officers (3rd & 2nd Mate)</option><option value="C">Chief Mate</option><option value="A" selected>All Access / Master</option></select></div>
-            <div><label for="val">Access for</label><select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1">1 month</option><option value="m3">3 months</option><option value="m6" selected>6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option></select></div>
+            <div><label for="val">Access for</label><select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1">1 month</option><option value="m3">3 months</option><option value="m6">6 months</option><option value="y1" selected>1 year</option><option value="life">Lifetime</option></select></div>
           </div>
-          <div class="two"><div><label for="amt">Amount paid (₱, optional)</label><input id="amt" placeholder="1899" inputmode="decimal"></div><div><label for="ref">Reference no. (optional)</label><input id="ref" placeholder="GCash / bank ref"></div></div>
+          <div class="two"><div><label for="amt">Amount paid (₱, optional)</label><input id="amt" placeholder="2799" inputmode="decimal"></div><div><label for="ref">Reference no. (optional)</label><input id="ref" placeholder="GCash / bank ref"></div></div>
           <label for="aff">Referred by · code (optional)</label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="sub" id="affHint" style="margin:4px 0 0"></div>
           <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
           <label class="check"><input type="checkbox" id="newLink"> Also make a set-password link (for a student who never set one)</label>
@@ -241,7 +241,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
   const HUB = location.origin + '/';
   const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
-  const VAL = [['m1','1 month'],['m3','3 months'],['m6','6 months'],['y1','1 year'],['life','Lifetime']];
+  const VAL = [['m1','1 month'],['m3','3 months'],['m6','6 months'],['y1','1 year'],['life','Lifetime']]; const DEF_VAL = 'y1';
   const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit', storageKey:'ecademy-admin-auth' } });   // own session store: logging in as a student on the hub must not replace the owner login here
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -323,7 +323,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       <span class="pk">${esc(NAMES[p.package])}</span><span class="amt">${peso(p.amount)}</span>
       <div class="ref"><span style="font-size:.78rem;color:#7A5208">GCash<br>Ref No.</span><b>${esc(p.ref_no || '—')}</b><button type="button" data-copy="${esc(p.ref_no || '')}">Copy</button></div>
       ${p.proof_url ? '<a class="proof" href="' + p.proof_url + '" target="_blank" rel="noopener"><img src="' + p.proof_url + '" alt="GCash receipt"></a>' : '<div class="meta">No screenshot attached.</div>'}
-      <div class="acts"><select data-val>${VAL.map(v => '<option value="' + v[0] + '"' + (v[0] === 'm6' ? ' selected' : '') + '>Access for ' + v[1] + '</option>').join('')}</select><button class="btn ok" data-p="ok">Approve</button><button class="btn no" data-p="no">Reject</button></div>
+      <div class="acts"><select data-val>${VAL.map(v => '<option value="' + v[0] + '"' + (v[0] === DEF_VAL ? ' selected' : '') + '>Access for ' + v[1] + '</option>').join('')}</select><button class="btn ok" data-p="ok">Approve</button><button class="btn no" data-p="no">Reject</button></div>
     </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
     $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + (p.aff_code ? ' · via ' + esc(p.aff_code) : '') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
@@ -381,7 +381,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       const by = a.referred_by ? esc(a.referred_by) + (m && m.aff_code && m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
       const acts = a.is_admin ? '' : '<div class="rowacts">' +
         (s.key === 'unpaid' || s.key === 'declined' ? '<button class="btn ghost mini" data-s="lead">Follow up</button>' : '') +
-        (s.key === 'review' ? '<button class="btn ok mini" data-s="approve">Approve · 6 months</button><button class="btn ghost mini" data-s="review">See payment</button>' : '') +
+        (s.key === 'review' ? '<button class="btn ok mini" data-s="approve">Approve · 1 year</button><button class="btn ghost mini" data-s="review">See payment</button>' : '') +
         (m ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="renew">Renew</button><button class="btn ghost mini" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn ghost mini" data-s="dev">Reset devices</button>' : '') +
         '<button class="btn ghost mini" data-s="link">Password link</button><button class="btn no mini" data-s="del">Delete</button></div>';
       const contact = '<small>' + esc(a.email) + (a.phone ? ' · ' + esc(a.phone) : '') + (a.fb ? ' · ' + fb : '') + '</small><small>since ' + day(a.created_at) + (a.provider === 'google' ? ' · Google' : '') + '</small>';
@@ -400,9 +400,9 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     if(b.dataset.s === 'review') return showTab('payments');
     if(b.dataset.s === 'approve'){
       const p = s.pay; if(!p || p.status !== 'pending') return;
-      if(!confirm('Approve ' + who + ' — ' + NAMES[p.package] + ' for 6 months?' + (p.ref_no ? '\nGCash ref ' + p.ref_no : ''))) return;
+      if(!confirm('Approve ' + who + ' — ' + NAMES[p.package] + ' for 1 year?' + (p.ref_no ? '\nGCash ref ' + p.ref_no : ''))) return;
       b.disabled = true;
-      try { const r = await call({ action:'pay_approve', id:p.id, validity:'m6', extend:true }); toast('Approved. ' + who + ' now has access.'); showMsg('Approved — message for ' + who, approvedMsg(a.name, p.package, r.member && r.member.expires_at)); await load(); }
+      try { const r = await call({ action:'pay_approve', id:p.id, validity:'y1', extend:true }); toast('Approved. ' + who + ' now has access.'); showMsg('Approved — message for ' + who, approvedMsg(a.name, p.package, r.member && r.member.expires_at)); await load(); }
       catch(err){ alert(err.message); b.disabled = false; }
       return;
     }
