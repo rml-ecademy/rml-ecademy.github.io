@@ -3010,6 +3010,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     render();
     schedulePendingPoll();
     checkReferral();
+    if(session && AFF_CODE) sb.rpc('attach_referral', { p_code: AFF_CODE }).then(() => {}, () => {});   // tie the referral to the account, not just this browser
   }
   let pollT = null;
   function schedulePendingPoll(){
