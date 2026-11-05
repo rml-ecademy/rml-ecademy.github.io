@@ -1295,6 +1295,58 @@
           x.restore(); x.globalAlpha = 1; x.shadowBlur = 0;
         });
       }
+      function drawTrails(x, C, rad, px, OFF) {
+        if (!(showTrails && trailLen > 0)) return;
+        const rot = -displayUp() * D, map = (a, b) => { const q = a * Math.cos(rot) + b * Math.sin(rot), v = -a * Math.sin(rot) + b * Math.cos(rot); return { x: C + q * px, y: C - v * px }; };
+        x.save(); x.translate(OFF.dx, OFF.dy);
+          const bw = (3 + $("mes").selectedIndex) * 0.9, pl = 1 + $("mpl").selectedIndex * 1.2, fadeLen = trailLen >= 9e5 ? 1800 : trailLen;
+          const span = Math.min(trailLen, fadeLen);
+          x.save();
+          x.lineCap = "round"; x.lineJoin = "round";
+          targets.forEach((t) => {
+            const h = history[t.id]; if (!h || h.length < 2) return;
+            // samples run oldest -> newest; keep only those inside the trail length and on the screen
+            let pts = [];
+            for (let i = 0; i < h.length; i++) {
+              const q = h[i], age = time - q.t; if (age > span || age < 0) continue;
+              const z = trailRef === "TRUE" ? map(q.ax - ownPos.x, q.ay - ownPos.y) : map(q.x, q.y);
+              const dist = Math.hypot(z.x - C, z.y - C); if (dist > rad * 1.02) { pts.push(null); continue; }
+              pts.push({ x: z.x, y: z.y, k: Math.max(0, 1 - age / span), lv: Math.min(1, q.lv), dist });
+            }
+            if (pts.length < 2) return;
+            // smooth the path: Catmull-Rom through the samples so a slowly turning target leaves a curved, not kinked, tail
+            const seg = [];
+            for (let i = 0; i < pts.length - 1; i++) {
+              const p1 = pts[i], p2 = pts[i + 1]; if (!p1 || !p2) continue;
+              const p0 = pts[i - 1] || p1, p3 = pts[i + 2] || p2;
+              const STEPS = 4;
+              for (let s = 0; s < STEPS; s++) {
+                const u = s / STEPS, u2 = u * u, u3 = u2 * u;
+                const cx = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * u + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * u2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * u3);
+                const cy = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * u + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * u2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * u3);
+                seg.push({ x: cx, y: cy, k: p1.k + (p2.k - p1.k) * u, lv: p1.lv + (p2.lv - p1.lv) * u, dist: p1.dist });
+              }
+              if (i === pts.length - 2) seg.push({ x: p2.x, y: p2.y, k: p2.k, lv: p2.lv, dist: p2.dist });
+            }
+            if (seg.length < 2) return;
+            // head width follows the echo's own size (beamwidth across, widening with range), tail tapers to a point
+            const headW = (bw + Math.min(1.2, seg[seg.length - 1].lv)) * 2.1 + seg[seg.length - 1].dist * 0.012;
+            for (let pass = 0; pass < 2; pass++) {           // pass 0: soft halo, pass 1: bright core
+              for (let i = 0; i < seg.length - 1; i++) {
+                const a = seg[i], b = seg[i + 1], k = (a.k + b.k) / 2, lv = (a.lv + b.lv) / 2;
+                const taper = Math.pow(k, 0.85);
+                const w = Math.max(0.6, headW * taper) * (pass ? 1 : 1.9);
+                const al = (pass ? 0.55 : 0.16) * Math.pow(k, 1.35) * (0.45 + 0.55 * lv);
+                if (al < 0.004) continue;
+                x.lineWidth = w;
+                x.strokeStyle = (pass ? "rgba(96,214,255," : "rgba(60,170,230,") + al.toFixed(3) + ")";
+                x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke();
+              }
+            }
+          });
+          x.restore();
+        x.restore();
+      }
       function draw() {
         let c = $("ppi"),
           x = c.getContext("2d"),
@@ -1340,6 +1392,7 @@
             paintEchoes(ex, C, rad, range, px, gain, sea, rain, a0, a1);
             ex.restore();
           }
+          drawTrails(x, C, rad, px, OFF);   // trails sit under the live echoes, like the video memory of a real display
           x.drawImage(echoCv, 0, 0, w, w);
           // the trace itself: bright line with a fading trail behind it
           const sa = sweepScreenAngle(sweepDeg + displayUp());
@@ -1472,41 +1525,6 @@
             const lp = map(n.x * l.off + u.x * range * (0.62 - 0.1 * li), n.y * l.off + u.y * range * (0.62 - 0.1 * li));
             x.fillStyle = x.strokeStyle; x.textAlign = l.off >= 0 ? "left" : "right"; x.fillText(l.label, lp.x + (l.off >= 0 ? 6 : -6), lp.y); x.textAlign = "center";
           });
-        }
-        // afterglow trails: the past echo positions painted as fading smears (relative trails show the relative motion,
-        // true trails the true motion). They sit under the live echoes, like the video memory of a real display.
-        if (showTrails && trailLen > 0) {
-          const bw = (3 + $("mes").selectedIndex) * 0.9, pl = 1 + $("mpl").selectedIndex * 1.2, fadeLen = trailLen >= 9e5 ? 1800 : trailLen;
-          x.save();
-          x.lineCap = "butt"; x.lineJoin = "round";
-          const BANDS = 8;
-          targets.forEach((t) => {
-            const h = history[t.id]; if (!h || h.length < 2) return;
-            // the trail is drawn as a few age bands, oldest first, each one a single faint stroke so the smear stays
-            // smooth; a slow target leaves a short stub, a fast one a long streak
-            let pts = [];
-            for (let i = 0; i < h.length; i++) {
-              const q = h[i], age = time - q.t; if (age > trailLen || age < 0) continue;
-              const z = trailRef === "TRUE" ? map(q.ax - ownPos.x, q.ay - ownPos.y) : map(q.x, q.y);
-              const dist = Math.hypot(z.x - C, z.y - C); if (dist > rad * 1.02) { pts.push(null); continue; }
-              pts.push({ x: z.x, y: z.y, age, lv: q.lv, w: (bw * 0.8 + dist * 0.01 + Math.min(1, q.lv)) * 1.6 });
-            }
-            const span = Math.min(trailLen, fadeLen);
-            for (let b = BANDS - 1; b >= 0; b--) {      // samples run oldest -> newest, so age falls with the index
-              const aHi = span * (b + 1) / BANDS, aLo = span * b / BANDS;
-              let i0 = -1, i1 = -1;
-              for (let i = 0; i < pts.length; i++) { const q = pts[i]; if (!q) continue; if (i0 < 0 && q.age <= aHi) i0 = i; if (q.age >= aLo) i1 = i; }
-              if (i0 < 0 || i1 < i0) continue;
-              i0 = Math.max(0, i0 - 1); i1 = Math.min(pts.length - 1, i1 + 1);   // one shared end point each side so the bands join
-              let open = false, w = 0, lv = 0, n = 0;
-              x.beginPath();
-              for (let i = i0; i <= i1; i++) { const q = pts[i]; if (!q) { open = false; continue; } open ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y); open = true; w += q.w; lv += q.lv; n++; }
-              if (n < 2) continue;
-              const f = Math.max(0.1, 1 - (aLo + aHi) / 2 / fadeLen);
-              x.lineWidth = w / n; x.strokeStyle = "rgba(120,215,170," + (0.05 + 0.3 * f * Math.min(1, lv / n)) + ")"; x.stroke();
-            }
-          });
-          x.restore();
         }
         targets.forEach((t) => {
           let p = map(t.x, t.y);
