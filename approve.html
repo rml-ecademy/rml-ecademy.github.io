@@ -227,11 +227,14 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
 /* stale-copy guard: if the browser kept an old approve.html, load the live one once under a fresh URL */
 (async () => {
   try {
-    if (sessionStorage.getItem('ecademy.adm.fresh')) return;
     const url = location.pathname;
-    const [cached, live] = await Promise.all([fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''), fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')]);
-    if (cached && live && cached !== live) { sessionStorage.setItem('ecademy.adm.fresh', '1'); location.replace(url + '?v=' + Date.now() + location.hash); }
-  } catch (_) {}
+      const h = t => { let x = 0; for (let i = 0; i < t.length; i++) x = (x * 31 + t.charCodeAt(i)) | 0; return t.length + ':' + x; };
+      const [cached, live] = await Promise.all([fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''), fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')]);
+      if (!live) return;
+      const seen = sessionStorage.getItem('ecademy.adm.fresh');          // version this tab already reloaded into
+      if (cached && cached !== live && seen !== h(live)) { sessionStorage.setItem('ecademy.adm.fresh', h(live)); location.replace(url + '?v=' + Date.now() + location.hash); }
+      if (cached === live) sessionStorage.setItem('ecademy.adm.fresh', h(live));
+    } catch (_) {}
 })();
 (function(){
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';

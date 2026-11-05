@@ -2791,17 +2791,13 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
      live one once under a fresh URL (the ?v= query defeats the webview cache; sessionStorage stops any reload loop). */
   (async () => {
     try {
-      if (sessionStorage.getItem('ecademy.fresh')) return;
       const url = location.pathname;
-      const [cached, live] = await Promise.all([
-        fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''),
-        fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')
-      ]);
-      if (cached && live && cached !== live) {
-        sessionStorage.setItem('ecademy.fresh', '1');
-        const q = new URLSearchParams(location.search); q.set('v', String(Date.now()));
-        location.replace(location.pathname + '?' + q.toString() + location.hash);
-      }
+      const h = t => { let x = 0; for (let i = 0; i < t.length; i++) x = (x * 31 + t.charCodeAt(i)) | 0; return t.length + ':' + x; };
+      const [cached, live] = await Promise.all([fetch(url, { cache: 'force-cache' }).then(r => r.ok ? r.text() : ''), fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.text() : '')]);
+      if (!live) return;
+      const seen = sessionStorage.getItem('ecademy.fresh');          // version this tab already reloaded into
+      if (cached && cached !== live && seen !== h(live)) { sessionStorage.setItem('ecademy.fresh', h(live)); const q = new URLSearchParams(location.search); q.set('v', String(Date.now())); location.replace(location.pathname + '?' + q.toString() + location.hash); }
+      if (cached === live) sessionStorage.setItem('ecademy.fresh', h(live));
     } catch (_) {}
   })();
   if (IN_APP) {
