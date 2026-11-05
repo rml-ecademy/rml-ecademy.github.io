@@ -31,7 +31,7 @@ nav.side button.on{color:var(--brand);border-bottom-color:var(--brand)}
   nav.side button.on{background:#E8F0F5}
   main{padding:18px 22px 40px}
 }
-.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
 @media (max-width:640px){.tiles{grid-template-columns:1fr 1fr}}
 .tile{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:12px 14px}
 .tile b{display:block;font-size:1.6rem;line-height:1.2;font-variant-numeric:tabular-nums}.tile span{color:var(--mute);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em}
@@ -130,6 +130,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       <div class="tile"><b id="tActive">0</b><span>Active students</span></div>
       <div class="tile"><b id="tLeads">0</b><span>Not yet paid</span></div>
       <div class="tile"><b id="tComm">₱0</b><span>Commission to pay</span></div>
+      <div class="tile"><b id="tDue">0</b><span>Renewals due · 30 d</span></div>
     </div>
 
     <!-- 1 · TO APPROVE -->
@@ -146,7 +147,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       <section class="card">
         <h2>Students <span class="badge zero" id="tn2">0</span></h2>
         <p class="sub">Everyone with an account. <b>Their link</b> is made the moment you approve them. <b>Not yet paid</b> = follow up on Messenger.</p>
-        <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
+        <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button><button data-f="soon">Renewal due (30 d)</button></div>
         <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., code" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div>
         <div class="twrap"><table class="tbl"><thead><tr><th>Student</th><th>Status</th><th>Package</th><th>Their link</th><th>Referred by</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
       </section>
@@ -241,6 +242,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';
   const HUB = location.origin + '/';
   const NAMES = { J:'Junior Officers', C:'Chief Mate', A:'All Access · Master' };
+  const PRELAUNCH_END = new Date('2027-06-01T00:00:00+08:00');   // enrollees before this date renew at 50% off
   const VAL = [['m1','1 month'],['m3','3 months'],['m6','6 months'],['y1','1 year'],['life','Lifetime']]; const DEF_VAL = 'y1';
   const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit', storageKey:'ecademy-admin-auth' } });   // own session store: logging in as a student on the hub must not replace the owner login here
   const $ = id => document.getElementById(id);
@@ -368,7 +370,8 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   }
   function renderAccounts(){
     const q = $('sq').value.trim().toLowerCase();
-    const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || r.s.key === filt).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref, r.a.ref_code, r.a.referred_by].join(' ').toLowerCase().includes(q));
+    const dueSoon = r => r.s.m && r.s.m.expires_at && !r.s.m.revoked && (new Date(r.s.m.expires_at) - Date.now()) < 30 * 864e5 && new Date(r.s.m.expires_at) > new Date();
+    const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || (filt === 'soon' ? dueSoon(r) : r.s.key === filt)).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref, r.a.ref_code, r.a.referred_by].join(' ').toLowerCase().includes(q));
     const n = accounts.filter(a => !a.is_admin).length; ['tn','tn2'].forEach(i => { $(i).textContent = n; $(i).classList.toggle('zero', !n); });
     $('rows').innerHTML = rows.map(({ a, s }) => {
       const m = s.m, ref = (s.pay && s.pay.ref_no) || (m && m.ref) || '';
@@ -386,7 +389,9 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
         '<button class="btn ghost mini" data-s="link">Password link</button><button class="btn no mini" data-s="del">Delete</button></div>';
       const contact = '<small>' + esc(a.email) + (a.phone ? ' · ' + esc(a.phone) : '') + (a.fb ? ' · ' + fb : '') + '</small><small>since ' + day(a.created_at) + (a.provider === 'google' ? ' · Google' : '') + '</small>';
       const stat = '<span class="st ' + s.cls + '">' + s.label + '</span>' + (ref ? '<small>ref <b>' + esc(ref) + '</b>' + (proof ? ' · <a href="' + proof + '" target="_blank" rel="noopener">receipt</a>' : '') + '</small>' : '');
-      const pk = (pkg ? esc(NAMES[pkg]) : '—') + (m ? '<small>' + until + ' · ' + (m.devices || 0) + '/5 devices' + (m.active ? ' · on ' + esc(m.active.kind === 'computer' ? 'laptop' : m.active.kind) : '') + '</small>' : '');
+      const pre = m && !a.is_admin && new Date(m.created_at || 0) < PRELAUNCH_END;
+      const soon = m && m.expires_at && !m.revoked && (new Date(m.expires_at) - Date.now()) < 30 * 864e5 && new Date(m.expires_at) > new Date();
+      const pk = (pkg ? esc(NAMES[pkg]) : '—') + (m ? '<small>' + until + (soon ? ' · <span class="soon-t">renews in ' + Math.ceil((new Date(m.expires_at) - Date.now()) / 864e5) + ' d</span>' : '') + ' · ' + (m.devices || 0) + '/5 devices' + '</small>' + (pre ? '<small><span class="st rev" title="Enrolled before full launch: renew at 50% of the full price">★ PRE-LAUNCH · 50% OFF RENEWAL</span></small>' : '') : '');
       return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b>' + contact + '</td><td>' + stat + '</td><td class="wrap">' + pk + '</td><td>' + own + '</td><td>' + by + '</td><td>' + acts + '</td></tr>';
     }).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
   }
@@ -408,7 +413,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     }
     if(b.dataset.s === 'copyref') return copyBtn(b, 'https://ecademymaritime.com/?ref=' + a.ref_code, 'Link');
     if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
-    if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; showTab('tools'); setTimeout(() => $('val').focus(), 400); return; }
+    if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; $('eerr').textContent = (m && new Date(m.created_at || 0) < PRELAUNCH_END) ? '★ Pre-launch member: renewal is 50% of the full price (All Access ₱8,699 → ₱4,350).' : ''; showTab('tools'); setTimeout(() => $('val').focus(), 400); return; }
     b.disabled = true;
     try {
       if(b.dataset.s === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')){ await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); await load(); } }
@@ -502,6 +507,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     const st = accounts.filter(a => !a.is_admin).map(statusOf);
     $('tPend').textContent = pend; $('tActive').textContent = st.filter(x => x.key === 'approved').length; $('tLeads').textContent = st.filter(x => x.key === 'unpaid' || x.key === 'declined').length;
     $('tComm').textContent = peso(affs.reduce((t, a) => t + Number(a.unpaid || 0), 0));
+    const due = members.filter(m => m.expires_at && !m.revoked && (new Date(m.expires_at) - Date.now()) < 30 * 864e5 && new Date(m.expires_at) > new Date()).length; $('tDue').textContent = due; $('tDue').parentElement.classList.toggle('warn', due > 0);
   }
   function renderAll(){ renderPays(); renderAccounts(); renderAff(); renderTiles(); }
   async function load(){ try { await fetchAll(); renderAll(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
