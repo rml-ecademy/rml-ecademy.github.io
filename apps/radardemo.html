@@ -1260,16 +1260,16 @@
         // sea clutter: dense speckle near the centre, thinned by A/C SEA and IR, random each pass so it "boils"
         const GA = gainAmp(gain), seaLvl = Math.max(0, 1 - sea / 100) * Math.min(1.35, GA) * (radarBand === "S" ? 0.55 : 1), mir = 1 + $("mir").selectedIndex * 0.45;
         const n = Math.round(260 * seaLvl / mir * (a1 - a0) / (2 * Math.PI) * 12);
-        x.fillStyle = "rgba(80,255,140,.55)";
+        x.fillStyle = "rgba(255,215,70,.55)";
         for (let i = 0; i < n; i++) { const a = a0 + Math.random() * (a1 - a0), r = rad * (0.02 + Math.pow(Math.random(), 2.4) * 0.30 * Math.min(1, seaLvl)); x.globalAlpha = (0.25 + Math.random() * 0.5) * Math.min(1, 0.6 + GA * 0.4); x.fillRect(C + Math.cos(a) * r, C + Math.sin(a) * r, 1.5 + Math.random() * 2, 1.2); }
         // receiver noise: with the gain too high the whole screen fills with fine "snow" and weak echoes hide in it.
         // Correct setting: just a faint speckle visible over the screen (about 70-80).
-        const nz = Math.max(0, (gain - 70) / 30); if (nz > 0) { const k = Math.round(520 * nz * nz * (a1 - a0) / (2 * Math.PI) * 12 / mir); x.fillStyle = "rgba(90,255,150,1)";
+        const nz = Math.max(0, (gain - 70) / 30); if (nz > 0) { const k = Math.round(520 * nz * nz * (a1 - a0) / (2 * Math.PI) * 12 / mir); x.fillStyle = "rgba(255,220,90,1)";
           for (let i = 0; i < k; i++) { const a = a0 + Math.random() * (a1 - a0), r = rad * Math.sqrt(Math.random()) * 1.02; x.globalAlpha = 0.04 + Math.random() * (0.06 + 0.3 * nz); x.fillRect(C + Math.cos(a) * r, C + Math.sin(a) * r, 1 + Math.random() * 1.2, 1); } }
         x.globalAlpha = 1;
         // rain cell (screen-fixed cell for the exercise), speckled, suppressed by A/C RAIN
-        const rainLvl = Math.max(0, 1 - rain / 100) * Math.min(1.2, GA) * (radarBand === "S" ? 0.4 : 1); if (rainLvl > 0.15) { const cx = C + rad * 0.3, cy = C - rad * 0.25; x.fillStyle = "rgba(85,255,148," + (0.35 * rainLvl) + ")"; for (let i = 0; i < 60; i++) { const t = Math.random() * 7, rr = Math.sqrt(Math.random()); const sx = cx + Math.cos(t) * rad * 0.2 * rr, sy = cy + Math.sin(t) * rad * 0.33 * rr; if (inWedge(sx, sy)) x.fillRect(sx, sy, 2, 2); } }
-        if (scenario === "coastal") { x.save(); x.translate(C, C); x.rotate(-displayUp() * D); x.translate(-C, -C); x.strokeStyle = "rgba(83,255,140,.75)"; x.lineWidth = 5; x.beginPath(); x.moveTo(C - rad * 0.9, C - rad * 0.3); x.bezierCurveTo(C - rad * 0.65, C - rad * 0.55, C - rad * 0.55, C - rad * 0.9, C - rad * 0.35, C - rad); x.stroke(); x.restore(); }
+        const rainLvl = Math.max(0, 1 - rain / 100) * Math.min(1.2, GA) * (radarBand === "S" ? 0.4 : 1); if (rainLvl > 0.15) { const cx = C + rad * 0.3, cy = C - rad * 0.25; x.fillStyle = "rgba(255,214,80," + (0.35 * rainLvl) + ")"; for (let i = 0; i < 60; i++) { const t = Math.random() * 7, rr = Math.sqrt(Math.random()); const sx = cx + Math.cos(t) * rad * 0.2 * rr, sy = cy + Math.sin(t) * rad * 0.33 * rr; if (inWedge(sx, sy)) x.fillRect(sx, sy, 2, 2); } }
+        if (scenario === "coastal") { x.save(); x.translate(C, C); x.rotate(-displayUp() * D); x.translate(-C, -C); x.strokeStyle = "rgba(255,210,60,.75)"; x.lineWidth = 5; x.beginPath(); x.moveTo(C - rad * 0.9, C - rad * 0.3); x.bezierCurveTo(C - rad * 0.65, C - rad * 0.55, C - rad * 0.55, C - rad * 0.9, C - rad * 0.35, C - rad); x.stroke(); x.restore(); }
         const gk = Math.max(.15, Math.min(1, gain / 80));
         LAND.forEach(poly => {
           x.beginPath(); poly.pts.forEach(([X, Y], i) => { const q = rm(X, Y); i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y); }); x.closePath();
@@ -1285,7 +1285,7 @@
           const p = map(t.x, t.y); const ang = Math.atan2(p.y - C, p.x - C); const dist = Math.hypot(p.x - C, p.y - C);
           // echo size: pulse length along range, beamwidth across (wider with range); strong echoes bloom when the gain is high, weak ones break up
           const bloom = Math.max(0, lv - 1) * 1.6, along = pl + 1.2 + Math.min(4, lv * 2) + bloom * 0.5, across = bw + dist * 0.012 + Math.min(1.2, lv) + bloom;
-          x.save(); x.translate(p.x, p.y); x.rotate(ang); x.fillStyle = "#7dffac"; x.shadowColor = "#52ff91"; x.shadowBlur = 2 + 6 * al;
+          x.save(); x.translate(p.x, p.y); x.rotate(ang); x.fillStyle = "#ffe14a"; x.shadowColor = "#ffcf2a"; x.shadowBlur = 2 + 6 * al;
           x.globalAlpha = 0.22 + 0.78 * al;
           if (al < 0.35) { // weak echo: speckled, breaks up from scan to scan
             for (let i = 0; i < 4; i++) { if (Math.random() < 0.35) continue; x.beginPath(); x.ellipse((Math.random() - .5) * along, (Math.random() - .5) * across, along * 0.45, across * 0.5, 0, 0, 7); x.fill(); }
@@ -1339,7 +1339,8 @@
                 const al = (pass ? 0.55 : 0.16) * Math.pow(k, 1.35) * (0.45 + 0.55 * lv);
                 if (al < 0.004) continue;
                 x.lineWidth = w;
-                x.strokeStyle = (pass ? "rgba(96,214,255," : "rgba(60,170,230,") + al.toFixed(3) + ")";
+                const r = Math.round(70 + 180 * k * k), g = Math.round(150 + 100 * k), bl = 255;   // white at the head -> blue at the tail
+                x.strokeStyle = (pass ? "rgba(" + r + "," + g + "," + bl + "," : "rgba(60,140,255,") + al.toFixed(3) + ")";
                 x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke();
               }
             }
@@ -1744,7 +1745,7 @@
         if (!SART || radarBand !== "X") return; const dx = SART.x - ownPos.x, dy = SART.y - ownPos.y, r = Math.hypot(dx, dy); if (r > 7 || r > range * 1.05) return;
         const b = Math.atan2(dx, dy), ux = Math.sin(b), uy = Math.cos(b), vis = Math.max(0, Math.min(1, gain / 70)) * Math.max(0, 1 - sea / 120) * Math.max(0, 1 - rain / 110); if (vis < 0.08) return;
         const fl = 0.75 + 0.25 * Math.sin(performance.now() / 90);
-        x.save(); x.fillStyle = x.strokeStyle = `rgba(160,255,190,${(0.9 * vis * fl).toFixed(3)})`; x.shadowColor = "#7dffac"; x.shadowBlur = 6;
+        x.save(); x.fillStyle = x.strokeStyle = `rgba(255,230,120,${(0.9 * vis * fl).toFixed(3)})`; x.shadowColor = "#7dffac"; x.shadowBlur = 6;
         const half = sartHalf(r), spacing = 0.64; sartLive(r);
         for (let i = 0; i < 12; i++) { const rr = r + 0.15 + i * spacing; if (rr > range * 1.02) break;
           const c = map(0, 0); if (half >= Math.PI - 0.01) { x.lineWidth = 3; x.beginPath(); x.arc(c.x, c.y, rr * px, 0, 7); x.stroke(); continue; }
