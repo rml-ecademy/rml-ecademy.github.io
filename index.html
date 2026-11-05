@@ -912,6 +912,8 @@
 .plan .fine{font-size:.78rem;color:var(--muted);text-align:center}
 .member-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;display:none;gap:10px;align-items:center;padding:9px 14px 9px 12px;border-radius:999px;background:rgba(5,25,39,.92);border:1px solid rgba(94,230,168,.4);backdrop-filter:blur(8px);font:600 .78rem/1 "Courier New",monospace;letter-spacing:.08em;color:var(--green)}
 .member-bar.show{display:inline-flex}
+.member-bar{max-width:calc(100vw - 20px);flex-wrap:wrap;justify-content:center;row-gap:6px;white-space:normal;text-align:center}
+@media (max-width:640px){.member-bar{bottom:10px;padding:8px 12px;font-size:.7rem;letter-spacing:.04em}.member-bar a{border-left:0;padding:6px 12px;border-radius:999px;background:rgba(255,215,122,.16);white-space:nowrap}.member-bar .lead{display:none}}
 .member-bar a{color:var(--amber);text-decoration:none;border-left:1px solid rgba(255,255,255,.15);padding-left:10px}
 .enroll-modal{position:fixed;inset:0;z-index:120;display:none;place-items:start center;background:rgba(2,12,20,.78);backdrop-filter:blur(6px);padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .enroll-modal.open{display:grid}
@@ -3061,7 +3063,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const bar = $('memberBar'); bar.className = 'member-bar';
     if(pkg){
       const until = isAdmin ? 'owner' : member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
-      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Share my link' + refBadge() + '</a>';
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + '<span class="lead"> ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + '</span>' + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Share my link' + refBadge() + '</a>';
       bar.classList.add('show'); $('barRef').onclick = e => { e.preventDefault(); openReferral(); };
     } else if(session && pending){
       bar.innerHTML = clockSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' PAYMENT UNDER REVIEW · ' + PACKAGES[pending.package].name.toUpperCase() + ' · REF ' + esc(pending.ref_no) + ' <a href="#" id="barPay">Details</a>';
