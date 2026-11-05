@@ -3233,7 +3233,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const E = data.enrollees || [], earned = E.reduce((t, e) => t + Number(e.commission || 0), 0), paid = E.filter(e => e.paid).reduce((t, e) => t + Number(e.commission || 0), 0);
     const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH', { maximumFractionDigits: 2 });
     const caption = 'Training for your next rank? I use ECADEMY Maritime — realistic Radar/ARPA, ECDIS, LSA/FFE, draft survey and ship-handling simulators, organised by rank from 3/O to Master. Try the free radar demo here:\n' + link;
-    $('refH').textContent = 'Share my link · ' + Number(data.rate) + '% commission';
+    $('refH').textContent = 'Share my link · commission';
     refSeen(E.length); render();
     body.innerHTML = '<div class="ref-link"><code>' + esc(link) + '</code><button type="button" id="refCopy">Copy link</button>' + (navigator.share ? '<button type="button" class="ghost" id="refShare">Share…</button>' : '') + '</div>' +
       '<div class="ref-tiles"><div><b>' + data.clicks + '</b><span>link opens</span></div><div><b>' + E.length + '</b><span>enrolled</span></div><div><b>' + peso(earned) + '</b><span>earned</span></div></div>' +
