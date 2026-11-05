@@ -967,6 +967,7 @@
 .pkg-body .tier{font:600 .7rem/1.4 "Courier New",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
 .pkg-slide.featured .pkg-body .tier{color:var(--amber)}
 .pkg-body h3{margin:8px 0 16px;font-size:1.7rem;letter-spacing:-.02em}
+.pkg-price{margin:-6px 0 14px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,200,87,.45);background:rgba(255,200,87,.08)}.pkg-price .pp-main{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.pkg-price .pp-main b{font-size:1.7rem;letter-spacing:-.02em}.pkg-price .pp-main span{opacity:.8}.pkg-price .pp-main em{font-style:normal;font:700 .68rem/1 "Courier New",monospace;letter-spacing:.12em;text-transform:uppercase;padding:5px 8px;border-radius:999px;background:#ffc857!important;color:#061622!important;margin-left:auto}.pkg-price small{display:block;margin-top:6px;font-size:.8rem;line-height:1.45;opacity:.85}.pkg-price.alt{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.04)}.pkg-price.alt .pp-main b{font-size:1.05rem}
 .pkg-hl{display:grid;gap:10px}
 .pkg-hl div{padding:12px 14px;border-radius:12px;background:rgba(100,221,255,.06);border-left:3px solid var(--cyan)}
 .pkg-slide.featured .pkg-hl div{border-left-color:var(--amber);background:rgba(255,200,87,.06)}
@@ -2749,13 +2750,13 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
              ['Radar / ARPA','Target tracking, CPA and TCPA, plotting and COLREG crossing, head-on and overtaking situations.'],
              ['ECDIS','Passage planning with APEM and route monitoring on a realistic Manila to Cebu passage.']],
          feats:['Deck 01 · Third Officer','Deck 02 · Second Officer, navigation equipment and GMDSS'] },
-    C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'], featured:true,
+    C: { code:'C', name:'Chief Mate', tier:'Package B', who:'Up to Chief Officer', ranks:['Third Officer','Second Officer','Chief Officer'],
          img:['sales/img/draft.jpg','assets/img3.webp'],
          hl:[['Draft Survey','Manual draft survey step by step, with 7 narrated video lessons, tank soundings and the hydrometer.'],
              ['Trim & Stability','Righting lever (GZ) trainer: K-B-G-M, the loading computer printout, free surface, angle of loll, shear force and bending moment, and how to prove it all on the ship.'],
              ['Deck Maintenance','Planned maintenance, defect control, permits and inspections run by the Chief Officer.']],
          feats:['Everything in Junior Officers','Deck 03 · Chief Officer, cargo, stability and ballast'] },
-    A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'],
+    A: { code:'A', name:'All Access · Master', tier:'Package C', who:'Up to Master', ranks:['Third Officer','Second Officer','Chief Officer','Master'], featured:true,
          img:['sales/img/bridge.jpg','assets/img4.webp'],
          hl:[['Ship Manoeuvring','Ship handling, pilotage and emergency manoeuvres from the Master\'s position.'],
              ['PSC','Port State, Flag and Class preparation and the Master\'s compliance strategy.'],
@@ -3115,6 +3116,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
           <div class="pkg-body">
             <div class="tier">${p.tier} · ${p.who}${p.featured ? ' · Most popular' : ''}</div>
             <h3>${p.name}</h3>
+            ${p.code === 'A'
+              ? `<div class="pkg-price"><div class="pp-main"><b>₱3,199</b><span>/ 1 year</span><em>Pre-launch offer</em></div><small>Full launch (June 2027): ₱8,699 / year. <b>Enroll before June 2027 and keep 50% off at full launch.</b></small></div>`
+              : `<div class="pkg-price alt"><div class="pp-main"><b>Included in All Access</b></div><small>Sold separately at full launch (June 2027). During pre-launch, All Access · ₱3,199 / 1 year opens this deck and every other deck.</small></div>`}
             <div class="pkg-hl">${p.hl.map(h => `<div><b>${h[0]}</b><span>${h[1]}</span></div>`).join('')}</div>
             <ul>${p.feats.map(f => '<li>' + f + '</li>').join('')}</ul>
             <div class="pkg-cta">
@@ -3124,7 +3128,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
                 : pending && pending.package === p.code
                 ? `<button type="button" class="cta" data-pay="${p.code}">Payment under review</button>
               <span class="fine">We are checking your GCash payment. The decks open here automatically once confirmed.</span>`
-                : `<button type="button" class="cta${pkg ? '' : ' cta-nudge'}" data-get="${p.code}">${pkg ? 'Upgrade to ' + p.name : 'Get Access'}</button>
+                : `<button type="button" class="cta${pkg ? '' : ' cta-nudge'}" data-get="A">${pkg ? 'Upgrade to All Access · ₱3,199' : (p.code === 'A' ? 'Get Access · ₱3,199' : 'Get All Access · ₱3,199')}</button>
               <span class="fine">Create your free account, pay with GCash, and your decks open here once confirmed. <b>Questions? <a href="${MESSENGER}" target="_blank" rel="noopener" style="color:inherit">Message us</a>.</b></span>`}
             </div>
           </div>
