@@ -913,7 +913,17 @@
 .member-bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;display:none;gap:10px;align-items:center;padding:9px 14px 9px 12px;border-radius:999px;background:rgba(5,25,39,.92);border:1px solid rgba(94,230,168,.4);backdrop-filter:blur(8px);font:600 .78rem/1 "Courier New",monospace;letter-spacing:.08em;color:var(--green)}
 .member-bar.show{display:inline-flex}
 .member-bar{max-width:calc(100vw - 20px);flex-wrap:wrap;justify-content:center;row-gap:6px;white-space:normal;text-align:center}
-@media (max-width:640px){.member-bar{bottom:10px;padding:8px 12px;font-size:.7rem;letter-spacing:.04em}.member-bar a{border-left:0;padding:6px 12px;border-radius:999px;background:rgba(255,215,122,.16);white-space:nowrap}.member-bar .lead{display:none}}
+.member-bar .lead{cursor:default}.member-bar .menu{display:contents}.member-bar .caret{display:none}
+@media (max-width:640px){
+  .member-bar{bottom:10px;padding:8px 12px;font-size:.72rem;letter-spacing:.04em;flex-wrap:nowrap;max-width:calc(100vw - 16px)}
+  .member-bar .lead{cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70vw}
+  .member-bar .caret{display:inline-block;margin-left:4px;font-size:.8rem;opacity:.8;transition:transform .2s}
+  .member-bar.open .caret{transform:rotate(180deg)}
+  .member-bar .menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 8px);background:#071a2e;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:10px;flex-direction:column;gap:8px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .member-bar.open .menu{display:flex}
+  .member-bar .menu .info{font-size:.7rem;opacity:.85;padding:4px 6px 6px;white-space:normal;text-align:left;line-height:1.5}
+  .member-bar .menu a{border-left:0;padding:10px 12px;border-radius:12px;background:rgba(255,215,122,.16);text-align:center;white-space:nowrap}
+}
 .member-bar a{color:var(--amber);text-decoration:none;border-left:1px solid rgba(255,255,255,.15);padding-left:10px}
 .enroll-modal{position:fixed;inset:0;z-index:120;display:none;place-items:start center;background:rgba(2,12,20,.78);backdrop-filter:blur(6px);padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .enroll-modal.open{display:grid}
@@ -3063,8 +3073,15 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const bar = $('memberBar'); bar.className = 'member-bar';
     if(pkg){
       const until = isAdmin ? 'owner' : member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
-      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + '<span class="lead"> ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + '</span>' + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Share my link' + refBadge() + '</a>';
-      bar.classList.add('show'); $('barRef').onclick = e => { e.preventDefault(); openReferral(); };
+      const who = esc(((member && member.name) || session.user.email).toUpperCase());
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + '<span class="lead" id="barLead"> ENROLLED · ' + who + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + '<span class="caret">▴</span></span>' +
+        '<span class="menu"><span class="info">' + who + '<br>' + esc(pkg.name) + ' · ' + esc(until) + '<br>' + esc(session.user.email) + '</span>' +
+        (pkg === PACKAGES.A ? '' : '<a href="#plans">Upgrade</a>') + '<a href="#" id="barRef">Share my link' + refBadge() + '</a><a href="#" id="barDev">My devices</a><a href="#" id="barOut">Log out</a></span>';
+      bar.classList.add('show'); bar.classList.toggle('open', !!bar._open);
+      $('barRef').onclick = e => { e.preventDefault(); bar._open = false; bar.classList.remove('open'); openReferral(); };
+      $('barDev').onclick = e => { e.preventDefault(); bar._open = false; bar.classList.remove('open'); openDevices(); };
+      $('barOut').onclick = e => { e.preventDefault(); logout(); };
+      $('barLead').onclick = () => { if(window.matchMedia('(max-width:640px)').matches){ bar._open = !bar._open; bar.classList.toggle('open', bar._open); } };
     } else if(session && pending){
       bar.innerHTML = clockSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' PAYMENT UNDER REVIEW · ' + PACKAGES[pending.package].name.toUpperCase() + ' · REF ' + esc(pending.ref_no) + ' <a href="#" id="barPay">Details</a>';
       bar.classList.add('show', 'pending'); $('barPay').onclick = e => { e.preventDefault(); openPay(pending.package); };
