@@ -7,11 +7,11 @@
 <meta name="theme-color" content="#12304F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ECADEMY Pay">
+<meta name="apple-mobile-web-app-title" content="ECADEMY Admin">
 <link rel="manifest" href="assets/approve.webmanifest">
 <link rel="apple-touch-icon" href="assets/approve-icon-180.png">
 <link rel="icon" href="assets/approve-icon-180.png">
-<title>ECADEMY · Payments</title>
+<title>ECADEMY · Admin</title>
 <style>
 :root{--ink:#0C2D48;--ink2:#2B4659;--mute:#5E7587;--rule:#D3E2E9;--bg:#F2F6F9;--card:#fff;--brand:#12304F;--amber:#B9821A;--amber-bg:#FBF1DD;--green:#138A86;--green-bg:#E1F2F0;--red:#B3261E;--red-bg:#FBE9E7}
 *{box-sizing:border-box}
@@ -19,20 +19,28 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Albert S
 header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
 header .t{flex:1;font-weight:700;letter-spacing:.02em}header .t small{display:block;font-weight:400;opacity:.75;font-size:.78rem}
 header button{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:9px 12px;font:600 .85rem inherit;cursor:pointer}
+nav.tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:4;background:var(--card);border-bottom:1px solid var(--rule);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav.tabs button{flex:1 0 auto;min-width:96px;min-height:48px;padding:0 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--mute);font:600 .9rem inherit;cursor:pointer;white-space:nowrap}
+nav.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+nav.tabs .badge{margin-left:6px}
 main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:1240px;margin:0 auto}
 .wide{max-width:none;margin-left:calc(50% - 50vw + 10px);margin-right:calc(50% - 50vw + 10px)}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(12,45,72,.05)}
 h2{margin:0 0 6px;font-size:1.05rem}
 .sub{color:var(--mute);font-size:.86rem;margin:0 0 12px}
 label{display:block;font-size:.82rem;font-weight:600;color:var(--ink2);margin:12px 0 5px}
-input,select{width:100%;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid var(--rule);background:#fff;color:var(--ink);font:inherit}
-input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
+input,select,textarea{width:100%;min-height:46px;padding:0 12px;border-radius:10px;border:1px solid var(--rule);background:#fff;color:var(--ink);font:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
+.check{display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:400;color:var(--ink2);font-size:.88rem}.check input{width:auto;min-height:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;border:0;background:var(--brand);color:#fff;font:700 .95rem inherit;cursor:pointer;text-decoration:none}
 .btn.full{width:100%;margin-top:14px}
 .btn.ok{background:var(--green)}.btn.no{background:#fff;color:var(--red);border:1px solid var(--rule)}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
+.btn.mini{min-height:30px;padding:0 9px;font-size:.74rem;border-radius:8px}
 .btn:disabled{opacity:.5}
 .err{min-height:20px;color:var(--amber);font-size:.9rem;margin-top:8px}
 .badge{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:var(--amber);color:#fff;font-size:.82rem;font-weight:700;margin-left:6px}
+.badge.zero{background:var(--rule);color:var(--mute)}
 .pay{border:1px solid var(--rule);border-radius:14px;padding:14px;margin-top:12px;background:#fff}
 .pay .who{font-weight:700;font-size:1.02rem}.pay .meta{color:var(--mute);font-size:.84rem}
 .pay .pk{display:inline-block;margin:8px 8px 0 0;padding:4px 10px;border-radius:999px;background:#E3EFF4;color:var(--ink);font-size:.8rem;font-weight:700}
@@ -45,71 +53,154 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
 .acts select{min-height:46px}
 @media (max-width:480px){.acts{grid-template-columns:1fr 1fr}.acts select{grid-column:1/-1}}
 .hist{font-size:.86rem;color:var(--mute)}.hist div{padding:8px 0;border-bottom:1px solid var(--rule)}.hist div:last-child{border-bottom:0}
-.ok-t{color:var(--green);font-weight:700}.no-t{color:var(--red);font-weight:700}
+.ok-t{color:var(--green);font-weight:700}.no-t{color:var(--red);font-weight:700}.soon-t{color:var(--amber);font-weight:700}
 .empty{padding:22px;text-align:center;color:var(--mute);border:1px dashed var(--rule);border-radius:12px;margin-top:12px}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--brand);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:92vw;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--brand);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:92vw;text-align:center;z-index:30}
 .toast.show{opacity:1}
 .tip{background:var(--green-bg);border:1px solid #BFE3DF;border-radius:12px;padding:10px 12px;font-size:.86rem;color:var(--ink2)}
 .tip b{color:var(--ink)}
 .hidden{display:none!important}
 .chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{border:1px solid var(--rule);background:#fff;color:var(--ink2);border-radius:999px;padding:7px 12px;font:600 .8rem inherit;cursor:pointer}.chips button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .twrap{overflow:auto;-webkit-overflow-scrolling:touch}
-.tbl{width:100%;border-collapse:collapse;font-size:.82rem;min-width:1040px}
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem;min-width:1180px}
+.tbl.aff{min-width:760px}
 .tbl th{position:sticky;top:0;background:#fff;text-align:left;color:var(--mute);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
 .tbl td{padding:8px 8px;border-bottom:1px solid var(--rule);vertical-align:middle;white-space:nowrap}
 .tbl td.em{white-space:normal;word-break:break-all;max-width:190px}
 .tbl td.wrap{white-space:normal;min-width:160px}
+.tbl td small{display:block;color:var(--mute);font-size:.74rem;white-space:normal}
 .tbl tr:hover td{background:#F7FAFB}
 .st{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.74rem;font-weight:700;white-space:nowrap}
 .st.ok{background:var(--green-bg);color:var(--green)}.st.rev{background:var(--amber-bg);color:#7A5208}.st.no{background:#EEF2F5;color:var(--mute)}.st.bad{background:var(--red-bg);color:var(--red)}
 .tbl .ref{margin:0;padding:0;background:none;border:0;display:inline}.tbl .ref b{font-size:.9rem;letter-spacing:.05em}
-.tbl .mini{min-height:30px;padding:0 9px;font-size:.74rem;border-radius:8px}
 .tbl img.th{height:34px;width:34px;object-fit:cover;border-radius:6px;border:1px solid var(--rule);vertical-align:middle}
+.rowacts{display:flex;gap:4px;flex-wrap:wrap}
+.affform{display:grid;grid-template-columns:1.6fr 1fr .7fr 1.3fr auto;gap:10px;align-items:end}
+.affform label{margin-top:0}
+@media (max-width:900px){.affform{grid-template-columns:1fr 1fr}}
+.out{display:none;margin-top:16px;padding:14px;border-radius:12px;background:#F7FAFB;border:1px solid var(--rule)}
+.out.show{display:block}
+.out pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 10px;font:inherit;font-size:.9rem;color:var(--ink2)}
+.panel{display:none}.panel.on{display:block}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(12,45,72,.5);display:grid;place-items:center;padding:16px}
 </style>
 </head>
 <body>
-<header><div class="t">ECADEMY · Payments<small id="who">Confirm GCash payments and open access</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
+<header><div class="t">ECADEMY · Admin<small id="who">Payments, accounts, affiliates</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
+<nav class="tabs hidden" id="tabs">
+  <button data-t="payments" class="on">Payments<span class="badge zero" id="n">0</span></button>
+  <button data-t="accounts">Accounts<span class="badge zero" id="tn">0</span></button>
+  <button data-t="affiliates">Affiliates</button>
+  <button data-t="tools">Tools</button>
+</nav>
 <main>
   <section class="card" id="loginView">
     <h2>Owner login</h2>
     <p class="sub">Same e-mail and password as on the hub.</p>
     <form id="lf">
-      <label for="le">Email</label><input id="le" type="email" required autocomplete="email" inputmode="email">
+      <label for="le">Email</label><input id="le" type="email" required autocomplete="username" inputmode="email">
       <label for="lp">Password</label><input id="lp" type="password" required autocomplete="current-password">
       <button class="btn full" id="lb" type="submit">Log in</button>
     </form>
     <div class="err" id="lerr"></div>
+    <p class="sub" style="margin:8px 0 0"><a href="#" id="forgot" style="color:var(--ink2)">Forgot password?</a></p>
   </section>
 
-  <section class="card hidden" id="denied"><h2>Not an admin account</h2><p class="sub">You are logged in as <b id="deniedEmail"></b>, which is not on the ECADEMY admin list.</p></section>
+  <section class="card hidden" id="denied"><h2>Not an admin account</h2><p class="sub">You are logged in as <b id="deniedEmail"></b>, which is not on the ECADEMY admin list.</p><button class="btn ghost" id="out2" type="button">Log out</button></section>
 
   <div id="app" class="hidden">
-    <section class="card">
-      <h2>Waiting for your approval <span class="badge" id="n">0</span></h2>
-      <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds.</p>
-      <div id="list"></div>
-    </section>
-    <section class="card wide" style="padding:16px 0 10px">
-      <div style="padding:0 16px"><h2>All accounts <span class="badge" id="tn" style="background:var(--mute)">0</span></h2>
-      <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
-      <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no." style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div></div>
-      <div class="twrap"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Messenger</th><th>Package</th><th>Status</th><th>Ref No.</th><th>Proof</th><th>Valid until</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
-    </section>
-    <section class="card">
-      <h2>Recent decisions</h2>
-      <div class="hist" id="hist"></div>
-    </section>
-    <section class="card tip" id="homeTip">
-      <b>Tip for your tablet or phone:</b> open this page in Safari (iPad/iPhone) or Chrome (Android) → Share / menu → <b>Add to Home Screen</b>. It becomes an app icon called <b>ECADEMY Pay</b> that opens full-screen.
-    </section>
+
+    <!-- ===================== PAYMENTS ===================== -->
+    <div class="panel on" id="p-payments">
+      <section class="card">
+        <h2>Waiting for your approval</h2>
+        <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds. A <b>referred by</b> code means the commission is recorded automatically when you approve.</p>
+        <div id="list"></div>
+      </section>
+      <section class="card">
+        <h2>Recent decisions</h2>
+        <div class="hist" id="hist"></div>
+      </section>
+      <section class="card tip" id="homeTip">
+        <b>Tip for your tablet or phone:</b> open this page in Safari (iPad/iPhone) or Chrome (Android) → Share / menu → <b>Add to Home Screen</b>. It becomes an app icon called <b>ECADEMY Admin</b> that opens full-screen.
+      </section>
+    </div>
+
+    <!-- ===================== ACCOUNTS ===================== -->
+    <div class="panel" id="p-accounts">
+      <section class="card wide" style="padding:16px 0 10px">
+        <div style="padding:0 16px"><h2>All accounts</h2>
+        <p class="sub">Everyone who created an account on the hub. <b>Not yet paid</b> = leads to follow up on Messenger.</p>
+        <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
+        <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., affiliate" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div></div>
+        <div class="twrap"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Messenger</th><th>Package</th><th>Status</th><th>Valid until</th><th>Ref No.</th><th>Proof</th><th>Devices</th><th>Affiliate</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      </section>
+    </div>
+
+    <!-- ===================== AFFILIATES ===================== -->
+    <div class="panel" id="p-affiliates">
+      <section class="card">
+        <h2>Affiliates</h2>
+        <p class="sub">Give a person a code. Their link is <b>ecademymaritime.com/?ref=CODE</b>. Anyone who opens it carries the code for 60 days; when they pay and you press <b>Approve</b>, the commission is recorded by itself. Press <b>Copy kit</b> and paste it to the affiliate on Messenger — it has their share link and their private dashboard (clicks, enrollees, commission).</p>
+        <form id="af" class="affform">
+          <div><label for="aName">Affiliate name</label><input id="aName" required placeholder="3/O Juan dela Cruz" autocomplete="off"></div>
+          <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
+          <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="20"></div>
+          <div><label for="aContact">GCash number (for payouts)</label><input id="aContact" placeholder="09XX XXX XXXX" autocomplete="off"></div>
+          <div><button class="btn" id="ab" type="submit" style="width:100%">Save affiliate</button></div>
+        </form>
+        <div class="err" id="aerr" role="alert"></div>
+      </section>
+      <section class="card wide" style="padding:16px 0 10px">
+        <div style="padding:0 16px"><p class="sub" id="acount"></p></div>
+        <div class="twrap"><table class="tbl aff"><thead><tr><th>Affiliate</th><th>Clicks</th><th>Enrollees</th><th>Commission</th><th>Unpaid</th><th></th></tr></thead><tbody id="arows"></tbody></table></div>
+      </section>
+      <section class="card">
+        <h2>Commissions to pay out</h2>
+        <p class="sub">Each approved enrollment that came through an affiliate. Pay the affiliate by GCash, then press <b>Mark paid</b>.</p>
+        <div class="twrap"><table class="tbl aff"><thead><tr><th>Affiliate</th><th>Student</th><th>Package</th><th>Paid by student</th><th>Commission</th><th>Status</th><th></th></tr></thead><tbody id="crows"></tbody></table></div>
+      </section>
+    </div>
+
+    <!-- ===================== TOOLS ===================== -->
+    <div class="panel" id="p-tools">
+      <section class="card">
+        <h2>Give access by hand</h2>
+        <p class="sub">For exceptions only — a free account, a gift, a bank transfer, or a student who cannot use the GCash form. Normal students sign up and pay on the hub themselves and appear under <b>Payments</b>.</p>
+        <form id="ef">
+          <label for="email">Student email</label><input id="email" type="email" required placeholder="juan.delacruz@gmail.com" autocomplete="off">
+          <label for="name">Name (shown in the hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
+          <div class="two">
+            <div><label for="pkg">Package</label><select id="pkg"><option value="J">Junior Officers (3rd & 2nd Mate)</option><option value="C">Chief Mate</option><option value="A" selected>All Access / Master</option></select></div>
+            <div><label for="val">Access for</label><select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1">1 month</option><option value="m3">3 months</option><option value="m6" selected>6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option></select></div>
+          </div>
+          <div class="two"><div><label for="amt">Amount paid (₱, optional)</label><input id="amt" placeholder="1899" inputmode="decimal"></div><div><label for="ref">Reference no. (optional)</label><input id="ref" placeholder="GCash / bank ref"></div></div>
+          <label for="aff">Referred by · affiliate code (optional)</label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="sub" id="affHint" style="margin:4px 0 0"></div>
+          <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
+          <label class="check"><input type="checkbox" id="newLink"> Also make a set-password link (for a student who never set one)</label>
+          <button class="btn full" id="eb" type="submit">Give access</button>
+        </form>
+        <div class="err" id="eerr" role="alert"></div>
+        <div class="out" id="out">
+          <div id="outTitle" style="font-weight:700"></div>
+          <pre id="msg"></pre>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost mini" id="copyMsg" type="button" style="min-height:36px">Copy message</button><button class="btn ghost mini" id="copyLink" type="button" style="min-height:36px">Copy link only</button></div>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Links</h2>
+        <p class="sub" style="margin:0">Hub: <a href="https://ecademymaritime.com/" target="_blank" rel="noopener">ecademymaritime.com</a> · Free radar demo: <a href="https://ecademymaritime.com/#radar-demo" target="_blank" rel="noopener">/#radar-demo</a> · This page: <b>ecademymaritime.com/approve.html</b></p>
+      </section>
+    </div>
+
   </div>
 </main>
 <div class="toast" id="toast"></div>
-<div id="msgModal" class="hidden" style="position:fixed;inset:0;z-index:20;background:rgba(12,45,72,.5);display:grid;place-items:center;padding:16px">
+<div id="msgModal" class="hidden modal">
   <div class="card" style="width:min(560px,100%);margin:0">
     <h2 id="msgTitle">Message for the student</h2>
-    <p class="sub">Paste this in Messenger, Viber or SMS if they contacted you there. (E-mail notifications come automatically once the e-mail sender is set up.)</p>
-    <textarea id="msgText" style="width:100%;min-height:200px;padding:12px;border-radius:10px;border:1px solid var(--rule);font:inherit;font-size:.92rem;line-height:1.5"></textarea>
+    <p class="sub">Paste this in Messenger, Viber or SMS.</p>
+    <textarea id="msgText" style="min-height:220px;padding:12px;font-size:.92rem;line-height:1.5"></textarea>
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn ok" id="msgCopy" style="flex:1">Copy message</button><button class="btn ghost" id="msgClose">Close</button></div>
   </div>
 </div>
@@ -124,12 +215,29 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
   const sb = supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, detectSessionInUrl:true, flowType:'implicit', storageKey:'ecademy-admin-auth' } });   // own session store: logging in as a student on the hub must not replace the owner login here
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const peso = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? '₱' + n.toLocaleString('en-PH') : 'amount not given'; };
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : null; };
+  const peso = v => { const n = num(v); return n == null ? 'amount not given' : '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits:2 }); };
   const fmt = d => d ? new Date(d).toLocaleString('en-PH', { dateStyle:'medium', timeStyle:'short' }) : '';
+  const day = d => d ? new Date(d).toLocaleDateString('en-PH', { dateStyle:'medium' }) : '';
   const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
-  let pays = [], toastT, seenIds = null, alertsOn = false;
+  const first = n => (n || 'Officer').trim().split(' ')[0];
+  let pays = [], members = [], accounts = [], affs = [], filt = '', toastT, seenIds = null, alertsOn = false, lastLink = '';
+
+  /* ---------- tabs ---------- */
+  const TABS = ['payments','accounts','affiliates','tools'];
+  function showTab(t){
+    if(!TABS.includes(t)) t = 'payments';
+    TABS.forEach(x => { $('p-' + x).classList.toggle('on', x === t); });
+    [...$('tabs').children].forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    if(location.hash !== '#' + t) history.replaceState(null, '', '#' + t);
+    window.scrollTo({ top:0 });
+  }
+  $('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if(b) showTab(b.dataset.t); });
+  window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+  /* ---------- alerts ---------- */
   const beep = () => { try { const ac = new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.connect(g); g.connect(ac.destination); o.frequency.value = 880; g.gain.value = .25; o.start(); setTimeout(() => { o.frequency.value = 1175; }, 180); setTimeout(() => { o.stop(); ac.close(); }, 420); } catch(_){} };
-  function paintBell(){ const b = $('bell'); const on = alertsOn && Notification.permission === 'granted'; b.textContent = on ? '🔔 Alerts on' : '🔔 Alerts off'; b.style.background = on ? 'var(--green)' : ''; }
+  function paintBell(){ const b = $('bell'); const on = alertsOn && ('Notification' in window) && Notification.permission === 'granted'; b.textContent = on ? '🔔 Alerts on' : '🔔 Alerts off'; b.style.background = on ? 'var(--green)' : ''; }
   $('bell').onclick = async () => {
     if(!('Notification' in window)){ toast('This browser cannot show notifications.'); return; }
     if(Notification.permission !== 'granted'){ const r = await Notification.requestPermission(); if(r !== 'granted'){ toast('Notifications were not allowed.'); return; } }
@@ -152,12 +260,33 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     if(error){ let m = error.message; try { const j = await error.context.json(); m = j.message || j.error || m; } catch(_){} if(/^login$/.test(m)){ await sb.auth.signOut(); location.reload(); return; } throw new Error(m); }
     return data;
   }
-  function view(id){ ['loginView','denied','app'].forEach(v => $(v).classList.toggle('hidden', v !== id)); $('logout').classList.toggle('hidden', id === 'loginView'); $('reload').classList.toggle('hidden', id !== 'app'); $('bell').classList.toggle('hidden', id !== 'app'); paintBell(); }
+  function view(id){ ['loginView','denied','app'].forEach(v => $(v).classList.toggle('hidden', v !== id)); ['logout','reload','bell','tabs'].forEach(b => $(b).classList.toggle('hidden', id !== 'app')); paintBell(); }
 
-  function render(){
+  /* ---------- ready-to-paste messages ---------- */
+  function approvedMsg(name, pkg, exp){
+    return 'Hi ' + first(name) + ', welcome aboard ECADEMY! ✅\n\nYour payment is confirmed and your access is now ACTIVE.\n\nPackage: ' + NAMES[pkg] + '\nValid until: ' + (exp ? fmt(exp) : 'Lifetime') + '\n\nLog in anytime at https://ecademymaritime.com with your e-mail and password (or Continue with Google). Your decks and simulators are already open.\n\nTip: use Chrome or Safari, not the Messenger browser. Up to 5 devices, one logged in at a time.\n\nFair winds,\nECADEMY Maritime';
+  }
+  function rejectedMsg(name, note){
+    return 'Hi ' + first(name) + ', we checked your ECADEMY payment submission but could not confirm it.\n\n' + note + '\n\nLog in at https://ecademymaritime.com → Get Access → submit the correct GCash reference number (and a screenshot of the receipt if possible). We will activate your access as soon as it matches.\n\nECADEMY Maritime';
+  }
+  function leadMsg(name){ return 'Hi ' + first(name) + ', this is ECADEMY Maritime. We saw your account on ecademymaritime.com — your decks and simulators open as soon as your GCash payment is confirmed. Log in → Get Access → send via GCash → type the reference number, and we activate it right away. Questions? Just reply here.'; }
+  function manualMsg(name, pkg, exp, link){
+    const until = exp ? 'Valid until ' + fmt(exp) : 'Lifetime access';
+    return link
+      ? 'Welcome aboard ECADEMY, ' + first(name) + '!\n\nPackage: ' + NAMES[pkg] + '\n' + until + '\n\n1. Open this link to set your password:\n' + link + '\n\n2. After that, log in anytime at https://ecademymaritime.com with your e-mail and password.\n\nFair winds,\nECADEMY Maritime'
+      : 'Hi ' + first(name) + ', your ECADEMY access is updated.\n\nPackage: ' + NAMES[pkg] + '\n' + until + '\n\nLog in at https://ecademymaritime.com with your e-mail and password (or Continue with Google).\n\nECADEMY Maritime';
+  }
+  function showMsg(title, text){ $('msgTitle').textContent = title; $('msgText').value = text; $('msgModal').classList.remove('hidden'); }
+  $('msgClose').onclick = () => $('msgModal').classList.add('hidden');
+  $('msgCopy').onclick = () => { navigator.clipboard.writeText($('msgText').value).then(() => toast('Message copied.'), () => { $('msgText').select(); document.execCommand('copy'); toast('Message copied.'); }); };
+  function copyBtn(btn, text, label){ navigator.clipboard.writeText(text).then(() => { const t = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = t, 1200); }, () => prompt(label, text)); }
+
+  /* ---------- PAYMENTS ---------- */
+  function renderPays(){
     alertNew();
     const pend = pays.filter(p => p.status === 'pending'), done = pays.filter(p => p.status !== 'pending').slice(0, 15);
-    $('n').textContent = pend.length; document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY · Payments';
+    $('n').textContent = pend.length; $('n').classList.toggle('zero', !pend.length);
+    document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY · Admin';
     $('list').innerHTML = pend.map(p => `<div class="pay" data-id="${p.id}">
       <div class="who">${esc(p.name || p.email)}</div>
       <div class="meta">${esc(p.email)}${p.phone ? ' · ' + esc(p.phone) : ''} · submitted ${ago(p.created_at)}${p.aff_code ? ' · referred by <b>' + esc(p.aff_code) + '</b>' : ''}</div>
@@ -166,41 +295,8 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
       ${p.proof_url ? '<a class="proof" href="' + p.proof_url + '" target="_blank" rel="noopener"><img src="' + p.proof_url + '" alt="GCash receipt"></a>' : '<div class="meta">No screenshot attached.</div>'}
       <div class="acts"><select data-val>${VAL.map(v => '<option value="' + v[0] + '"' + (v[0] === 'm6' ? ' selected' : '') + '>Access for ' + v[1] + '</option>').join('')}</select><button class="btn ok" data-p="ok">Approve</button><button class="btn no" data-p="no">Reject</button></div>
     </div>`).join('') || '<div class="empty">Nothing waiting. New GCash submissions from the hub appear here automatically.</div>';
-    $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
+    $('hist').innerHTML = done.map(p => '<div><span class="' + (p.status === 'approved' ? 'ok-t' : 'no-t') + '">' + (p.status === 'approved' ? 'Approved' : 'Rejected') + '</span> · ' + esc(p.name || p.email) + ' · ' + esc(NAMES[p.package]) + ' · ' + peso(p.amount) + ' · ref ' + esc(p.ref_no || '—') + (p.aff_code ? ' · via ' + esc(p.aff_code) : '') + ' · ' + fmt(p.reviewed_at) + '</div>').join('') || '<div>No decisions yet.</div>';
   }
-  let members = [], accounts = [], filt = '';
-  function leadMsg(name){ const first = (name || 'Officer').trim().split(' ')[0]; return 'Hi ' + first + ', this is ECADEMY Maritime. We saw your account on ecademymaritime.com — your decks and simulators open as soon as your GCash payment is confirmed. Log in → Get Access → send via GCash → type the reference number, and we activate it right away. Questions? Just reply here.'; }
-  function statusOf(a){
-    const m = members.find(x => x.user_id === a.user_id);
-    const pend = pays.find(p => p.user_id === a.user_id && p.status === 'pending');
-    const last = pays.filter(p => p.user_id === a.user_id).sort((x, y) => new Date(y.created_at) - new Date(x.created_at))[0];
-    const live = m && !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
-    if(a.is_admin) return { key:'admin', label:'OWNER', cls:'ok', m, pay:last };
-    if(pend) return { key:'review', label:'UNDER REVIEW', cls:'rev', m, pay:pend };
-    if(live) return { key:'approved', label:'APPROVED', cls:'ok', m, pay:last };
-    if(m && m.revoked) return { key:'expired', label:'PAUSED', cls:'bad', m, pay:last };
-    if(m) return { key:'expired', label:'EXPIRED', cls:'bad', m, pay:last };
-    if(last && last.status === 'rejected') return { key:'declined', label:'DECLINED', cls:'bad', m, pay:last };
-    return { key:'unpaid', label:'NOT YET PAID', cls:'no', m, pay:last };
-  }
-  function renderTable(){
-    const q = $('sq').value.trim().toLowerCase();
-    const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || r.s.key === filt).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref].join(' ').toLowerCase().includes(q));
-    $('tn').textContent = accounts.filter(a => !a.is_admin).length;
-    $('rows').innerHTML = rows.map(({ a, s }) => {
-      const ref = (s.pay && s.pay.ref_no) || (s.m && s.m.ref) || '';
-      const proof = s.pay && s.pay.proof_url;
-      const pkg = (s.m && s.m.package) || (s.pay && s.pay.package) || '';
-      const fb = a.fb ? '<a href="https://m.me/' + encodeURIComponent(a.fb.replace(/\s+/g, '')) + '" target="_blank" rel="noopener">' + esc(a.fb) + '</a>' : '<span style="color:var(--mute)">—</span>';
-      return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b></td><td class="em">' + esc(a.email) + '</td><td>' + (a.phone ? esc(a.phone) : '<span style="color:var(--mute)">—</span>') + '</td><td>' + fb + '</td><td>' + (pkg ? esc(NAMES[pkg]) : '—') + '</td><td><span class="st ' + s.cls + '">' + s.label + '</span></td><td>' + (ref ? '<span class="ref"><b>' + esc(ref) + '</b></span>' : '—') + '</td><td>' + (proof ? '<a href="' + proof + '" target="_blank" rel="noopener"><img class="th" src="' + proof + '" alt="receipt"></a>' : '—') + '</td><td>' + (s.m ? (s.m.expires_at ? new Date(s.m.expires_at).toLocaleDateString('en-PH', { dateStyle:'medium' }) : 'Lifetime') : '—') + '</td><td>' +
-        (a.is_admin ? '' : '<div style="display:flex;gap:4px">' + (s.key === 'approved' || s.key === 'expired' ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="pause">' + (s.m && s.m.revoked ? 'Resume' : 'Pause') + '</button>' : '<button class="btn ghost mini" data-s="lead">Follow up</button>') + '<button class="btn no mini" data-s="del">Delete</button></div>') + '</td></tr>';
-    }).join('') || '<tr><td colspan="10" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
-  }
-  const renderStudents = renderTable, renderLeads = () => {};
-  async function loadAccounts(){ const { data, error } = await sb.rpc('admin_accounts'); if(error) throw new Error(error.message); accounts = (data && data.accounts) || []; }
-  $('sq').addEventListener('input', renderTable);
-  $('chips').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if(!b) return; filt = b.dataset.f; [...$('chips').children].forEach(x => x.classList.toggle('on', x === b)); renderTable(); });
-  async function load(){ try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; render(); renderStudents(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   $('list').addEventListener('click', async e => {
     const c = e.target.closest('button[data-copy]'); if(c){ navigator.clipboard && navigator.clipboard.writeText(c.dataset.copy).then(() => toast('Reference number copied.')); return; }
     const b = e.target.closest('button[data-p]'); if(!b) return;
@@ -226,6 +322,134 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     } catch(err){ alert(err.message); row.querySelectorAll('button').forEach(x => x.disabled = false); }
   });
 
+  /* ---------- ACCOUNTS ---------- */
+  function statusOf(a){
+    const m = members.find(x => x.user_id === a.user_id);
+    const pend = pays.find(p => p.user_id === a.user_id && p.status === 'pending');
+    const last = pays.filter(p => p.user_id === a.user_id).sort((x, y) => new Date(y.created_at) - new Date(x.created_at))[0];
+    const live = m && !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date());
+    if(a.is_admin) return { key:'admin', label:'OWNER', cls:'ok', m, pay:last };
+    if(pend) return { key:'review', label:'UNDER REVIEW', cls:'rev', m, pay:pend };
+    if(live) return { key:'approved', label:'APPROVED', cls:'ok', m, pay:last };
+    if(m && m.revoked) return { key:'expired', label:'PAUSED', cls:'bad', m, pay:last };
+    if(m) return { key:'expired', label:'EXPIRED', cls:'bad', m, pay:last };
+    if(last && last.status === 'rejected') return { key:'declined', label:'DECLINED', cls:'bad', m, pay:last };
+    return { key:'unpaid', label:'NOT YET PAID', cls:'no', m, pay:last };
+  }
+  function renderAccounts(){
+    const q = $('sq').value.trim().toLowerCase();
+    const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || r.s.key === filt).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref, r.s.m && r.s.m.aff_code].join(' ').toLowerCase().includes(q));
+    const n = accounts.filter(a => !a.is_admin).length; $('tn').textContent = n; $('tn').classList.toggle('zero', !n);
+    $('rows').innerHTML = rows.map(({ a, s }) => {
+      const m = s.m, ref = (s.pay && s.pay.ref_no) || (m && m.ref) || '';
+      const proof = s.pay && s.pay.proof_url;
+      const pkg = (m && m.package) || (s.pay && s.pay.package) || '';
+      const fb = a.fb ? '<a href="https://m.me/' + encodeURIComponent(a.fb.replace(/\s+/g, '')) + '" target="_blank" rel="noopener">' + esc(a.fb) + '</a>' : '<span style="color:var(--mute)">—</span>';
+      const until = m ? (m.expires_at ? day(m.expires_at) : 'Lifetime') : '—';
+      const dev = m ? (m.devices || 0) + ' / 5' + (m.active ? '<small>on: ' + esc(m.active.kind === 'computer' ? 'laptop/PC' : m.active.kind) + ' · ' + ago(m.active.at) + '</small>' : '<small>not logged in</small>') : '—';
+      const aff = m && m.aff_code ? esc(m.aff_code) + (m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
+      const acts = a.is_admin ? '' : '<div class="rowacts">' +
+        (s.key === 'unpaid' || s.key === 'declined' ? '<button class="btn ghost mini" data-s="lead">Follow up</button>' : '') +
+        (m ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="renew">Renew</button><button class="btn ghost mini" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn ghost mini" data-s="dev">Reset devices</button>' : '<button class="btn ghost mini" data-s="renew">Give access</button>') +
+        '<button class="btn ghost mini" data-s="link">Password link</button><button class="btn no mini" data-s="del">Delete</button></div>';
+      return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b><small>since ' + day(a.created_at) + (a.provider === 'google' ? ' · Google' : '') + '</small></td><td class="em">' + esc(a.email) + '</td><td>' + (a.phone ? esc(a.phone) : '<span style="color:var(--mute)">—</span>') + '</td><td>' + fb + '</td><td>' + (pkg ? esc(NAMES[pkg]) : '—') + '</td><td><span class="st ' + s.cls + '">' + s.label + '</span></td><td>' + until + '</td><td>' + (ref ? '<span class="ref"><b>' + esc(ref) + '</b></span>' : '—') + '</td><td>' + (proof ? '<a href="' + proof + '" target="_blank" rel="noopener"><img class="th" src="' + proof + '" alt="receipt"></a>' : '—') + '</td><td>' + dev + '</td><td>' + aff + '</td><td>' + acts + '</td></tr>';
+    }).join('') || '<tr><td colspan="12" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
+  }
+  $('sq').addEventListener('input', renderAccounts);
+  $('chips').addEventListener('click', e => { const b = e.target.closest('button[data-f]'); if(!b) return; filt = b.dataset.f; [...$('chips').children].forEach(x => x.classList.toggle('on', x === b)); renderAccounts(); });
+  $('rows').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-s]'); if(!b) return;
+    const uid = b.closest('tr').dataset.uid, a = accounts.find(x => x.user_id === uid); if(!a) return;
+    const s = statusOf(a), m = s.m, who = a.name || a.email;
+    if(b.dataset.s === 'lead') return showMsg('Follow-up for ' + who, leadMsg(a.name));
+    if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
+    if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; showTab('tools'); $('val').focus(); return; }
+    b.disabled = true;
+    try {
+      if(b.dataset.s === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')){ await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); await load(); } }
+      if(b.dataset.s === 'dev'){ if(confirm('Reset devices for ' + who + '? All their registered devices are cleared and they are signed out everywhere; the next devices they use will be registered.')){ await call({ action:'reset_devices', user_id:uid }); toast('Devices reset.'); await load(); } }
+      if(b.dataset.s === 'link'){ const r = await call({ action:'link', email:a.email }); showMsg('Set-password link for ' + who, 'Hi ' + first(a.name) + ', open this link to set a new ECADEMY password (it works once):\n\n' + r.link + '\n\nThen log in at https://ecademymaritime.com.\n\nECADEMY Maritime'); }
+      if(b.dataset.s === 'del'){ const typed = prompt('DELETE ' + who + '?\n\nThis removes the account, package, devices and payment records for good. They can no longer log in.\n\nType DELETE to confirm:'); if(typed === 'DELETE'){ await call({ action:'delete_user', user_id:uid }); toast('Account deleted.'); await load(); } }
+    } catch(err){ alert(err.message); }
+    b.disabled = false;
+  });
+  $('csv').onclick = () => {
+    const c = v => '"' + String(v ?? '').replace(/"/g,'""') + '"';
+    const csv = ['name,email,phone,messenger,status,package,valid_until,ref,affiliate,commission,commission_paid,signed_up'].concat(accounts.filter(a => !a.is_admin).map(a => { const s = statusOf(a), m = s.m; return [a.name, a.email, a.phone, a.fb, s.label, m ? NAMES[m.package] : '', m ? (m.expires_at || 'lifetime') : '', (s.pay && s.pay.ref_no) || (m && m.ref) || '', m && m.aff_code, m && m.commission, m && m.commission_paid_at, a.created_at].map(c).join(','); })).join('\n');
+    const el = document.createElement('a'); el.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv' })); el.download = 'ECADEMY_accounts_' + new Date().toISOString().slice(0,10) + '.csv'; el.click();
+  };
+
+  /* ---------- AFFILIATES ---------- */
+  const affLink = a => 'https://ecademymaritime.com/?ref=' + a.code;
+  const dashLink = a => 'https://ecademymaritime.com/aff.html?k=' + a.secret;
+  const kitMsg = a => 'Hi ' + first(a.name) + ', here is your ECADEMY affiliate kit. You earn ' + Number(a.rate_pct) + '% of every enrollment that comes through your link.\n\nYour link to share:\n' + affLink(a) + '\n\nYour private dashboard (clicks, enrollees, commission) — do not share this one:\n' + dashLink(a) + '\n\nTip: post the link with a short note on why you train with ECADEMY, and send it directly to classmates who are preparing for their next rank.\n\nECADEMY Maritime';
+  function affHint(){
+    const c = $('aff').value.trim().toUpperCase(); const a = affs.find(x => x.code === c); const amt = num($('amt').value);
+    $('affHint').innerHTML = !c ? '' : !a ? '<span class="no-t">No affiliate with code ' + esc(c) + '</span>' : esc(a.name) + ' · ' + a.rate_pct + '%' + (amt != null ? ' → commission <b>' + peso(Math.round(amt * a.rate_pct) / 100) + '</b>' : '') + (a.active ? '' : ' · <span class="no-t">paused</span>');
+  }
+  $('aff').addEventListener('input', affHint); $('amt').addEventListener('input', affHint);
+  function renderAff(){
+    $('affCodes').innerHTML = affs.map(a => `<option value="${esc(a.code)}">${esc(a.name)}</option>`).join('');
+    const unpaid = affs.reduce((s, a) => s + Number(a.unpaid || 0), 0);
+    $('acount').textContent = affs.length + ' affiliate' + (affs.length === 1 ? '' : 's') + ' · ' + affs.reduce((s, a) => s + a.clicks, 0) + ' clicks · ' + affs.reduce((s, a) => s + a.enrollees, 0) + ' enrollees · unpaid commission ' + peso(unpaid);
+    $('arows').innerHTML = affs.map(a => `<tr>
+      <td class="wrap"><b>${esc(a.name)}</b><small>Code <b>${esc(a.code)}</b> · ${a.rate_pct}%${a.contact ? ' · GCash ' + esc(a.contact) : ''}${a.active ? '' : ' · <span class="no-t">paused</span>'}</small></td>
+      <td>${a.clicks}</td><td>${a.enrollees}</td><td>${peso(a.earned)}</td><td>${a.unpaid > 0 ? '<span class="soon-t">' + peso(a.unpaid) + '</span>' : '—'}</td>
+      <td><div class="rowacts"><button class="btn mini" data-c="kit" data-code="${esc(a.code)}">Copy kit</button><button class="btn ghost mini" data-c="link" data-code="${esc(a.code)}">Copy link</button><button class="btn ghost mini" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="btn ghost mini" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="btn ghost mini" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">No affiliates yet. Add the first one above.</td></tr>';
+    const cm = members.filter(m => m.aff_code).sort((x, y) => new Date(y.updated_at || y.created_at) - new Date(x.updated_at || x.created_at));
+    $('crows').innerHTML = cm.map(m => { const a = affs.find(x => x.code === m.aff_code); return '<tr data-uid="' + esc(m.user_id) + '"><td class="wrap"><b>' + esc(a ? a.name : m.aff_code) + '</b><small>' + esc(m.aff_code) + '</small></td><td class="wrap">' + esc(m.name || m.email) + '</td><td>' + esc(NAMES[m.package]) + '</td><td>' + peso(m.amount) + '</td><td><b>' + (m.commission == null ? '—' : peso(m.commission)) + '</b></td><td>' + (m.commission_paid_at ? '<span class="st ok">PAID ' + day(m.commission_paid_at) + '</span>' : '<span class="st rev">TO PAY</span>') + '</td><td>' + (m.commission == null ? '' : '<button class="btn ghost mini" data-paid="' + (m.commission_paid_at ? '0' : '1') + '">' + (m.commission_paid_at ? 'Undo' : 'Mark paid') + '</button>') + '</td></tr>'; }).join('') || '<tr><td colspan="7" style="color:var(--mute);padding:18px">No affiliate enrollments yet.</td></tr>';
+  }
+  $('af').addEventListener('submit', async e => {
+    e.preventDefault(); $('ab').disabled = true; $('aerr').textContent = '';
+    try { await call({ action:'aff_save', name:$('aName').value.trim(), code:$('aCode').value.trim().toUpperCase(), rate_pct:parseFloat($('aRate').value), contact:$('aContact').value.trim(), active:true });
+      $('af').reset(); $('aRate').value = 20; toast('Affiliate saved. Press "Copy kit" to send them their links.'); await load(); } catch(err){ $('aerr').textContent = err.message; }
+    $('ab').disabled = false;
+  });
+  $('arows').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-c]'); if(!b) return; const a = affs.find(x => x.code === b.dataset.code); if(!a) return;
+    if(b.dataset.c === 'link') return copyBtn(b, affLink(a), 'Affiliate link');
+    if(b.dataset.c === 'kit') return showMsg('Affiliate kit for ' + a.name, kitMsg(a));
+    if(b.dataset.c === 'edit'){ $('aName').value = a.name; $('aCode').value = a.code; $('aRate').value = a.rate_pct; $('aContact').value = a.contact || ''; $('aName').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+    b.disabled = true;
+    try {
+      if(b.dataset.c === 'pause') await call({ action:'aff_save', code:a.code, name:a.name, rate_pct:a.rate_pct, contact:a.contact, active:!a.active });
+      if(b.dataset.c === 'secret' && confirm('Make a new dashboard link for ' + a.name + '? The old one stops working.')) await call({ action:'aff_newsecret', code:a.code });
+      await load();
+    } catch(err){ alert(err.message); }
+    b.disabled = false;
+  });
+  $('crows').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-paid]'); if(!b) return; const uid = b.closest('tr').dataset.uid;
+    b.disabled = true;
+    try { await call({ action:'aff_paid', user_id:uid, paid:b.dataset.paid === '1' }); await load(); } catch(err){ alert(err.message); }
+    b.disabled = false;
+  });
+
+  /* ---------- TOOLS: give access by hand ---------- */
+  function showOut(title, msg, link){ lastLink = link || ''; $('outTitle').textContent = title; $('msg').textContent = msg; $('copyLink').classList.toggle('hidden', !link); $('out').classList.add('show'); $('out').scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+  $('copyMsg').onclick = e => copyBtn(e.target, $('msg').textContent, 'Message');
+  $('copyLink').onclick = e => copyBtn(e.target, lastLink, 'Link');
+  $('ef').addEventListener('submit', async e => {
+    e.preventDefault(); $('eb').disabled = true; $('eerr').textContent = '';
+    const body = { action:'enroll', aff_code:$('aff').value.trim().toUpperCase(), email:$('email').value.trim().toLowerCase(), name:$('name').value.trim(), package:$('pkg').value, validity:$('val').value, amount:$('amt').value.trim(), ref:$('ref').value.trim(), extend:$('extend').checked, newLink:$('newLink').checked };
+    try {
+      const r = await call(body);
+      showOut(r.link ? 'Access given — send this to ' + (body.name || body.email) : 'Access updated for ' + (body.name || body.email), manualMsg(body.name, body.package, r.member.expires_at, r.link), r.link);
+      $('amt').value = ''; $('ref').value = ''; $('aff').value = ''; affHint(); await load();
+    } catch(err){ $('eerr').textContent = err.message; }
+    $('eb').disabled = false;
+  });
+
+  /* ---------- load everything ---------- */
+  async function loadAccounts(){ const { data, error } = await sb.rpc('admin_accounts'); if(error) throw new Error(error.message); if(data && data.error) throw new Error(data.error); accounts = (data && data.accounts) || []; }
+  async function fetchAll(){
+    const [p, m, a] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), call({ action:'aff_list' }), loadAccounts()]);
+    pays = p.payments; members = m.members; affs = a.affiliates;
+  }
+  function renderAll(){ renderPays(); renderAccounts(); renderAff(); }
+  async function load(){ try { await fetchAll(); renderAll(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+
+  /* ---------- auth ---------- */
   $('lf').addEventListener('submit', async e => {
     e.preventDefault(); $('lb').disabled = true; $('lerr').textContent = '';
     const { error } = await sb.auth.signInWithPassword({ email: $('le').value.trim().toLowerCase(), password: $('lp').value });
@@ -233,7 +457,13 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     if(error){ $('lerr').textContent = /invalid/i.test(error.message) ? 'Wrong email or password.' : error.message; return; }
     boot();
   });
-  $('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+  $('forgot').onclick = async e => { e.preventDefault(); const em = $('le').value.trim().toLowerCase(); if(!em){ $('lerr').textContent = 'Type your email first.'; return; }
+    const { error } = await sb.auth.resetPasswordForEmail(em, { redirectTo: HUB + 'approve.html' }); $('lerr').textContent = error ? error.message : 'Check your email for the reset link.'; };
+  sb.auth.onAuthStateChange(async ev => {
+    if(ev === 'PASSWORD_RECOVERY'){ const p = prompt('Type your new admin password (at least 8 characters):'); if(p && p.length >= 8){ const { error } = await sb.auth.updateUser({ password:p }); alert(error ? error.message : 'Password saved.'); } }
+  });
+  const logout = async () => { await sb.auth.signOut(); location.reload(); };
+  $('logout').onclick = logout; $('out2').onclick = logout;
   $('reload').onclick = load;
   setInterval(() => { if(!$('app').classList.contains('hidden')) load(); }, 30000);
   document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); });
@@ -243,8 +473,8 @@ input:focus,select:focus{outline:2px solid #1E6FA8;border-color:#1E6FA8}
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ view('loginView'); return; }
     $('who').textContent = session.user.email;
-    try { const [p, m] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), loadAccounts()]); pays = p.payments; members = m.members; view('app'); render(); renderStudents(); }
-    catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
+    try { await fetchAll(); view('app'); renderAll(); showTab(location.hash.slice(1)); }
+    catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); showTab(location.hash.slice(1)); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   }
   boot();
 })();

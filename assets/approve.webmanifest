@@ -1,2 +1,2 @@
-{ "name": "ECADEMY Payments", "short_name": "ECADEMY Pay", "start_url": "/approve.html", "display": "standalone", "background_color": "#F7FAFB", "theme_color": "#12304F",
+{ "name": "ECADEMY Admin", "short_name": "ECADEMY Admin", "start_url": "/approve.html", "display": "standalone", "background_color": "#F7FAFB", "theme_color": "#12304F",
   "icons": [ { "src": "/assets/approve-icon-512.png", "sizes": "512x512", "type": "image/png" }, { "src": "/assets/approve-icon-180.png", "sizes": "180x180", "type": "image/png" } ] }
