@@ -19,12 +19,23 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Albert S
 header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:12px}
 header .t{flex:1;font-weight:700;letter-spacing:.02em}header .t small{display:block;font-weight:400;opacity:.75;font-size:.78rem}
 header button{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;padding:9px 12px;font:600 .85rem inherit;cursor:pointer}
-nav.tabs{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:4;background:var(--card);border-bottom:1px solid var(--rule);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
-nav.tabs button{flex:1 0 auto;min-width:96px;min-height:48px;padding:0 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--mute);font:600 .9rem inherit;cursor:pointer;white-space:nowrap}
-nav.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
-nav.tabs .badge{margin-left:6px}
-main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));max-width:1240px;margin:0 auto}
-.wide{max-width:none;margin-left:calc(50% - 50vw + 10px);margin-right:calc(50% - 50vw + 10px)}
+.shell{display:grid;grid-template-columns:1fr;max-width:1400px;margin:0 auto}
+main{padding:14px 14px calc(30px + env(safe-area-inset-bottom));min-width:0}
+nav.side{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:4;background:var(--card);border-bottom:1px solid var(--rule);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav.side button{flex:1 0 auto;min-width:96px;min-height:48px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:none;color:var(--mute);font:600 .9rem inherit;cursor:pointer;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px}
+nav.side button.on{color:var(--brand);border-bottom-color:var(--brand)}
+@media (min-width:960px){
+  .shell{grid-template-columns:210px minmax(0,1fr);align-items:start}
+  nav.side{position:sticky;top:calc(58px + env(safe-area-inset-top));height:calc(100vh - 58px);flex-direction:column;border-bottom:0;border-right:1px solid var(--rule);padding:14px 10px;gap:4px;background:var(--card)}
+  nav.side button{flex:0 0 auto;min-height:44px;justify-content:space-between;text-align:left;border-radius:10px;border-bottom:0;padding:0 12px}
+  nav.side button.on{background:#E8F0F5}
+  main{padding:18px 22px 40px}
+}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media (max-width:640px){.tiles{grid-template-columns:1fr 1fr}}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:12px 14px}
+.tile b{display:block;font-size:1.6rem;line-height:1.2;font-variant-numeric:tabular-nums}.tile span{color:var(--mute);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em}
+.tile.warn b{color:var(--amber)}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(12,45,72,.05)}
 h2{margin:0 0 6px;font-size:1.05rem}
 .sub{color:var(--mute);font-size:.86rem;margin:0 0 12px}
@@ -63,10 +74,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 .chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{border:1px solid var(--rule);background:#fff;color:var(--ink2);border-radius:999px;padding:7px 12px;font:600 .8rem inherit;cursor:pointer}.chips button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .twrap{overflow:auto;-webkit-overflow-scrolling:touch}
 .tbl{width:100%;border-collapse:collapse;font-size:.82rem;min-width:1320px}
+.card .twrap{margin:0 -16px;padding:0 16px}
 .tbl.aff{min-width:760px}
 .tbl th{position:sticky;top:0;background:#fff;text-align:left;color:var(--mute);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
 .tbl td{padding:8px 8px;border-bottom:1px solid var(--rule);vertical-align:middle;white-space:nowrap}
-.tbl td.em{white-space:normal;word-break:break-all;max-width:190px}
+.tbl td.em{white-space:nowrap}
 .tbl td.wrap{white-space:normal;min-width:160px}
 .tbl td small{display:block;color:var(--mute);font-size:.74rem;white-space:normal}
 .tbl tr:hover td{background:#F7FAFB}
@@ -82,18 +94,18 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 .out.show{display:block}
 .out pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 10px;font:inherit;font-size:.9rem;color:var(--ink2)}
 .panel{display:block;scroll-margin-top:118px}
-nav.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
 details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}details.adv summary::before{content:"▸";font-size:.9rem}details.adv[open] summary::before{content:"▾"}
 .modal{position:fixed;inset:0;z-index:20;background:rgba(12,45,72,.5);display:grid;place-items:center;padding:16px}
 </style>
 </head>
 <body>
 <header><div class="t">ECADEMY · Admin<small id="who">Everything on one page</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
-<nav class="tabs hidden" id="tabs">
-  <button data-t="payments" class="on">Payments<span class="badge zero" id="n">0</span></button>
-  <button data-t="accounts">Accounts<span class="badge zero" id="tn">0</span></button>
-  <button data-t="affiliates">Affiliates</button>
-  <button data-t="tools">Tools</button>
+<div class="shell">
+<nav class="side hidden" id="tabs">
+  <button data-t="payments" class="on"><span>To approve</span><span class="badge zero" id="n">0</span></button>
+  <button data-t="accounts"><span>Students</span><span class="badge zero" id="tn">0</span></button>
+  <button data-t="affiliates"><span>Referrals</span></button>
+  <button data-t="tools"><span>Advanced</span></button>
 </nav>
 <main>
   <section class="card" id="loginView">
@@ -112,63 +124,66 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
 
   <div id="app" class="hidden">
 
-    <!-- ===================== PAYMENTS ===================== -->
-    <div class="panel on" id="p-payments">
+    <div class="tiles" id="tiles">
+      <div class="tile warn"><b id="tPend">0</b><span>To approve</span></div>
+      <div class="tile"><b id="tActive">0</b><span>Active students</span></div>
+      <div class="tile"><b id="tLeads">0</b><span>Not yet paid</span></div>
+      <div class="tile"><b id="tComm">₱0</b><span>Commission to pay</span></div>
+    </div>
+
+    <!-- 1 · TO APPROVE -->
+    <div class="panel" id="p-payments">
       <section class="card">
         <h2>Waiting for your approval <span class="badge zero" id="n2">0</span></h2>
-        <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds. A <b>referred by</b> code means the commission is recorded automatically when you approve.</p>
+        <p class="sub">Open GCash → Transactions → compare the <b>Ref No.</b> → Approve. Their decks open on their screen within 30 seconds. <b>Referred by</b> = the commission is recorded by itself when you approve.</p>
         <div id="list"></div>
-      </section>
-      <section class="card">
-        <h2>Recent decisions</h2>
-        <div class="hist" id="hist"></div>
-      </section>
-      <section class="card tip" id="homeTip">
-        <b>Tip for your tablet or phone:</b> open this page in Safari (iPad/iPhone) or Chrome (Android) → Share / menu → <b>Add to Home Screen</b>. It becomes an app icon called <b>ECADEMY Admin</b> that opens full-screen.
       </section>
     </div>
 
-    <!-- ===================== ACCOUNTS ===================== -->
+    <!-- 2 · STUDENTS -->
     <div class="panel" id="p-accounts">
-      <section class="card wide" style="padding:16px 0 10px">
-        <div style="padding:0 16px"><h2>All accounts <span class="badge zero" id="tn2">0</span></h2>
-        <p class="sub">Everyone who created an account on the hub. <b>Not yet paid</b> = leads to follow up on Messenger.</p>
+      <section class="card">
+        <h2>Students <span class="badge zero" id="tn2">0</span></h2>
+        <p class="sub">Everyone with an account. <b>Their link</b> is made the moment you approve them. <b>Not yet paid</b> = follow up on Messenger.</p>
         <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
-        <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., affiliate" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div></div>
+        <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., code" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div>
         <div class="twrap"><table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Messenger</th><th>Package</th><th>Status</th><th>Valid until</th><th>Ref No.</th><th>Proof</th><th>Devices</th><th>Their link</th><th>Referred by</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
       </section>
     </div>
 
-    <!-- ===================== AFFILIATES ===================== -->
+    <!-- 3 · REFERRALS -->
     <div class="panel" id="p-affiliates">
       <section class="card">
-        <h2>Affiliates</h2>
-        <p class="sub"><b>Every student gets a link the moment you approve them</b> — it shows in the Accounts table above (Their link) and in the hub (Share my link), and they appear in this list by themselves. Use the form only for a non-student partner (an agency, a page admin). A link is <b>ecademymaritime.com/?ref=CODE</b>. Anyone who opens it carries the code for 60 days; when they pay and you press <b>Approve</b>, the commission is recorded by itself. Press <b>Copy kit</b> and paste it to the affiliate on Messenger — it has their share link and their private dashboard (clicks, enrollees, commission).</p>
-        <form id="af" class="affform">
-          <div><label for="aName">Affiliate name</label><input id="aName" required placeholder="3/O Juan dela Cruz" autocomplete="off"></div>
-          <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
-          <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="20"></div>
-          <div><label for="aContact">GCash number (for payouts)</label><input id="aContact" placeholder="09XX XXX XXXX" autocomplete="off"></div>
-          <div><button class="btn" id="ab" type="submit" style="width:100%">Save affiliate</button></div>
-        </form>
-        <div class="err" id="aerr" role="alert"></div>
-      </section>
-      <section class="card wide" style="padding:16px 0 10px">
-        <div style="padding:0 16px"><p class="sub" id="acount"></p></div>
-        <div class="twrap"><table class="tbl aff"><thead><tr><th>Affiliate</th><th>Clicks</th><th>Enrollees</th><th>Commission</th><th>Unpaid</th><th></th></tr></thead><tbody id="arows"></tbody></table></div>
-      </section>
-      <section class="card">
-        <h2>Commissions to pay out</h2>
-        <p class="sub">Each approved enrollment that came through an affiliate. Pay the affiliate by GCash, then press <b>Mark paid</b>.</p>
-        <div class="twrap"><table class="tbl aff"><thead><tr><th>Affiliate</th><th>Student</th><th>Package</th><th>Paid by student</th><th>Commission</th><th>Status</th><th></th></tr></thead><tbody id="crows"></tbody></table></div>
+        <h2>Referrals &amp; commissions</h2>
+        <p class="sub" id="acount"></p>
+        <div class="twrap"><table class="tbl aff"><thead><tr><th>Who</th><th>Clicks</th><th>Enrolled</th><th>Commission</th><th>Unpaid</th><th></th></tr></thead><tbody id="arows"></tbody></table></div>
+        <h2 style="margin-top:18px">To pay out</h2>
+        <p class="sub">Each approved enrollment that came through a link. Send the commission by GCash, then press <b>Mark paid</b>.</p>
+        <div class="twrap"><table class="tbl aff"><thead><tr><th>Pay to</th><th>For enrolling</th><th>Package</th><th>Student paid</th><th>Commission</th><th>Status</th><th></th></tr></thead><tbody id="crows"></tbody></table></div>
+        <details class="adv" style="margin-top:16px">
+          <summary>Add a non-student partner (agency, page admin)</summary>
+          <p class="sub" style="margin-top:8px">Students never need this — their link is automatic. A partner's link is <b>ecademymaritime.com/?ref=CODE</b>; press <b>Copy kit</b> to send it to them.</p>
+          <form id="af" class="affform">
+            <div><label for="aName">Name</label><input id="aName" required placeholder="Juan dela Cruz" autocomplete="off"></div>
+            <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
+            <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="20"></div>
+            <div><label for="aContact">GCash number</label><input id="aContact" placeholder="09XX XXX XXXX" autocomplete="off"></div>
+            <div><button class="btn" id="ab" type="submit" style="width:100%">Save</button></div>
+          </form>
+          <div class="err" id="aerr" role="alert"></div>
+        </details>
       </section>
     </div>
 
-    <!-- ===================== TOOLS ===================== -->
+    <!-- 4 · HISTORY + ADVANCED -->
     <div class="panel" id="p-tools">
+      <section class="card">
+        <h2>Recent decisions</h2>
+        <div class="hist" id="hist"></div>
+      </section>
       <details class="adv card" id="adv">
-        <summary>Give access by hand (advanced — exceptions only)</summary>
-        <p class="sub">For exceptions only — a free account, a gift, a bank transfer, or a student who cannot use the GCash form. Normal students sign up and pay on the hub themselves and appear under <b>Payments</b>.</p>
+        <summary>Give access by hand (exceptions only)</summary>
+        <p class="sub" style="margin-top:8px">A free account, a gift, a bank transfer, or a student who cannot use the GCash form. Normal students sign up and pay on the hub and appear under <b>To approve</b>.</p>
         <form id="ef">
           <label for="email">Student email</label><input id="email" type="email" required placeholder="juan.delacruz@gmail.com" autocomplete="off">
           <label for="name">Name (shown in the hub)</label><input id="name" placeholder="Juan dela Cruz" autocomplete="off">
@@ -177,7 +192,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
             <div><label for="val">Access for</label><select id="val"><option value="h1">Trial · 1 hour</option><option value="d1">1 day</option><option value="d7">7 days</option><option value="m1">1 month</option><option value="m3">3 months</option><option value="m6" selected>6 months</option><option value="y1">1 year</option><option value="life">Lifetime</option></select></div>
           </div>
           <div class="two"><div><label for="amt">Amount paid (₱, optional)</label><input id="amt" placeholder="1899" inputmode="decimal"></div><div><label for="ref">Reference no. (optional)</label><input id="ref" placeholder="GCash / bank ref"></div></div>
-          <label for="aff">Referred by · affiliate code (optional)</label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="sub" id="affHint" style="margin:4px 0 0"></div>
+          <label for="aff">Referred by · code (optional)</label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="sub" id="affHint" style="margin:4px 0 0"></div>
           <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
           <label class="check"><input type="checkbox" id="newLink"> Also make a set-password link (for a student who never set one)</label>
           <button class="btn full" id="eb" type="submit">Give access</button>
@@ -189,14 +204,14 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
           <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost mini" id="copyMsg" type="button" style="min-height:36px">Copy message</button><button class="btn ghost mini" id="copyLink" type="button" style="min-height:36px">Copy link only</button></div>
         </div>
       </details>
-      <section class="card">
-        <h2>Links</h2>
-        <p class="sub" style="margin:0">Hub: <a href="https://ecademymaritime.com/" target="_blank" rel="noopener">ecademymaritime.com</a> · Free radar demo: <a href="https://ecademymaritime.com/#radar-demo" target="_blank" rel="noopener">/#radar-demo</a> · This page: <b>ecademymaritime.com/approve.html</b></p>
+      <section class="card tip" id="homeTip">
+        <b>Phone or tablet:</b> Safari / Chrome → Share / menu → <b>Add to Home Screen</b> → an app icon called <b>ECADEMY Admin</b>. &nbsp; Hub: <a href="https://ecademymaritime.com/" target="_blank" rel="noopener">ecademymaritime.com</a> · Free radar demo: <a href="https://ecademymaritime.com/#radar-demo" target="_blank" rel="noopener">/#radar-demo</a>
       </section>
     </div>
 
   </div>
 </main>
+</div>
 <div class="toast" id="toast"></div>
 <div id="msgModal" class="hidden modal">
   <div class="card" style="width:min(560px,100%);margin:0">
@@ -414,18 +429,18 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   function renderAff(){
     $('affCodes').innerHTML = affs.map(a => `<option value="${esc(a.code)}">${esc(a.name)}</option>`).join('');
     const unpaid = affs.reduce((s, a) => s + Number(a.unpaid || 0), 0);
-    $('acount').textContent = affs.length + ' affiliate' + (affs.length === 1 ? '' : 's') + ' · ' + affs.reduce((s, a) => s + a.clicks, 0) + ' clicks · ' + affs.reduce((s, a) => s + a.enrollees, 0) + ' enrollees · unpaid commission ' + peso(unpaid);
+    $('acount').textContent = affs.length + ' link' + (affs.length === 1 ? '' : 's') + ' · ' + affs.reduce((s, a) => s + a.clicks, 0) + ' clicks · ' + affs.reduce((s, a) => s + a.enrollees, 0) + ' enrollees · unpaid commission ' + peso(unpaid);
     $('arows').innerHTML = affs.map(a => `<tr>
       <td class="wrap"><b>${esc(a.name)}</b><small>Code <b>${esc(a.code)}</b> · ${a.rate_pct}%${a.contact ? ' · GCash ' + esc(a.contact) : ''}${a.active ? '' : ' · <span class="no-t">paused</span>'}</small></td>
       <td>${a.clicks}</td><td>${a.enrollees}</td><td>${peso(a.earned)}</td><td>${a.unpaid > 0 ? '<span class="soon-t">' + peso(a.unpaid) + '</span>' : '—'}</td>
-      <td><div class="rowacts"><button class="btn mini" data-c="kit" data-code="${esc(a.code)}">Copy kit</button><button class="btn ghost mini" data-c="link" data-code="${esc(a.code)}">Copy link</button><button class="btn ghost mini" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="btn ghost mini" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="btn ghost mini" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">No affiliates yet. Add the first one above.</td></tr>';
+      <td><div class="rowacts"><button class="btn mini" data-c="kit" data-code="${esc(a.code)}">Copy kit</button><button class="btn ghost mini" data-c="link" data-code="${esc(a.code)}">Copy link</button><button class="btn ghost mini" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="btn ghost mini" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="btn ghost mini" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">No links yet — the first approved student appears here.</td></tr>';
     const cm = members.filter(m => m.aff_code).sort((x, y) => new Date(y.updated_at || y.created_at) - new Date(x.updated_at || x.created_at));
     $('crows').innerHTML = cm.map(m => { const a = affs.find(x => x.code === m.aff_code); return '<tr data-uid="' + esc(m.user_id) + '"><td class="wrap"><b>' + esc(a ? a.name : m.aff_code) + '</b><small>' + esc(m.aff_code) + '</small></td><td class="wrap">' + esc(m.name || m.email) + '</td><td>' + esc(NAMES[m.package]) + '</td><td>' + peso(m.amount) + '</td><td><b>' + (m.commission == null ? '—' : peso(m.commission)) + '</b></td><td>' + (m.commission_paid_at ? '<span class="st ok">PAID ' + day(m.commission_paid_at) + '</span>' : '<span class="st rev">TO PAY</span>') + '</td><td>' + (m.commission == null ? '' : '<button class="btn ghost mini" data-paid="' + (m.commission_paid_at ? '0' : '1') + '">' + (m.commission_paid_at ? 'Undo' : 'Mark paid') + '</button>') + '</td></tr>'; }).join('') || '<tr><td colspan="7" style="color:var(--mute);padding:18px">No affiliate enrollments yet.</td></tr>';
   }
   $('af').addEventListener('submit', async e => {
     e.preventDefault(); $('ab').disabled = true; $('aerr').textContent = '';
     try { await call({ action:'aff_save', name:$('aName').value.trim(), code:$('aCode').value.trim().toUpperCase(), rate_pct:parseFloat($('aRate').value), contact:$('aContact').value.trim(), active:true });
-      $('af').reset(); $('aRate').value = 20; toast('Affiliate saved. Press "Copy kit" to send them their links.'); await load(); } catch(err){ $('aerr').textContent = err.message; }
+      $('af').reset(); $('aRate').value = 20; toast('Saved. Press "Copy kit" to send them their links.'); await load(); } catch(err){ $('aerr').textContent = err.message; }
     $('ab').disabled = false;
   });
   $('arows').addEventListener('click', async e => {
@@ -469,7 +484,13 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     const [p, m, a] = await Promise.all([call({ action:'pay_list' }), call({ action:'list' }), call({ action:'aff_list' }), loadAccounts()]);
     pays = p.payments; members = m.members; affs = a.affiliates;
   }
-  function renderAll(){ renderPays(); renderAccounts(); renderAff(); }
+  function renderTiles(){
+    const pend = pays.filter(p => p.status === 'pending').length;
+    const st = accounts.filter(a => !a.is_admin).map(statusOf);
+    $('tPend').textContent = pend; $('tActive').textContent = st.filter(x => x.key === 'approved').length; $('tLeads').textContent = st.filter(x => x.key === 'unpaid' || x.key === 'declined').length;
+    $('tComm').textContent = peso(affs.reduce((t, a) => t + Number(a.unpaid || 0), 0));
+  }
+  function renderAll(){ renderPays(); renderAccounts(); renderAff(); renderTiles(); }
   async function load(){ try { await fetchAll(); renderAll(); } catch(e){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
 
   /* ---------- auth ---------- */
