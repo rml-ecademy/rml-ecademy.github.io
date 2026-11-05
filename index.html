@@ -2969,7 +2969,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       refresh().then(() => { if(linkType === 'invite' || linkType === 'recovery') openSetPw(linkType); else { toast('Welcome aboard, ' + displayName() + '.'); runAfterLogin(); } });
     }
   });
-  async function logout(){ stopWatch(); await sb.auth.signOut(); await refresh(); toast('Logged out.'); }
+  async function logout(){ stopWatch(); await sb.auth.signOut({ scope:'local' }); await refresh(); toast('Logged out.'); }
 
   /* ---------- one device at a time ---------- */
   const KICK_MSG = 'You were signed out because your ECADEMY account was opened on another device. Only one device can be logged in at a time; log in here again to continue on this device.';
@@ -2979,7 +2979,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     try {
       const { data, error } = await sb.rpc('claim_device', { p_device: deviceId(), p_label: UA.slice(0, 120) });
       if(error) return null;
-      if(data && data.ok === false){ await sb.auth.signOut(); openLogin(data.message); return false; }
+      if(data && data.ok === false){ await sb.auth.signOut({ scope:'local' }); openLogin(data.message); return false; }
       return true;
     } catch(_) { return null; }
   }
@@ -2989,7 +2989,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(busyCheck || document.hidden || !session || isAdmin || !watchT) return; busyCheck = true;
     try {
       const { data: active, error } = await sb.rpc('my_active_device');
-      if(!error && active && active !== deviceId()){ stopWatch(); await sb.auth.signOut(); await refresh(); openLogin(KICK_MSG); }
+      if(!error && active && active !== deviceId()){ stopWatch(); await sb.auth.signOut({ scope:'local' }); await refresh(); openLogin(KICK_MSG); }
     } catch(_){} finally { busyCheck = false; }
   }
   function watchActiveDevice(){ stopWatch(); watchT = setInterval(checkActive, 20000); }
