@@ -2562,6 +2562,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .login-box select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--shoal-2,rgba(255,255,255,.14));background:#fff;color:var(--ink,#0C2D48);font-size:1rem}
 .pay-ok{padding:14px 16px;border-radius:12px;background:var(--lagoon-soft,rgba(94,230,168,.12));border:1px solid rgba(19,138,134,.3);color:var(--ink,#fff);line-height:1.55}
 .dev-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
+.ref-link{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ref-link code{flex:1 1 220px;min-height:44px;display:flex;align-items:center;padding:0 12px;border-radius:10px;border:1px solid var(--rule,rgba(255,255,255,.2));background:var(--chart,rgba(255,255,255,.05));font:600 .95rem ui-monospace,Menlo,Consolas,monospace;word-break:break-all}.ref-link button{min-height:44px;padding:0 14px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd77a,var(--amber));color:#061622;font:700 .9rem inherit;cursor:pointer}.ref-link button.ghost{background:transparent;color:inherit;border:1px solid var(--rule,rgba(255,255,255,.25))}.ref-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.ref-tiles div{padding:10px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04));text-align:center}.ref-tiles b{display:block;font-size:1.3rem}.ref-tiles span{font-size:.72rem;opacity:.75;text-transform:uppercase;letter-spacing:.06em}.ref-list{font-size:.88rem}.ref-list div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule,rgba(255,255,255,.1))}.ref-cap{white-space:pre-wrap;font-size:.86rem;padding:10px 12px;border-radius:10px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04));margin:8px 0}
 .dev-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04))}
 .dev-row .ic{flex:0 0 34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--shoal,rgba(255,255,255,.08))}
 .dev-row .ic svg{width:18px;height:18px;fill:var(--ink,#fff)}
@@ -2686,6 +2687,18 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     <p>Up to 5 devices (2 phones, 1 tablet, 2 laptops/PCs). Only one device is logged in at a time: the latest device that opens ECADEMY stays, the previous one is signed out. You can remove one device every 7 days.</p>
     <div class="dev-list" id="devList">Loading…</div>
     <div class="err" id="devErr" role="alert"></div>
+  </div>
+</div>
+
+<!-- SHARE & EARN (every enrolled student has a referral link) -->
+<div class="enroll-modal" id="refModal" role="dialog" aria-modal="true" aria-labelledby="refH">
+  <div class="enroll-box login-box">
+    <button class="x" id="refClose" type="button" aria-label="Close">×</button>
+    <div class="tier">YOUR ACCOUNT</div>
+    <h3 id="refH">Share ECADEMY, earn 20%</h3>
+    <p id="refIntro">Send your link to classmates and shipmates. Every time someone enrolls through it, <b>20% of what they pay is yours</b>, sent to your GCash.</p>
+    <div class="dev-list" id="refBody">Loading…</div>
+    <div class="err" id="refErr" role="alert"></div>
   </div>
 </div>
 
@@ -2817,10 +2830,10 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   /* ---------- state ---------- */
   let session = null, member = null, pending = null, rejected = null, isAdmin = false, pkg = null, valid = false;
   let afterLogin = null;                     // e.g. { pay: 'A' } → open the payment form once logged in
-  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal'), otp: $('otpModal'), prof: $('profModal') };
+  const modals = { login: $('loginModal'), pw: $('pwModal'), enroll: $('enrollModal'), pay: $('payModal'), dev: $('devModal'), otp: $('otpModal'), prof: $('profModal'), ref: $('refModal') };
   const show = m => { Object.values(modals).forEach(x => x.classList.remove('open')); if(m) m.classList.add('open'); };
   Object.values(modals).forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); }));
-  ['loginClose','enrollClose','payClose','devClose','otpClose'].forEach(id => $(id).onclick = () => show(null));
+  ['loginClose','enrollClose','payClose','devClose','otpClose','refClose'].forEach(id => $(id).onclick = () => show(null));
 
   /* ---------- login / create account ---------- */
   let mode = 'in';
@@ -3032,17 +3045,18 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(session){
       const who = displayName();
       const state = pkg ? pkg.name : pending ? 'Payment under review' : 'No active package';
-      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a><a href="#" id="pillOut">Log out</a>';
+      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg ? '<a href="#" id="pillRef">Share &amp; earn</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
       pill.classList.toggle('ok', !!pkg); pill.onclick = null;
       $('pillOut').onclick = e => { e.preventDefault(); e.stopPropagation(); logout(); };
       $('pillDev').onclick = e => { e.preventDefault(); e.stopPropagation(); openDevices(); };
+      if($('pillRef')) $('pillRef').onclick = e => { e.preventDefault(); e.stopPropagation(); openReferral(); };
     } else { pill.innerHTML = lockSvg + '<span>Log in</span>'; pill.classList.remove('ok'); pill.onclick = () => openLogin(); }
     renderPlans();
     const bar = $('memberBar'); bar.className = 'member-bar';
     if(pkg){
       const until = isAdmin ? 'owner' : member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
-      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>');
-      bar.classList.add('show');
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Share &amp; earn 20%</a>';
+      bar.classList.add('show'); $('barRef').onclick = e => { e.preventDefault(); openReferral(); };
     } else if(session && pending){
       bar.innerHTML = clockSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' PAYMENT UNDER REVIEW · ' + PACKAGES[pending.package].name.toUpperCase() + ' · REF ' + esc(pending.ref_no) + ' <a href="#" id="barPay">Details</a>';
       bar.classList.add('show', 'pending'); $('barPay').onclick = e => { e.preventDefault(); openPay(pending.package); };
@@ -3184,6 +3198,26 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const l = label || ''; const os = /iPhone/.test(l) ? 'iPhone' : /iPad/.test(l) ? 'iPad' : /Android/.test(l) ? 'Android' : /Windows/.test(l) ? 'Windows PC' : /Macintosh/.test(l) ? 'Mac' : /Linux/.test(l) ? 'Linux' : (kind || 'Device');
     const br = /EdgA?\//.test(l) ? 'Edge' : /OPR\//.test(l) ? 'Opera' : /SamsungBrowser/.test(l) ? 'Samsung Internet' : /Firefox/.test(l) ? 'Firefox' : /CriOS|Chrome/.test(l) ? 'Chrome' : /Safari/.test(l) ? 'Safari' : 'Browser';
     return os + ' · ' + br;
+  }
+  /* ---------- share & earn: every enrolled student has a referral link; the code is made on first open ---------- */
+  async function openReferral(){
+    const body = $('refBody'), err = $('refErr'); err.textContent = ''; body.textContent = 'Loading…'; show(modals.ref);
+    const { data, error } = await sb.rpc('my_referral');
+    if(error || !data || !data.ok){ body.textContent = ''; err.textContent = (error && error.message) || (data && data.message) || 'Could not load your link.'; return; }
+    const link = 'https://ecademymaritime.com/?ref=' + data.code;
+    const E = data.enrollees || [], earned = E.reduce((t, e) => t + Number(e.commission || 0), 0), paid = E.filter(e => e.paid).reduce((t, e) => t + Number(e.commission || 0), 0);
+    const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH', { maximumFractionDigits: 2 });
+    const caption = 'Training for your next rank? I use ECADEMY Maritime — realistic Radar/ARPA, ECDIS, LSA/FFE, draft survey and ship-handling simulators, organised by rank from 3/O to Master. Try the free radar demo here:\n' + link;
+    $('refH').textContent = 'Share ECADEMY, earn ' + Number(data.rate) + '%';
+    body.innerHTML = '<div class="ref-link"><code>' + esc(link) + '</code><button type="button" id="refCopy">Copy link</button>' + (navigator.share ? '<button type="button" class="ghost" id="refShare">Share…</button>' : '') + '</div>' +
+      '<div class="ref-tiles"><div><b>' + data.clicks + '</b><span>link opens</span></div><div><b>' + E.length + '</b><span>enrolled</span></div><div><b>' + peso(earned) + '</b><span>earned</span></div></div>' +
+      (E.length ? '<div class="ref-list">' + E.map(e => '<div><span>' + esc(e.who) + ' · ' + esc((PACKAGES[e.package] || {}).name || e.package) + '</span><span>' + (e.commission == null ? '—' : peso(e.commission)) + (e.paid ? ' · paid' : ' · to be paid') + '</span></div>').join('') + '</div>' : '<p class="hint">No enrollments through your link yet. Your code <b>' + esc(data.code) + '</b> stays on a classmate\'s phone for 60 days after they open your link, so it counts even if they enroll later.</p>') +
+      '<p class="hint" style="margin-top:12px">Ready-to-post caption:</p><div class="ref-cap" id="refCap">' + esc(caption) + '</div><div class="ref-link"><button type="button" class="ghost" id="refCapCopy">Copy caption</button></div>' +
+      '<p class="hint">Commissions are paid by ECADEMY to your GCash' + (earned - paid > 0 ? ' — <b>' + peso(earned - paid) + '</b> waiting to be paid' : '') + '. Message us anytime for a payout.</p>';
+    const cp = (b, t) => (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => b.textContent = o, 1300); }, () => prompt('Copy:', t));
+    $('refCopy').onclick = e => cp(e.target, link);
+    $('refCapCopy').onclick = e => cp(e.target, caption);
+    if($('refShare')) $('refShare').onclick = () => navigator.share({ title:'ECADEMY Maritime', text:caption, url:link }).catch(() => {});
   }
   async function openDevices(){
     const list = $('devList'), err = $('devErr'); err.textContent = ''; list.textContent = 'Loading…'; show(modals.dev);
