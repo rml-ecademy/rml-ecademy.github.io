@@ -2563,6 +2563,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
 .pay-ok{padding:14px 16px;border-radius:12px;background:var(--lagoon-soft,rgba(94,230,168,.12));border:1px solid rgba(19,138,134,.3);color:var(--ink,#fff);line-height:1.55}
 .dev-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
 .ref-badge{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;background:#ffd77a;color:#061622;font-size:.68rem;font-weight:800;vertical-align:middle}
+.qr-wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}.qr-wrap .qr{width:168px;height:168px;border-radius:10px;background:#fff;padding:6px;border:1px solid var(--rule,rgba(0,0,0,.1))}.qr-side{flex:1 1 180px}
 .ref-link{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ref-link code{flex:1 1 220px;min-height:44px;display:flex;align-items:center;padding:0 12px;border-radius:10px;border:1px solid var(--rule,rgba(255,255,255,.2));background:var(--chart,rgba(255,255,255,.05));font:600 .95rem ui-monospace,Menlo,Consolas,monospace;word-break:break-all}.ref-link button{min-height:44px;padding:0 14px;border-radius:10px;border:0;background:linear-gradient(135deg,#ffd77a,var(--amber));color:#061622;font:700 .9rem inherit;cursor:pointer}.ref-link button.ghost{background:transparent;color:inherit;border:1px solid var(--rule,rgba(255,255,255,.25))}.ref-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.ref-tiles div{padding:10px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04));text-align:center}.ref-tiles b{display:block;font-size:1.3rem}.ref-tiles span{font-size:.72rem;opacity:.75;text-transform:uppercase;letter-spacing:.06em}.ref-list{font-size:.88rem}.ref-list div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule,rgba(255,255,255,.1))}.ref-cap{white-space:pre-wrap;font-size:.86rem;padding:10px 12px;border-radius:10px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04));margin:8px 0}
 .dev-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--rule,rgba(255,255,255,.14));background:var(--chart,rgba(255,255,255,.04))}
 .dev-row .ic{flex:0 0 34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--shoal,rgba(255,255,255,.08))}
@@ -2712,7 +2713,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const HUB = location.origin + '/';
   const MESSENGER = 'https://m.me/ecademymaritime';
   /* GCash account shown to students. Fill in number + name; leave empty to send students to Messenger for the details. */
-  const GCASH = { number: '', name: '' };
+  const GCASH = { number: '0918 501 7747', name: 'RE*****O L.', qr: 'media/gcash-qr.png' };   // name as GCash shows it on the receipt
   /* Current offer per package. amount '' = student types what was quoted on Messenger. */
   const OFFER = {
     A: { label: 'All Access · 6 months (pre-launch offer)', amount: '1899', validity: '6 months' },
@@ -3145,6 +3146,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     openPay(code);
   }
   function gcashBlock(){
+    if(GCASH.qr) return '<div class="pay-step"><b class="n">1</b><div>Pay via <b>GCash</b> — scan or upload this QR:' +
+      '<div class="qr-wrap"><img src="' + GCASH.qr + '" alt="ECADEMY GCash QR" class="qr"><div class="qr-side"><b>' + esc(GCASH.name) + '</b><br><span class="big">' + esc(GCASH.number) + '</span> <button type="button" class="copy" data-copy="' + esc(GCASH.number.replace(/\s/g, '')) + '">Copy</button>' +
+      '<p class="hint" style="margin:6px 0 0">On this phone: press and hold the QR → <b>Save image</b>, then in GCash: <b>Scan QR → Upload QR</b>. Or send to the number above (GCash → Send Money).</p></div></div></div></div>';
     if(GCASH.number) return '<div class="pay-step"><b class="n">1</b><div>Send the amount via <b>GCash</b> to<br><span class="big">' + esc(GCASH.number) + '</span><button type="button" class="copy" data-copy="' + esc(GCASH.number) + '">Copy</button><br>Account name: <b>' + esc(GCASH.name) + '</b></div></div>';
     return '<div class="pay-step"><b class="n">1</b><div>Message us on <a href="' + MESSENGER + '?text=' + encodeURIComponent('Hi ECADEMY, I want to pay via GCash. Please send me the GCash number.') + '" target="_blank" rel="noopener"><b>Messenger</b></a> to get the GCash number, then send the amount.</div></div>';
   }
@@ -3160,7 +3164,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       (rejected ? '<div class="notice" style="border-color:rgba(192,57,43,.35);background:rgba(192,57,43,.08)"><b>Your previous payment could not be confirmed.</b> ' + esc(rejected.note || '') + ' Please check and submit again.</div>' : '') +
       '<div class="pay-steps">' + gcashBlock() +
       '<div class="pay-step"><b class="n">2</b><div>' + (o.amount ? 'Amount: <span class="big">₱' + Number(o.amount).toLocaleString('en-PH') + '</span><br>' + esc(o.label) : esc(o.label) + ' — send the amount quoted to you on Messenger.') + '</div></div>' +
-      '<div class="pay-step"><b class="n">3</b><div>Enter the <b>GCash reference number</b> below (from the GCash receipt) and submit. We check it and open your decks — no waiting for a link.</div></div></div>' +
+      '<div class="pay-step"><b class="n">3</b><div>After paying, <b>scroll down ↓</b>, type the <b>13-digit reference number</b> from your GCash receipt, and press <b>Submit payment</b>. We check it and open your decks. <a href="#" id="goRef">Go to the form ↓</a></div></div></div>' +
       '<div class="pay-grid"><div><label for="payName">Full name</label><input id="payName" required minlength="5" maxlength="120" value="' + esc(name) + '" placeholder="e.g. Juan P. Dela Cruz"></div>' +
       '<div><label for="payPhone">Mobile number</label><input id="payPhone" required minlength="7" maxlength="40" inputmode="tel" value="' + esc(phone) + '" placeholder="09XX XXX XXXX"></div>' +
       '<div><label for="payAmount">Amount sent (₱)</label><input id="payAmount" required inputmode="decimal" maxlength="12" value="' + esc(o.amount || '') + '" placeholder="e.g. 1899"></div>' +
@@ -3170,6 +3174,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       '<div class="err" id="payErr" role="alert"></div>' +
       '<div class="row"><button class="cta" id="payBtn" type="submit">Submit payment</button><a class="ghost" href="' + MESSENGER + '" target="_blank" rel="noopener">Need help? Message us</a></div>';
     body.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => navigator.clipboard && navigator.clipboard.writeText(b.dataset.copy).then(() => toast('GCash number copied.')));
+    $('goRef').onclick = e => { e.preventDefault(); $('payRef').scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(() => $('payRef').focus(), 400); };
     $('payForm').dataset.pkg = code;
     show(modals.pay); setTimeout(() => $('payRef').focus(), 80);
   }
