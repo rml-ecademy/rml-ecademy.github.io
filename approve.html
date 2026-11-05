@@ -167,7 +167,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
           <form id="af" class="affform">
             <div><label for="aName">Name</label><input id="aName" required placeholder="Juan dela Cruz" autocomplete="off"></div>
             <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
-            <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="20"></div>
+            <div><label for="aRate">Commission %</label><input id="aRate" type="number" min="0" max="100" step="0.5" value="25"></div>
             <div><label for="aContact">GCash number</label><input id="aContact" placeholder="09XX XXX XXXX" autocomplete="off"></div>
             <div><button class="btn" id="ab" type="submit" style="width:100%">Save</button></div>
           </form>
@@ -447,7 +447,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   $('af').addEventListener('submit', async e => {
     e.preventDefault(); $('ab').disabled = true; $('aerr').textContent = '';
     try { await call({ action:'aff_save', name:$('aName').value.trim(), code:$('aCode').value.trim().toUpperCase(), rate_pct:parseFloat($('aRate').value), contact:$('aContact').value.trim(), active:true });
-      $('af').reset(); $('aRate').value = 20; toast('Saved. Press "Copy kit" to send them their links.'); await load(); } catch(err){ $('aerr').textContent = err.message; }
+      $('af').reset(); $('aRate').value = 25; toast('Saved. Press "Copy kit" to send them their links.'); await load(); } catch(err){ $('aerr').textContent = err.message; }
     $('ab').disabled = false;
   });
   $('arows').addEventListener('click', async e => {
