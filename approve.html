@@ -81,12 +81,14 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 .out{display:none;margin-top:16px;padding:14px;border-radius:12px;background:#F7FAFB;border:1px solid var(--rule)}
 .out.show{display:block}
 .out pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 10px;font:inherit;font-size:.9rem;color:var(--ink2)}
-.panel{display:none}.panel.on{display:block}
+.panel{display:block;scroll-margin-top:118px}
+nav.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}details.adv summary::before{content:"▸";font-size:.9rem}details.adv[open] summary::before{content:"▾"}
 .modal{position:fixed;inset:0;z-index:20;background:rgba(12,45,72,.5);display:grid;place-items:center;padding:16px}
 </style>
 </head>
 <body>
-<header><div class="t">ECADEMY · Admin<small id="who">Payments, accounts, affiliates</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
+<header><div class="t">ECADEMY · Admin<small id="who">Everything on one page</small></div><button id="bell" class="hidden" title="Get a sound and a notification when a new payment arrives">🔔 Alerts off</button><button id="reload" class="hidden">Refresh</button><button id="logout" class="hidden">Log out</button></header>
 <nav class="tabs hidden" id="tabs">
   <button data-t="payments" class="on">Payments<span class="badge zero" id="n">0</span></button>
   <button data-t="accounts">Accounts<span class="badge zero" id="tn">0</span></button>
@@ -113,7 +115,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
     <!-- ===================== PAYMENTS ===================== -->
     <div class="panel on" id="p-payments">
       <section class="card">
-        <h2>Waiting for your approval</h2>
+        <h2>Waiting for your approval <span class="badge zero" id="n2">0</span></h2>
         <p class="sub">Open your GCash app → Transactions → find the amount → compare the <b>Ref No.</b> with the one below. Match → Approve. Their decks open on their screen within 30 seconds. A <b>referred by</b> code means the commission is recorded automatically when you approve.</p>
         <div id="list"></div>
       </section>
@@ -129,7 +131,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
     <!-- ===================== ACCOUNTS ===================== -->
     <div class="panel" id="p-accounts">
       <section class="card wide" style="padding:16px 0 10px">
-        <div style="padding:0 16px"><h2>All accounts</h2>
+        <div style="padding:0 16px"><h2>All accounts <span class="badge zero" id="tn2">0</span></h2>
         <p class="sub">Everyone who created an account on the hub. <b>Not yet paid</b> = leads to follow up on Messenger.</p>
         <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button></div>
         <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., affiliate" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div></div>
@@ -164,8 +166,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 
     <!-- ===================== TOOLS ===================== -->
     <div class="panel" id="p-tools">
-      <section class="card">
-        <h2>Give access by hand</h2>
+      <details class="adv card" id="adv">
+        <summary>Give access by hand (advanced — exceptions only)</summary>
         <p class="sub">For exceptions only — a free account, a gift, a bank transfer, or a student who cannot use the GCash form. Normal students sign up and pay on the hub themselves and appear under <b>Payments</b>.</p>
         <form id="ef">
           <label for="email">Student email</label><input id="email" type="email" required placeholder="juan.delacruz@gmail.com" autocomplete="off">
@@ -186,7 +188,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
           <pre id="msg"></pre>
           <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost mini" id="copyMsg" type="button" style="min-height:36px">Copy message</button><button class="btn ghost mini" id="copyLink" type="button" style="min-height:36px">Copy link only</button></div>
         </div>
-      </section>
+      </details>
       <section class="card">
         <h2>Links</h2>
         <p class="sub" style="margin:0">Hub: <a href="https://ecademymaritime.com/" target="_blank" rel="noopener">ecademymaritime.com</a> · Free radar demo: <a href="https://ecademymaritime.com/#radar-demo" target="_blank" rel="noopener">/#radar-demo</a> · This page: <b>ecademymaritime.com/approve.html</b></p>
@@ -234,12 +236,12 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
 
   /* ---------- tabs ---------- */
   const TABS = ['payments','accounts','affiliates','tools'];
-  function showTab(t){
+  function showTab(t){                      // everything is on one screen; the bar only jumps to a section
     if(!TABS.includes(t)) t = 'payments';
-    TABS.forEach(x => { $('p-' + x).classList.toggle('on', x === t); });
     [...$('tabs').children].forEach(b => b.classList.toggle('on', b.dataset.t === t));
     if(location.hash !== '#' + t) history.replaceState(null, '', '#' + t);
-    window.scrollTo({ top:0 });
+    if(t === 'tools') $('adv').open = true;
+    if(t === 'payments') window.scrollTo({ top:0, behavior:'smooth' }); else $('p-' + t).scrollIntoView({ behavior:'smooth', block:'start' });
   }
   $('tabs').addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if(b) showTab(b.dataset.t); });
   window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
@@ -294,7 +296,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
   function renderPays(){
     alertNew();
     const pend = pays.filter(p => p.status === 'pending'), done = pays.filter(p => p.status !== 'pending').slice(0, 15);
-    $('n').textContent = pend.length; $('n').classList.toggle('zero', !pend.length);
+    ['n','n2'].forEach(i => { $(i).textContent = pend.length; $(i).classList.toggle('zero', !pend.length); });
     document.title = (pend.length ? '(' + pend.length + ') ' : '') + 'ECADEMY · Admin';
     $('list').innerHTML = pend.map(p => `<div class="pay" data-id="${p.id}">
       <div class="who">${esc(p.name || p.email)}</div>
@@ -348,7 +350,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
   function renderAccounts(){
     const q = $('sq').value.trim().toLowerCase();
     const rows = accounts.map(a => ({ a, s: statusOf(a) })).filter(r => !filt || r.s.key === filt).filter(r => !q || [r.a.name, r.a.email, r.a.phone, r.a.fb, r.s.pay && r.s.pay.ref_no, r.s.m && r.s.m.ref, r.s.m && r.s.m.aff_code].join(' ').toLowerCase().includes(q));
-    const n = accounts.filter(a => !a.is_admin).length; $('tn').textContent = n; $('tn').classList.toggle('zero', !n);
+    const n = accounts.filter(a => !a.is_admin).length; ['tn','tn2'].forEach(i => { $(i).textContent = n; $(i).classList.toggle('zero', !n); });
     $('rows').innerHTML = rows.map(({ a, s }) => {
       const m = s.m, ref = (s.pay && s.pay.ref_no) || (m && m.ref) || '';
       const proof = s.pay && s.pay.proof_url;
@@ -359,7 +361,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
       const aff = m && m.aff_code ? esc(m.aff_code) + (m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
       const acts = a.is_admin ? '' : '<div class="rowacts">' +
         (s.key === 'unpaid' || s.key === 'declined' ? '<button class="btn ghost mini" data-s="lead">Follow up</button>' : '') +
-        (m ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="renew">Renew</button><button class="btn ghost mini" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn ghost mini" data-s="dev">Reset devices</button>' : '<button class="btn ghost mini" data-s="renew">Give access</button>') +
+        (s.key === 'review' ? '<button class="btn mini" data-s="review">Review payment</button>' : '') +
+        (m ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="renew">Renew</button><button class="btn ghost mini" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn ghost mini" data-s="dev">Reset devices</button>' : '') +
         '<button class="btn ghost mini" data-s="link">Password link</button><button class="btn no mini" data-s="del">Delete</button></div>';
       return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b><small>since ' + day(a.created_at) + (a.provider === 'google' ? ' · Google' : '') + '</small></td><td class="em">' + esc(a.email) + '</td><td>' + (a.phone ? esc(a.phone) : '<span style="color:var(--mute)">—</span>') + '</td><td>' + fb + '</td><td>' + (pkg ? esc(NAMES[pkg]) : '—') + '</td><td><span class="st ' + s.cls + '">' + s.label + '</span></td><td>' + until + '</td><td>' + (ref ? '<span class="ref"><b>' + esc(ref) + '</b></span>' : '—') + '</td><td>' + (proof ? '<a href="' + proof + '" target="_blank" rel="noopener"><img class="th" src="' + proof + '" alt="receipt"></a>' : '—') + '</td><td>' + dev + '</td><td>' + aff + '</td><td>' + acts + '</td></tr>';
     }).join('') || '<tr><td colspan="12" style="color:var(--mute);padding:18px">Nothing here.</td></tr>';
@@ -371,8 +374,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid #1E6FA8;border-color:#
     const uid = b.closest('tr').dataset.uid, a = accounts.find(x => x.user_id === uid); if(!a) return;
     const s = statusOf(a), m = s.m, who = a.name || a.email;
     if(b.dataset.s === 'lead') return showMsg('Follow-up for ' + who, leadMsg(a.name));
+    if(b.dataset.s === 'review') return showTab('payments');
     if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
-    if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; showTab('tools'); $('val').focus(); return; }
+    if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; showTab('tools'); setTimeout(() => $('val').focus(), 400); return; }
     b.disabled = true;
     try {
       if(b.dataset.s === 'pause'){ if(confirm((m.revoked ? 'Resume' : 'Pause') + ' access for ' + who + '?')){ await call({ action:'revoke', user_id:uid, revoked:!m.revoked }); await load(); } }
