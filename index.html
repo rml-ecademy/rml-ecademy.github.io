@@ -2696,8 +2696,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   <div class="enroll-box login-box">
     <button class="x" id="refClose" type="button" aria-label="Close">×</button>
     <div class="tier">YOUR ACCOUNT</div>
-    <h3 id="refH">Refer a classmate</h3>
-    <p id="refIntro">This is your own ECADEMY link. When a classmate or shipmate enrolls through it, a <b>referral commission</b> is credited to you and sent to your GCash.</p>
+    <h3 id="refH">Share my link</h3>
+    <p id="refIntro">This is your own ECADEMY link. When someone enrolls through it, a <b>referral commission</b> is credited to you and sent to your GCash.</p>
     <div class="dev-list" id="refBody">Loading…</div>
     <div class="err" id="refErr" role="alert"></div>
   </div>
@@ -3047,7 +3047,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(session){
       const who = displayName();
       const state = pkg ? pkg.name : pending ? 'Payment under review' : 'No active package';
-      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg ? '<a href="#" id="pillRef">Refer a classmate' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
+      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg ? '<a href="#" id="pillRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
       pill.classList.toggle('ok', !!pkg); pill.onclick = null;
       $('pillOut').onclick = e => { e.preventDefault(); e.stopPropagation(); logout(); };
       $('pillDev').onclick = e => { e.preventDefault(); e.stopPropagation(); openDevices(); };
@@ -3057,7 +3057,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const bar = $('memberBar'); bar.className = 'member-bar';
     if(pkg){
       const until = isAdmin ? 'owner' : member.expires_at ? 'until ' + fmt(member.expires_at) : 'lifetime';
-      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Refer a classmate' + refBadge() + '</a>';
+      bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' ENROLLED · ' + esc(((member && member.name) || session.user.email).toUpperCase()) + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (pkg === PACKAGES.A ? '' : ' <a href="#plans">Upgrade</a>') + ' <a href="#" id="barRef">Share my link' + refBadge() + '</a>';
       bar.classList.add('show'); $('barRef').onclick = e => { e.preventDefault(); openReferral(); };
     } else if(session && pending){
       bar.innerHTML = clockSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + ' PAYMENT UNDER REVIEW · ' + PACKAGES[pending.package].name.toUpperCase() + ' · REF ' + esc(pending.ref_no) + ' <a href="#" id="barPay">Details</a>';
@@ -3214,7 +3214,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       const n = (data.enrollees || []).length; let seen = null; try { seen = localStorage.getItem(refKey()); } catch(_){}
       if(seen === null){ refSeen(n); return; }            // first time on this device: start counting from here
       refNew = Math.max(0, n - Number(seen));
-      if(refNew > 0){ render(); const e = data.enrollees[0]; toast((refNew === 1 ? (e && e.who ? e.who + ' enrolled' : '1 classmate enrolled') : refNew + ' classmates enrolled') + ' through your link. Open "Refer a classmate" to see your commission.', 7000); }
+      if(refNew > 0){ render(); const e = data.enrollees[0]; toast((refNew === 1 ? (e && e.who ? e.who + ' enrolled' : '1 person enrolled') : refNew + ' people enrolled') + ' through your link. Open "Share my link" to see your commission.', 7000); }
     } catch(_){}
   }
   async function openReferral(){
@@ -3225,11 +3225,11 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const E = data.enrollees || [], earned = E.reduce((t, e) => t + Number(e.commission || 0), 0), paid = E.filter(e => e.paid).reduce((t, e) => t + Number(e.commission || 0), 0);
     const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH', { maximumFractionDigits: 2 });
     const caption = 'Training for your next rank? I use ECADEMY Maritime — realistic Radar/ARPA, ECDIS, LSA/FFE, draft survey and ship-handling simulators, organised by rank from 3/O to Master. Try the free radar demo here:\n' + link;
-    $('refH').textContent = 'Refer a classmate · ' + Number(data.rate) + '% commission';
+    $('refH').textContent = 'Share my link · ' + Number(data.rate) + '% commission';
     refSeen(E.length); render();
     body.innerHTML = '<div class="ref-link"><code>' + esc(link) + '</code><button type="button" id="refCopy">Copy link</button>' + (navigator.share ? '<button type="button" class="ghost" id="refShare">Share…</button>' : '') + '</div>' +
       '<div class="ref-tiles"><div><b>' + data.clicks + '</b><span>link opens</span></div><div><b>' + E.length + '</b><span>enrolled</span></div><div><b>' + peso(earned) + '</b><span>earned</span></div></div>' +
-      (E.length ? '<div class="ref-list">' + E.map(e => '<div><span>' + esc(e.who) + ' · ' + esc((PACKAGES[e.package] || {}).name || e.package) + '</span><span>' + (e.commission == null ? '—' : peso(e.commission)) + (e.paid ? ' · paid' : ' · to be paid') + '</span></div>').join('') + '</div>' : '<p class="hint">No enrollments through your link yet. Your code <b>' + esc(data.code) + '</b> stays on a classmate\'s phone for 60 days after they open your link, so it counts even if they enroll later.</p>') +
+      (E.length ? '<div class="ref-list">' + E.map(e => '<div><span>' + esc(e.who) + ' · ' + esc((PACKAGES[e.package] || {}).name || e.package) + '</span><span>' + (e.commission == null ? '—' : peso(e.commission)) + (e.paid ? ' · paid' : ' · to be paid') + '</span></div>').join('') + '</div>' : '<p class="hint">No enrollments through your link yet. Your code <b>' + esc(data.code) + '</b> stays on the phone of anyone who opens your link for 60 days, so it counts even if they enroll later.</p>') +
       '<p class="hint" style="margin-top:12px">Ready-to-post caption:</p><div class="ref-cap" id="refCap">' + esc(caption) + '</div><div class="ref-link"><button type="button" class="ghost" id="refCapCopy">Copy caption</button></div>' +
       '<p class="hint">Commissions are paid by ECADEMY to your GCash' + (earned - paid > 0 ? ' — <b>' + peso(earned - paid) + '</b> waiting to be paid' : '') + '. Message us anytime for a payout.</p>';
     const cp = (b, t) => (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => b.textContent = o, 1300); }, () => prompt('Copy:', t));
