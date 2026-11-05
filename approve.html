@@ -362,7 +362,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       const by = a.referred_by ? esc(a.referred_by) + (m && m.aff_code && m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
       const acts = a.is_admin ? '' : '<div class="rowacts">' +
         (s.key === 'unpaid' || s.key === 'declined' ? '<button class="btn ghost mini" data-s="lead">Follow up</button>' : '') +
-        (s.key === 'review' ? '<button class="btn mini" data-s="review">Review payment</button>' : '') +
+        (s.key === 'review' ? '<button class="btn ok mini" data-s="approve">Approve · 6 months</button><button class="btn ghost mini" data-s="review">See payment</button>' : '') +
         (m ? '<button class="btn ghost mini" data-s="msg">Message</button><button class="btn ghost mini" data-s="renew">Renew</button><button class="btn ghost mini" data-s="pause">' + (m.revoked ? 'Resume' : 'Pause') + '</button><button class="btn ghost mini" data-s="dev">Reset devices</button>' : '') +
         '<button class="btn ghost mini" data-s="link">Password link</button><button class="btn no mini" data-s="del">Delete</button></div>';
       return '<tr data-uid="' + esc(a.user_id) + '"><td class="wrap"><b>' + esc(a.name || '(no name)') + '</b><small>since ' + day(a.created_at) + (a.provider === 'google' ? ' · Google' : '') + '</small></td><td class="em">' + esc(a.email) + '</td><td>' + (a.phone ? esc(a.phone) : '<span style="color:var(--mute)">—</span>') + '</td><td>' + fb + '</td><td>' + (pkg ? esc(NAMES[pkg]) : '—') + '</td><td><span class="st ' + s.cls + '">' + s.label + '</span></td><td>' + until + '</td><td>' + (ref ? '<span class="ref"><b>' + esc(ref) + '</b></span>' : '—') + '</td><td>' + (proof ? '<a href="' + proof + '" target="_blank" rel="noopener"><img class="th" src="' + proof + '" alt="receipt"></a>' : '—') + '</td><td>' + dev + '</td><td>' + own + '</td><td>' + by + '</td><td>' + acts + '</td></tr>';
@@ -376,6 +376,14 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     const s = statusOf(a), m = s.m, who = a.name || a.email;
     if(b.dataset.s === 'lead') return showMsg('Follow-up for ' + who, leadMsg(a.name));
     if(b.dataset.s === 'review') return showTab('payments');
+    if(b.dataset.s === 'approve'){
+      const p = s.pay; if(!p || p.status !== 'pending') return;
+      if(!confirm('Approve ' + who + ' — ' + NAMES[p.package] + ' for 6 months?' + (p.ref_no ? '\nGCash ref ' + p.ref_no : ''))) return;
+      b.disabled = true;
+      try { const r = await call({ action:'pay_approve', id:p.id, validity:'m6', extend:true }); toast('Approved. ' + who + ' now has access.'); showMsg('Approved — message for ' + who, approvedMsg(a.name, p.package, r.member && r.member.expires_at)); await load(); }
+      catch(err){ alert(err.message); b.disabled = false; }
+      return;
+    }
     if(b.dataset.s === 'copyref') return copyBtn(b, 'https://ecademymaritime.com/?ref=' + a.ref_code, 'Link');
     if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
     if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; showTab('tools'); setTimeout(() => $('val').focus(), 400); return; }
