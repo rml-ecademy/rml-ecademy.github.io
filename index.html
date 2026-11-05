@@ -3161,7 +3161,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       '<div class="pay-steps">' + gcashBlock() +
       '<div class="pay-step"><b class="n">2</b><div>' + (o.amount ? 'Amount: <span class="big">₱' + Number(o.amount).toLocaleString('en-PH') + '</span><br>' + esc(o.label) : esc(o.label) + ' — send the amount quoted to you on Messenger.') + '</div></div>' +
       '<div class="pay-step"><b class="n">3</b><div>Enter the <b>GCash reference number</b> below (from the GCash receipt) and submit. We check it and open your decks — no waiting for a link.</div></div></div>' +
-      '<div class="pay-grid"><div><label for="payName">Full name (as in your Seaman\'s Book)</label><input id="payName" required minlength="5" maxlength="120" value="' + esc(name) + '" placeholder="e.g. Juan P. Dela Cruz"></div>' +
+      '<div class="pay-grid"><div><label for="payName">Full name</label><input id="payName" required minlength="5" maxlength="120" value="' + esc(name) + '" placeholder="e.g. Juan P. Dela Cruz"></div>' +
       '<div><label for="payPhone">Mobile number</label><input id="payPhone" required minlength="7" maxlength="40" inputmode="tel" value="' + esc(phone) + '" placeholder="09XX XXX XXXX"></div>' +
       '<div><label for="payAmount">Amount sent (₱)</label><input id="payAmount" required inputmode="decimal" maxlength="12" value="' + esc(o.amount || '') + '" placeholder="e.g. 1899"></div>' +
       '<div><label for="payRef">GCash reference no.</label><input id="payRef" required minlength="4" maxlength="40" placeholder="13-digit ref no." style="letter-spacing:.05em"></div></div>' +
