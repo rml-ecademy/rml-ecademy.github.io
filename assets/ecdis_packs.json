@@ -5,7 +5,7 @@
 "name": "Singapore, Malacca Strait & Indonesia",
 "desc": "Singapore Strait, Malacca Strait, Java Sea, Gulf of Thailand, Vietnam coast \u00b7 real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the Singapore Strait",
 "group": "Asia",
-"chart": "ecdis_sea_chart.gz?v=d2",
+"chart": "ecdis_sea_chart.gz?v=d3",
 "depth": "ecdis_sea_depth.gz?v=d2",
 "cells": 104,
 "start": "Singapore",

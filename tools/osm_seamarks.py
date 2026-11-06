@@ -349,18 +349,19 @@ SIM_OBJ = {"LIGHTS", "BOYLAT", "BOYCAR", "BOYSAW", "BOYISD", "BOYSPP", "PILBOP",
 SIM_AREA = {"ACHARE", "PRCARE", "TSEZNE", "TSSLPT"}
 SIM_LINE = {"RDOCAL"}
 
-def apply_real_seamarks(feat, aid, js=None, iala="A"):
-    """remove the simulated aids/dangers/areas inside the area box, then add the real OSM seamarks"""
-    A = AREAS[aid]; bb = A["bb"]; B = box(*bb)
+def apply_real_seamarks(feat, aid, js=None, iala="A", cover=None):
+    """remove the simulated aids/dangers/areas inside the area box (or only inside `cover`, the tiles
+    downloaded so far, for a partial update), then add the real OSM seamarks"""
+    A = AREAS[aid]; bb = A["bb"]; B = box(*bb) if cover is None else cover
     js = js or fetch(aid)
-    inb = lambda lo, la: bb[0] <= lo <= bb[2] and bb[1] <= la <= bb[3]
+    inb = (lambda lo, la: bb[0] <= lo <= bb[2] and bb[1] <= la <= bb[3]) if cover is None else (lambda lo, la: cover.covers(Point(lo, la)))
     n0 = len(feat["obj"])
-    feat["obj"] = [o for o in feat["obj"] if not (o["c"] in SIM_OBJ and inb(o["lon"], o["lat"]))]
+    feat["obj"] = [o for o in feat["obj"] if o.get("src") == "osm" or not (o["c"] in SIM_OBJ and inb(o["lon"], o["lat"]))]   # never remove real data of another area
     def area_in(a):
         if a.get("circle"): return inb(a["circle"][0], a["circle"][1])
         return Polygon(a["ring"]).intersects(B)
-    feat["areas"] = [a for a in feat["areas"] if not (a["c"] in SIM_AREA and area_in(a))]
-    feat["lines"] = [l for l in feat["lines"] if not (l["c"] in SIM_LINE and any(inb(*p) for p in l["pts"]))]
+    feat["areas"] = [a for a in feat["areas"] if a.get("src") == "osm" or not (a["c"] in SIM_AREA and area_in(a))]
+    feat["lines"] = [l for l in feat["lines"] if l.get("src") == "osm" or not (l["c"] in SIM_LINE and any(inb(*p) for p in l["pts"]))]
     removed = n0 - len(feat["obj"])
     R = convert(js, iala, bb)
     have = {x["att"].get("SORIND") for k in ("obj", "areas", "lines") for x in feat[k] if x.get("src") == "osm"}
@@ -368,7 +369,7 @@ def apply_real_seamarks(feat, aid, js=None, iala="A"):
     for k in ("obj", "areas", "lines"):
         for x in R[k]: x["osm"] = aid
         feat[k].extend(R[k])
-    feat.setdefault("real", []).append(dict(id=aid, name=A["name"], bb=list(bb), src=SRC, osm=js.get("osm3s", {}).get("timestamp_osm_base", "")))
+    feat.setdefault("real", []).append(dict(id=aid, name=A["name"], bb=list(bb), src=SRC, osm=js.get("osm3s", {}).get("timestamp_osm_base", ""), **({"partial": True} if cover is not None else {})))
     from collections import Counter
     print(f"  real seamarks {A['name']}: removed {removed} simulated objects; added {len(R['obj'])} objects {dict(Counter(o['c'] for o in R['obj']))}, "
           f"{len(R['areas'])} areas {dict(Counter(a['c'] for a in R['areas']))}, {len(R['lines'])} lines")
@@ -376,12 +377,29 @@ def apply_real_seamarks(feat, aid, js=None, iala="A"):
 
 credit = lambda names: f" Real aids to navigation, lights, TSS, anchorages and wrecks in the {names}: OpenStreetMap / OpenSeaMap contributors (ODbL), training use only."
 
-def patch(aid, chart_gz):
+def partial_tiles(aid):
+    """the tiles of an unfinished tiled download: merged elements and the area they cover"""
+    A = AREAS[aid]; T = A["tile"]; seen, els, boxes, base = set(), [], [], ""
+    for fn in sorted(os.listdir(os.path.join(CACHE, "tiles"))):
+        if not fn.startswith(aid + "_"): continue
+        try: js = json.load(gzip.open(os.path.join(CACHE, "tiles", fn)))
+        except Exception: continue                                   # being written right now
+        lo, la = map(float, fn[len(aid) + 1:-len(".json.gz")].split("_"))
+        boxes.append(box(lo, la, min(lo + T, A["bb"][2]), min(la + T, A["bb"][3])))
+        b = js.get("osm3s", {}).get("timestamp_osm_base", ""); base = min(base, b) if base and b else (base or b)
+        for e in js["elements"]:
+            if (e["type"], e["id"]) not in seen: seen.add((e["type"], e["id"])); els.append(e)
+    print(f"  {aid}: partial, {len(boxes)} tiles, {len(els)} elements")
+    return {"osm3s": {"timestamp_osm_base": base}, "elements": els}, unary_union(boxes)
+
+def patch(aid, chart_gz, partial=False):
     js = json.load(gzip.open(chart_gz))
     for k in ("obj", "areas", "lines"):                                                  # idempotent re-run of this area
-        js["feat"][k] = [x for x in js["feat"][k] if not (x.get("src") == "osm" and x.get("osm", aid) == aid)]
+        js["feat"][k] = [x for x in js["feat"][k] if not (x.get("src") == "osm" and x.get("osm") == aid)]
     js["feat"]["real"] = [r for r in js["feat"].get("real", []) if r["id"] != aid]
-    apply_real_seamarks(js["feat"], aid, iala=js.get("iala", "A"))
+    if partial:
+        osm, cover = partial_tiles(aid); apply_real_seamarks(js["feat"], aid, js=osm, iala=js.get("iala", "A"), cover=cover)
+    else: apply_real_seamarks(js["feat"], aid, iala=js.get("iala", "A"))
     names = " and ".join(r["name"] for r in js["feat"]["real"])
     js["desc"] = js["desc"].split(" · real OpenSeaMap")[0] + " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + names
     js["credit"] = js["credit"].split(" Singapore Strait aids")[0].split(" Real aids")[0].replace(" Depths, aids", " Depths, other aids") + credit(names)
@@ -392,4 +410,5 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     if len(a) >= 2 and a[0] == "fetch": fetch(a[1], refresh=True)
     elif len(a) >= 3 and a[0] == "patch": patch(a[1], a[2])
+    elif len(a) >= 3 and a[0] == "patch-partial": patch(a[1], a[2], partial=True)   # tiles downloaded so far
     else: print(__doc__)
