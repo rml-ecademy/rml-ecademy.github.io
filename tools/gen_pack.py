@@ -3,7 +3,8 @@
 
 Builds training ENC packs (same schema as the Philippines pack read by the ECDIS trainer)
 from open data: OSM-derived coastline (geo-maps, ODbL), Natural Earth bathymetry / ports /
-names (public domain). Depths, aids to navigation, traffic and notices are SIMULATED.
+names (public domain). Depths, aids to navigation, traffic and notices are SIMULATED, except
+where real OpenSeaMap seamarks are available (tools/osm_seamarks.py: Singapore Strait).
 
 usage: python3 -I gen_pack.py <region-id> [--out DIR]
 """
@@ -16,6 +17,8 @@ from skimage.graph import route_through_array
 from shapely.geometry import shape, box, Polygon, MultiPolygon, Point, LineString, mapping
 from shapely.strtree import STRtree
 from shapely.ops import unary_union
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from osm_seamarks import AREAS as OSM_AREAS, apply_real_seamarks, CREDIT_ADD as OSM_CREDIT
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 LEVELS = [0, 2, 5, 10, 15, 20, 30, 50, 100, 200, 500, 1000, 2000]
@@ -755,6 +758,10 @@ def build(rid, outdir):
         if inf and big: inf["port"] = p; infos.append(inf); equipped.append((px, py))
         elif inf and p in major: p["near"] = True
     build_names(P); build_shoals(P); build_dangers(P, infos)
+    # real OpenSeaMap seamarks replace the simulated aids/dangers/areas where we have them (tools/osm_seamarks.py)
+    real = [a for a, A in OSM_AREAS.items() if A["region"] == rid]
+    for a in real: apply_real_seamarks(P.feat, a, iala=R["iala"])
+    if real and "OpenSeaMap" not in R.get("desc", ""): R["desc"] += " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + ", ".join(OSM_AREAS[a]["name"] for a in real)
     if R.get("gen"):
         seas = [n["t"] for n in P.feat["names"] if not n["land"]][:3]; lands = [n["t"].title() for n in P.feat["names"] if n["land"] and n["s"] >= 15][:4]
         R["desc"] = ", ".join(seas + lands) or "Open ocean"
@@ -846,7 +853,7 @@ def write_pack(P, R, rid, outdir, general, infos, voy=None):
     for b in P.depth_blobs: offs.append(offs[-1] + len(b))
     chart = dict(pack=rid, name=R["name"], desc=R["desc"], gen=bool(R.get("gen")), lon0=P.lon0, lat0=P.lat0, lon1=P.lon1, lat1=P.lat1, C=P.C, WX=P.WX, WY=P.WY, iala=R["iala"], tz=R["tz"], **voy,
                  cells=P.cells, offs=offs[:-1], general=general, shoals=P.shoals, peaks=[], drg=[], feat=P.feat, ais=P.ais, aio=P.aio, enc=P.enc,
-                 credit="Coastline: OpenStreetMap contributors (ODbL) via geo-maps; bathymetry, ports and names: Natural Earth (public domain). Depths, aids, traffic and notices are simulated training data.")
+                 credit="Coastline: OpenStreetMap contributors (ODbL) via geo-maps; bathymetry, ports and names: Natural Earth (public domain). Depths, aids, traffic and notices are simulated training data." + (OSM_CREDIT if P.feat.get("real") else ""))
     os.makedirs(outdir, exist_ok=True)
     with gzip.open(os.path.join(outdir, f"ecdis_{rid}_chart.gz"), "wb", compresslevel=9) as f: f.write(json.dumps(chart, separators=(",", ":")).encode())
     with gzip.open(os.path.join(outdir, f"ecdis_{rid}_depth.gz"), "wb", compresslevel=9) as f:
