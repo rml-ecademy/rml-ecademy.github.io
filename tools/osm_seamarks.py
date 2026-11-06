@@ -49,7 +49,8 @@ def fetch(aid, refresh=False):
                 else:
                     js = query(tb); os.makedirs(os.path.dirname(tf), exist_ok=True)
                     with gzip.open(tf, "wt") as f: json.dump(js, f, separators=(",", ":"))
-                base = base or js.get("osm3s", {}).get("timestamp_osm_base", "")
+                b = js.get("osm3s", {}).get("timestamp_osm_base", "")
+                base = min(base, b) if base and b else (base or b)          # mirrors differ: keep the oldest snapshot date
                 for e in js["elements"]:
                     if (e["type"], e["id"]) not in seen: seen.add((e["type"], e["id"])); els.append(e)
                 la += T
@@ -73,6 +74,7 @@ def query(bb):
                 req = urllib.request.Request(url, data=data, headers={"User-Agent": UA})
                 with urllib.request.urlopen(req, timeout=300) as r: js = json.loads(r.read())
                 if "elements" not in js: raise ValueError("no elements in reply")
+                if "error" in js.get("remark", "").lower(): raise ValueError("overpass: " + js["remark"][:120])   # timeout/out-of-memory: partial reply
                 print(f"  overpass {bb}: {len(js['elements'])} elements from {url.split('/')[2]}")
                 return js
             except Exception as e:
