@@ -26,7 +26,8 @@ UA = "ecademy-ecdis-pack-generator/1.0"
 AREAS = {
     "sgstrait": dict(region="sea", bb=(103.35, 1.05, 104.55, 1.50), name="Singapore Strait"),
     # Sumatra / Peninsular Malaysia: One Fathom Bank TSS, Port Klang, Penang, Dumai, Belawan, Malacca; stops where sgstrait starts
-    "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75, land_from="ecdis_sea_chart.gz"),
+    "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75, land_from="ecdis_sea_chart.gz",
+                    axis=[(98.3, 5.9), (100.3, 3.4), (101.3, 2.6), (102.3, 1.9), (103.35, 1.2)]),   # traffic route through the strait
 }
 SRC = "OpenStreetMap / OpenSeaMap (ODbL)"
 
@@ -40,24 +41,27 @@ def fetch(aid, refresh=False):
     if T:   # big area: one Overpass query per tile, merged (an object on a tile edge is kept once)
         seen, els, base = set(), [], ""
         land = pack_land(A["land_from"]) if A.get("land_from") else None
+        tiles = []
         lo = lo0
         while lo < lo1 - 1e-9:
             la = la0
             while la < la1 - 1e-9:
                 tb = (round(lo, 3), round(la, 3), round(min(lo + T, lo1), 3), round(min(la + T, la1), 3))
-                tf = os.path.join(CACHE, "tiles", f"{aid}_{tb[0]}_{tb[1]}.json.gz")
-                if land is not None and box(*tb).difference(land).area < 0.005 * box(*tb).area:
-                    la += T; continue                                      # all land in the pack: no seamarks needed
-                if os.path.exists(tf): js = json.load(gzip.open(tf))           # resume an interrupted download
-                else:
-                    js = query(tb); os.makedirs(os.path.dirname(tf), exist_ok=True)
-                    with gzip.open(tf, "wt") as f: json.dump(js, f, separators=(",", ":"))
-                b = js.get("osm3s", {}).get("timestamp_osm_base", "")
-                base = min(base, b) if base and b else (base or b)          # mirrors differ: keep the oldest snapshot date
-                for e in js["elements"]:
-                    if (e["type"], e["id"]) not in seen: seen.add((e["type"], e["id"])); els.append(e)
+                if land is None or box(*tb).difference(land).area >= 0.005 * box(*tb).area: tiles.append(tb)   # all land in the pack: skipped
                 la += T
             lo += T
+        if A.get("axis"):   # fetch the main shipping corridor first
+            ax = LineString(A["axis"]); tiles.sort(key=lambda tb: ax.distance(box(*tb)))
+        for tb in tiles:
+            tf = os.path.join(CACHE, "tiles", f"{aid}_{tb[0]}_{tb[1]}.json.gz")
+            if os.path.exists(tf): js = json.load(gzip.open(tf))           # resume an interrupted download
+            else:
+                js = query(tb); os.makedirs(os.path.dirname(tf), exist_ok=True)
+                with gzip.open(tf, "wt") as f: json.dump(js, f, separators=(",", ":"))
+            b = js.get("osm3s", {}).get("timestamp_osm_base", "")
+            base = min(base, b) if base and b else (base or b)          # mirrors differ: keep the oldest snapshot date
+            for e in js["elements"]:
+                if (e["type"], e["id"]) not in seen: seen.add((e["type"], e["id"])); els.append(e)
         js = {"osm3s": {"timestamp_osm_base": base, "copyright": "OpenStreetMap contributors, ODbL"}, "elements": els}
     else:
         js = query(A["bb"])
