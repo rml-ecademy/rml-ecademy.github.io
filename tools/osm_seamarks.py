@@ -19,12 +19,15 @@ from shapely.ops import unary_union, polygonize
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "osm_cache")
-MIRRORS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
+MIRRORS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]   # main server first, then mirrors
 UA = "ecademy-ecdis-pack-generator/1.0"
 
 # real-data areas: id -> (region id in gen_pack, bbox lon0, lat0, lon1, lat1, label)
 AREAS = {
     "sgstrait": dict(region="sea", bb=(103.35, 1.05, 104.55, 1.50), name="Singapore Strait"),
+    # Sumatra / Peninsular Malaysia: One Fathom Bank TSS, Port Klang, Penang, Dumai, Belawan, Malacca; stops where sgstrait starts
+    "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75, land_from="ecdis_sea_chart.gz",
+                    axis=[(98.3, 5.9), (100.3, 3.4), (101.3, 2.6), (102.3, 1.9), (103.35, 1.2)]),   # traffic route through the strait
 }
 SRC = "OpenStreetMap / OpenSeaMap (ODbL)"
 
@@ -34,22 +37,67 @@ def fetch(aid, refresh=False):
     fn = os.path.join(CACHE, f"{aid}.json.gz")
     if os.path.exists(fn) and not refresh:
         return json.load(gzip.open(fn))
+    T = A.get("tile")
+    if T:   # big area: one Overpass query per tile, merged (an object on a tile edge is kept once)
+        seen, els, base = set(), [], ""
+        land = pack_land(A["land_from"]) if A.get("land_from") else None
+        tiles = []
+        lo = lo0
+        while lo < lo1 - 1e-9:
+            la = la0
+            while la < la1 - 1e-9:
+                tb = (round(lo, 3), round(la, 3), round(min(lo + T, lo1), 3), round(min(la + T, la1), 3))
+                if land is None or box(*tb).difference(land).area >= 0.005 * box(*tb).area: tiles.append(tb)   # all land in the pack: skipped
+                la += T
+            lo += T
+        if A.get("axis"):   # fetch the main shipping corridor first
+            ax = LineString(A["axis"]); tiles.sort(key=lambda tb: ax.distance(box(*tb)))
+        for tb in tiles:
+            tf = os.path.join(CACHE, "tiles", f"{aid}_{tb[0]}_{tb[1]}.json.gz")
+            if os.path.exists(tf): js = json.load(gzip.open(tf))           # resume an interrupted download
+            else:
+                js = query(tb); os.makedirs(os.path.dirname(tf), exist_ok=True)
+                with gzip.open(tf, "wt") as f: json.dump(js, f, separators=(",", ":"))
+            b = js.get("osm3s", {}).get("timestamp_osm_base", "")
+            base = min(base, b) if base and b else (base or b)          # mirrors differ: keep the oldest snapshot date
+            for e in js["elements"]:
+                if (e["type"], e["id"]) not in seen: seen.add((e["type"], e["id"])); els.append(e)
+        js = {"osm3s": {"timestamp_osm_base": base, "copyright": "OpenStreetMap contributors, ODbL"}, "elements": els}
+    else:
+        js = query(A["bb"])
+    os.makedirs(CACHE, exist_ok=True)
+    with gzip.open(fn, "wt") as f: json.dump(js, f, separators=(",", ":"))
+    print(f"  {aid}: {len(js['elements'])} seamark elements (OSM base {js['osm3s'].get('timestamp_osm_base', '?')})")
+    return js
+
+def pack_land(name):
+    """land of an existing chart pack (overview rings, NM grid) as lon/lat polygons"""
+    j = json.load(gzip.open(os.path.join(HERE, "..", "assets", name)))
+    ps = []
+    for r in j["general"]:
+        pts = [(j["lon0"] + r[i] / (60 * j["C"]), j["lat0"] + r[i + 1] / 60) for i in range(0, len(r) - 1, 2)]
+        if len(pts) >= 3:
+            p = Polygon(pts).buffer(0)
+            if not p.is_empty: ps.append(p)
+    return unary_union(ps)
+
+def query(bb):
+    lo0, la0, lo1, la1 = bb
     q = f'[out:json][timeout:240];nwr["seamark:type"]({la0},{lo0},{la1},{lo1});out body geom;'
     data = urllib.parse.urlencode({"data": q}).encode()
     last = None
-    for attempt in range(3):
+    for attempt in range(5):
         for url in MIRRORS:
             try:
                 req = urllib.request.Request(url, data=data, headers={"User-Agent": UA})
                 with urllib.request.urlopen(req, timeout=300) as r: js = json.loads(r.read())
                 if "elements" not in js: raise ValueError("no elements in reply")
-                os.makedirs(CACHE, exist_ok=True)
-                with gzip.open(fn, "wt") as f: json.dump(js, f, separators=(",", ":"))
-                print(f"  overpass: {len(js['elements'])} seamark elements from {url.split('/')[2]} (OSM base {js.get('osm3s', {}).get('timestamp_osm_base', '?')})")
+                if "error" in js.get("remark", "").lower(): raise ValueError("overpass: " + js["remark"][:120])   # timeout/out-of-memory: partial reply
+                print(f"  overpass {bb}: {len(js['elements'])} elements from {url.split('/')[2]}")
                 return js
             except Exception as e:
                 last = e; print(f"  overpass {url.split('/')[2]}: {e}")
-        time.sleep(5 * (attempt + 1))
+        time.sleep(10 * (attempt + 1))
     raise RuntimeError(f"Overpass download failed: {last}")
 
 # ----------------------------------------------------------------------------- helpers
@@ -315,24 +363,28 @@ def apply_real_seamarks(feat, aid, js=None, iala="A"):
     feat["lines"] = [l for l in feat["lines"] if not (l["c"] in SIM_LINE and any(inb(*p) for p in l["pts"]))]
     removed = n0 - len(feat["obj"])
     R = convert(js, iala, bb)
-    feat["obj"].extend(R["obj"]); feat["areas"].extend(R["areas"]); feat["lines"].extend(R["lines"])
+    have = {x["att"].get("SORIND") for k in ("obj", "areas", "lines") for x in feat[k] if x.get("src") == "osm"}
+    R["lines"] = [l for l in R["lines"] if l["att"]["SORIND"] not in have]      # a TSS line crossing into a neighbouring area is kept once
+    for k in ("obj", "areas", "lines"):
+        for x in R[k]: x["osm"] = aid
+        feat[k].extend(R[k])
     feat.setdefault("real", []).append(dict(id=aid, name=A["name"], bb=list(bb), src=SRC, osm=js.get("osm3s", {}).get("timestamp_osm_base", "")))
     from collections import Counter
     print(f"  real seamarks {A['name']}: removed {removed} simulated objects; added {len(R['obj'])} objects {dict(Counter(o['c'] for o in R['obj']))}, "
           f"{len(R['areas'])} areas {dict(Counter(a['c'] for a in R['areas']))}, {len(R['lines'])} lines")
     return R
 
-CREDIT_ADD = " Singapore Strait aids to navigation, lights, TSS, anchorages and wrecks: OpenStreetMap / OpenSeaMap contributors (ODbL), training use only."
+credit = lambda names: f" Real aids to navigation, lights, TSS, anchorages and wrecks in the {names}: OpenStreetMap / OpenSeaMap contributors (ODbL), training use only."
 
 def patch(aid, chart_gz):
     js = json.load(gzip.open(chart_gz))
-    js["feat"]["obj"] = [o for o in js["feat"]["obj"] if o.get("src") != "osm"]        # idempotent re-run
-    js["feat"]["areas"] = [a for a in js["feat"]["areas"] if a.get("src") != "osm"]
-    js["feat"]["lines"] = [l for l in js["feat"]["lines"] if l.get("src") != "osm"]
+    for k in ("obj", "areas", "lines"):                                                  # idempotent re-run of this area
+        js["feat"][k] = [x for x in js["feat"][k] if not (x.get("src") == "osm" and x.get("osm", aid) == aid)]
     js["feat"]["real"] = [r for r in js["feat"].get("real", []) if r["id"] != aid]
     apply_real_seamarks(js["feat"], aid, iala=js.get("iala", "A"))
-    if "OpenSeaMap" not in js["desc"]: js["desc"] += " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + AREAS[aid]["name"]
-    if CREDIT_ADD.strip() not in js["credit"]: js["credit"] = js["credit"].replace(" Depths, aids", " Depths, other aids") + CREDIT_ADD
+    names = " and ".join(r["name"] for r in js["feat"]["real"])
+    js["desc"] = js["desc"].split(" · real OpenSeaMap")[0] + " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + names
+    js["credit"] = js["credit"].split(" Singapore Strait aids")[0].split(" Real aids")[0].replace(" Depths, aids", " Depths, other aids") + credit(names)
     with gzip.open(chart_gz, "wb", compresslevel=9) as f: f.write(json.dumps(js, separators=(",", ":")).encode())
     print(f"  wrote {chart_gz} {os.path.getsize(chart_gz) / 1e6:.2f} MB")
 
