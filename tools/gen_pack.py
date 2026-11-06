@@ -47,6 +47,24 @@ REGIONS = {
 }
 
 
+# ----------------------------------------------------------------------------- worldwide general coverage
+LAT_BANDS = [(-80, -68), (-68, -55), (-55, -30), (-30, -5), (-5, 20), (20, 45), (45, 65), (65, 75), (75, 84)]
+IALA_B_LON = (-170, -30)  # the Americas (plus JP/KR/PH handled by the detailed regions)
+def gap_regions():
+    from shapely.geometry import box as _box
+    from shapely.ops import unary_union as _uu
+    cov = _uu([_box(*R["bb"]) for R in REGIONS.values()] + [_box(116.8, 4.5, 126.8, 21.2)])
+    out = {}
+    for la0, la1 in LAT_BANDS:
+        for lo0 in range(-180, 180, 30):
+            lo1 = lo0 + 30; t = _box(lo0, la0, lo1, la1)
+            if t.difference(cov).area < 0.08 * t.area: continue
+            ns = lambda v: f"{abs(v)}°{'N' if v >= 0 else 'S'}"; ew = lambda v: f"{abs(v)}°{'E' if v >= 0 else 'W'}"
+            rid = f"g{'n' if la0 >= 0 else 's'}{abs(la0)}{'e' if lo0 >= 0 else 'w'}{abs(lo0)}"
+            out[rid] = dict(name=f"General {ns(la0)}–{ns(la1)} {ew(lo0)}–{ew(lo1)}", bb=(lo0, la0, lo1, la1), iala="B" if IALA_B_LON[0] <= (lo0 + lo1) / 2 <= IALA_B_LON[1] else "A",
+                            tz=int(round((lo0 + lo1) / 2 / 15)), start=None, dest=None, pfx="G" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[len(out) % 26], desc="", gen=True)
+    return out
+
 # curated major ports (lon, lat, rank): rank 3 = hub, 4 = major, 5 = regional. Positions are approximate; each is snapped to the nearest water.
 PORTS = {
  "sea": [("Singapore",103.75,1.25,3),("Port Klang",101.33,2.98,4),("Tanjung Pelepas",103.55,1.36,4),("Penang",100.35,5.41,5),("Jakarta (Tanjung Priok)",106.88,-6.10,3),("Surabaya",112.73,-7.20,4),("Semarang",110.42,-6.95,5),("Makassar",119.40,-5.12,5),("Belawan",98.70,3.78,5),("Balikpapan",116.82,-1.27,5),("Laem Chabang",100.88,13.08,4),("Bangkok",100.58,13.55,5),("Vung Tau",107.07,10.35,4),("Hai Phong",106.72,20.85,4),("Da Nang",108.22,16.10,5),("Sihanoukville",103.52,10.63,5),("Kuching",110.35,1.56,5),("Kota Kinabalu",116.06,5.98,5),("Bintulu",113.05,3.22,5),("Benoa (Bali)",115.22,-8.75,5),("Batam",104.03,1.15,5),("Dumai",101.45,1.68,5),("Songkhla",100.57,7.23,5),("Phuket",98.40,7.83,5),("Kuantan",103.43,3.97,5),("Banjarmasin",114.56,-3.32,5),("Pontianak",109.33,-0.03,5),("Tanjung Pandan",107.63,-2.75,5),("Cilacap",109.00,-7.73,5)],
@@ -68,6 +86,8 @@ PORTS = {
  "samw": [("Callao",-77.15,-12.05,3),("Guayaquil",-79.90,-2.28,3),("Manta",-80.72,-0.95,4),("Esmeraldas",-79.65,0.98,5),("Buenaventura",-77.08,3.88,4),("Balboa (Panama)",-79.57,8.95,3),("Puerto Quetzal",-90.78,13.92,4),("Acajutla",-89.83,13.58,5),("Corinto",-87.18,12.48,5),("Caldera (CR)",-84.72,9.92,5),("Paita",-81.10,-5.08,5),("Salaverry",-78.98,-8.22,5),("Chimbote",-78.60,-9.08,5),("Pisco",-76.22,-13.72,5),("Matarani",-72.10,-17.00,4),("Ilo",-71.35,-17.65,5),("Puerto Bolivar",-80.00,-3.27,5),("Arica",-70.33,-18.47,4),("Tumaco",-78.78,1.80,5),("Puerto Baquerizo (Galapagos)",-89.60,-0.90,5),("La Libertad",-80.90,-2.22,5),("Posorja",-80.25,-2.70,5),("Cartagena",-75.53,10.40,3),("Colon (Cristobal)",-79.90,9.37,3),("Puerto Armuelles",-82.87,8.27,5),("San Lorenzo (Honduras)",-87.45,13.42,5),("Puerto San Jose",-90.83,13.92,5),("Golfito",-83.17,8.63,5),("Puntarenas",-84.83,9.97,5),("Turbo",-76.73,8.10,5),("Barranquilla",-74.77,11.00,5)],
  "ruse": [("Vladivostok",131.88,43.10,3),("Nakhodka",132.88,42.80,4),("Vostochny",133.07,42.75,4),("Vanino",140.27,49.08,4),("Korsakov",142.75,46.63,5),("Kholmsk",142.05,47.05,5),("Magadan",150.80,59.55,4),("Petropavlovsk-Kamchatsky",158.65,53.00,4),("Okhotsk",143.25,59.37,5),("Sovetskaya Gavan",140.30,48.97,5),("Nikolayevsk-na-Amure",140.70,53.15,5),("Otaru",141.00,43.20,4),("Wakkanai",141.68,45.42,5),("Hakodate",140.72,41.78,5),("Kushiro",144.37,42.98,4),("Chongjin",129.78,41.77,5),("Rason",130.40,42.25,5),("Posyet",130.80,42.65,5),("De-Kastri",140.78,51.47,5),("Prigorodnoye (Sakhalin LNG)",142.90,46.63,5),("Nemuro",145.58,43.33,5),("Abashiri",144.28,44.02,5),("Rumoi",141.63,43.93,5),("Muroran",140.97,42.33,4),("Okhotsk (Ayan)",138.17,56.45,5),("Ust-Kamchatsk",162.47,56.22,5)],
 }
+
+GAPS = gap_regions(); REGIONS.update(GAPS)
 
 # ----------------------------------------------------------------------------- helpers
 def vnoise(x, y, scale, seed):
@@ -212,8 +232,8 @@ class Pack:
     def depth_grid(self, x0, y0, res, nx, ny, drg_lines):
         """returns (depth float32 array, land mask). depth in metres; drying = negative"""
         land = self.land_mask(x0, y0, res, nx, ny)
-        d = ndimage.distance_transform_edt(~land) * res  # NM to nearest land
-        din = ndimage.distance_transform_edt(land) * res
+        d = ndimage.distance_transform_edt(~land) * res if land.any() else np.full(land.shape, 500.0)  # NM to nearest land
+        din = ndimage.distance_transform_edt(land) * res if (~land).any() else np.full(land.shape, 500.0)
         X = x0 + np.arange(nx)[None, :] * res; Y = y0 + np.arange(ny)[:, None] * res
         X = np.broadcast_to(X, (ny, nx)); Y = np.broadcast_to(Y, (ny, nx))
         n1 = fbm(X, Y, 11); n2 = vnoise(X, Y, 1.1, 77)
@@ -262,7 +282,7 @@ class Pack:
         return depth.astype(np.float32), land, din
 
     def encode_grid(self, depth, land):
-        dq_ = np.where(depth < 30, 0.1, np.where(depth < 100, 0.5, np.where(depth < 300, 2.0, 10.0)))
+        dq_ = np.where(depth < 30, 0.1, np.where(depth < 100, 0.5, np.where(depth < 300, 2.0, np.where(depth < 1000, 10.0, 50.0))))
         depth = np.round(depth / dq_) * dq_
         q = np.clip(np.round((depth + 10) * 10), 1, 65000).astype(np.int64)
         q[land] = LAND_Q
@@ -339,14 +359,14 @@ class Pack:
                 i, j = int(round(p[0] / res)), int(round(p[1] / res))
                 if 0 <= i < nx and 0 <= j < ny: land[j, i] = True
         self.cg = dict(depth=depth, land=land, res=res, nx=nx, ny=ny)
-        self.cg["dist"] = ndimage.distance_transform_edt(~land) * res
+        self.cg["dist"] = ndimage.distance_transform_edt(~land) * res if land.any() else np.full(land.shape, 500.0)
 
     def port_local(self, x, y):
         """fine local land/distance grid (0.25 NM, ±30 NM) around a port for water snapping and sea direction"""
         res, R = 0.25, 30.0
         x0, y0 = max(0, x - R), max(0, y - R); nx, ny = int((min(self.WX, x + R) - x0) / res) + 1, int((min(self.WY, y + R) - y0) / res) + 1
         land = self.land_mask(x0, y0, res, nx, ny)
-        dist = ndimage.distance_transform_edt(~land) * res
+        dist = ndimage.distance_transform_edt(~land) * res if land.any() else np.full(land.shape, 500.0)
         return dict(x0=x0, y0=y0, res=res, nx=nx, ny=ny, land=land, dist=dist)
 
     def lg_water_near(self, g, x, y, maxr=20, mind=0.3):
@@ -547,7 +567,78 @@ def build_port_features(P: Pack, port, big):
     if best:
         q = best[1]
         o("LIGHTS", q[0], q[1], name=f"{name} Point Lighthouse", chr=rng.choice(["Fl 10s 25M", "Fl(2) 15s 22M", "Fl(3) 20s 20M", "LFl 12s 18M"]) , col="W", major=True, att={"CATLIT": "landfall light"}, why="Landfall light: the first light identified when approaching from sea. Check its character against the List of Lights.")
-    return dict(name=name, x=wx, y=wy, brg=brg, run=run, L=L, ext=ext)
+    res = dict(name=name, x=wx, y=wy, brg=brg, run=run, L=L, ext=ext)
+    if port.get("rank", 9) <= 4: build_tss(P, res, name)
+    return res
+
+def lane_ring(P, cx, cy, ux, uy, px, py, off0, off1, a0, a1):
+    """rectangle along the axis: across-track offsets off0..off1 (NM, +=starboard of outbound), along-track a0..a1"""
+    pts = [(cx + ux * a + px * o, cy + uy * a + py * o) for a, o in ((a0, off0), (a1, off0), (a1, off1), (a0, off1))]
+    return pts
+
+def ring_clear(P, pts, margin=0.4):
+    g = Polygon(pts).buffer(margin)
+    return not any(P.land_polys[i].intersects(g) for i in P.land_tree.query(g))
+
+def build_tss(P: Pack, inf, name):
+    """traffic separation scheme on the approach: outbound lane, separation zone, inbound lane"""
+    brg, L, run = inf["brg"], inf.get("L", 4), inf["run"]
+    if run < L + 10: return False
+    ux, uy = math.sin(math.radians(brg)), math.cos(math.radians(brg)); px, py = uy, -ux
+    cx, cy = inf["x"], inf["y"]; a0, a1 = L + 1.2, min(L + 12, run - 1.0)
+    zone = lane_ring(P, cx, cy, ux, uy, px, py, -0.25, 0.25, a0, a1)
+    outl = lane_ring(P, cx, cy, ux, uy, px, py, 0.25, 1.35, a0, a1)
+    inl = lane_ring(P, cx, cy, ux, uy, px, py, -1.35, -0.25, a0, a1)
+    if not all(ring_clear(P, r) for r in (zone, outl, inl)): return False
+    ll = lambda r: [[round(v, 5) for v in P.ll(x, y)] for x, y in r]
+    why_l = "Traffic lane: proceed in the general direction of traffic flow (COLREG Rule 10). Join or leave at the termination, or at a small angle."
+    P.feat["areas"].append(dict(c="TSEZNE", ring=ll(zone), name=f"{name} TSS separation zone", len=round(a1 - a0, 1), att={"CATTSS": "separation zone"}, why="Do not enter the separation zone except to cross or in an emergency (Rule 10)."))
+    P.feat["areas"].append(dict(c="TSSLPT", ring=ll(outl), name=f"{name} TSS outbound lane", orient=round(brg % 360), len=round(a1 - a0, 1), att={"ORIENT": f"{round(brg % 360):03d}°", "CATTSS": "traffic lane"}, why=why_l))
+    P.feat["areas"].append(dict(c="TSSLPT", ring=ll(inl), name=f"{name} TSS inbound lane", orient=round((brg + 180) % 360), len=round(a1 - a0, 1), att={"ORIENT": f"{round((brg + 180) % 360):03d}°", "CATTSS": "traffic lane"}, why=why_l))
+    return True
+
+def build_dangers(P: Pack, infos):
+    """wrecks, obstructions, cardinal and isolated-danger marks: more of them closer in (shown progressively by SCAMIN)"""
+    rng = random.Random(P.rid + "dng"); cg = P.cg; r = cg["res"]
+    def o(c, x, y, **k):
+        lo, la = P.ll(x, y); d = dict(c=c, lon=round(lo, 5), lat=round(la, 5)); d.update(k); P.feat["obj"].append(d)
+    def water(x, y, mind=0.3):
+        g = Point(x, y).buffer(mind)
+        return not any(P.land_polys[i].intersects(g) for i in P.land_tree.query(g))
+    # shelf wrecks (sparse, every pack)
+    cand = np.argwhere((cg["depth"] > 12) & (cg["depth"] < 80) & (cg["dist"] > 2) & ~cg["land"])
+    for j, i in [tuple(c) for c in cand[rng.sample(range(len(cand)), min(len(cand), 120, max(6, len(cand) // 900)))]] if len(cand) else []:
+        x, y = i * r + rng.uniform(-.4, .4), j * r + rng.uniform(-.4, .4); z = float(cg["depth"][j, i])
+        if rng.random() < 0.6: o("WRECKS", x, y, name="Wreck", depth=round(z * rng.uniform(.4, .8), 1), safe=False, scamin=1100000, att={"CATWRK": "dangerous wreck", "VALSOU": "sounded"}, why="Dangerous wreck: least depth may be less than your safety contour. Keep clear.")
+        else: o("WRECKS", x, y, name="Wreck (non-dangerous)", depth=None, safe=True, scamin=350000, att={"CATWRK": "non-dangerous wreck"}, why="Non-dangerous wreck: deep enough for surface navigation, but avoid anchoring or trawling here.")
+    # near each equipped port: wrecks, obstructions, cardinal marks, isolated danger mark
+    for inf in infos:
+        cx, cy, brg, L = inf["x"], inf["y"], inf["brg"], inf.get("L", 4)
+        ux, uy = math.sin(math.radians(brg)), math.cos(math.radians(brg)); px, py = uy, -ux
+        prng = random.Random(inf["port"]["name"])
+        for k in range(prng.randint(3, 6)):
+            a, off = prng.uniform(1, L + 8), prng.choice([-1, 1]) * prng.uniform(1.0, 3.5)
+            x, y = cx + ux * a + px * off, cy + uy * a + py * off
+            if not water(x, y): continue
+            kind = prng.random()
+            if kind < 0.35: o("WRECKS", x, y, name="Wreck", depth=round(prng.uniform(3, 12), 1), safe=False, scamin=180000, att={"CATWRK": "dangerous wreck", "VALSOU": "sounded"}, why="Dangerous wreck near the approach: check its depth against your safety depth.")
+            elif kind < 0.6: o("OBSTRN", x, y, name="Obstruction", depth=round(prng.uniform(2, 9), 1), scamin=120000, att={"CATOBS": "foul ground", "VALSOU": "sounded"}, why="Obstruction: foul ground, do not anchor. Check the least depth.")
+            else:
+                z = round(prng.uniform(1.2, 6.5), 1)
+                o("UWTROC", x, y, name="Rock", depth=z, cat="base", scamin=260000, att={"VALSOU": f"{z} m", "WATLEV": "always under water", "NATSUR": "rock"}, why="Isolated danger: less water than your safety contour. Keep well clear.")
+                if prng.random() < 0.5:   # isolated danger mark on it
+                    o("BOYISD", x + 0.05, y + 0.05, name=f"{inf['port']['name']} Isolated Danger", shape="pillar", chr="Fl(2) 5s", scamin=180000, att={"CATSPM": "isolated danger", "COLOUR": "black/red/black"}, why="Isolated danger mark: navigable water all round, but do not pass close.")
+                else:                     # cardinal mark on the fairway side of the danger
+                    side = (x - cx) * px + (y - cy) * py
+                    bx, by = x - px * 0.25 * (1 if side > 0 else -1), y - py * 0.25 * (1 if side > 0 else -1)
+                    dx, dy = bx - x, by - y; card = ("N" if dy > 0 else "S") if abs(dy) >= abs(dx) else ("E" if dx > 0 else "W")
+                    chr_ = {"N": "Q", "E": "Q(3) 10s", "S": "Q(6)+LFl 15s", "W": "Q(9) 15s"}[card]
+                    if water(bx, by, 0.15): o("BOYCAR", bx, by, name=f"{inf['port']['name']} {card} Cardinal", card=card, shape="pillar", chr=chr_, scamin=260000, att={"CATCAM": {"N": "north", "E": "east", "S": "south", "W": "west"}[card] + " cardinal", "COLOUR": "black/yellow"}, why=f"{card} cardinal mark: pass on its {card} side; the danger lies to the {'south' if card == 'N' else 'west' if card == 'E' else 'north' if card == 'S' else 'east'}.")
+    # cardinal marks on the shallowest shelf shoals (voyage-scale dangers)
+    for x, y, top, typ in sorted(P.shoals, key=lambda s: s[2])[: max(4, len(P.shoals) // 6)]:
+        card = rng.choice("NESW"); d = 0.35; bx, by = x + {"N": (0, d), "E": (d, 0), "S": (0, -d), "W": (-d, 0)}[card][0], y + {"N": (0, d), "E": (d, 0), "S": (0, -d), "W": (-d, 0)}[card][1]
+        if not water(bx, by, 0.1): continue
+        o("BOYCAR", bx, by, name=f"{card} Cardinal ({typ})", card=card, shape="pillar", chr={"N": "Q", "E": "Q(3) 10s", "S": "Q(6)+LFl 15s", "W": "Q(9) 15s"}[card], scamin=400000, att={"CATCAM": {"N": "north", "E": "east", "S": "south", "W": "west"}[card] + " cardinal"}, why=f"{card} cardinal mark: pass on its {card} side.")
 
 def build_names(P: Pack):
     bbox = box(P.lon0, P.lat0, P.lon1, P.lat1)
@@ -643,13 +734,15 @@ def build(rid, outdir):
     print(f"== {rid}: {R['name']}  bb={R['bb']}  WX={P.WX:.0f} WY={P.WY:.0f} NM")
     P.load(); P.coarse()
     major = [p for p in P.ports if p.get("curated")]
+    if R.get("gen"): major = sorted(P.ports, key=lambda p: p["rank"])[:10]
     # order: start, dest first
     def find(nm): return next((p for p in P.ports if p["name"].lower() == nm.lower()), None)
-    start, dest = find(R["start"]), find(R["dest"])
-    if not start: start = sorted(P.ports, key=lambda p: p["rank"])[0]
-    if not dest: dest = sorted([p for p in P.ports if p is not start], key=lambda p: p["rank"])[0]
+    start, dest = find(R["start"] or ""), find(R["dest"] or "")
+    if not start and P.ports: start = sorted(P.ports, key=lambda p: p["rank"])[0]
+    if not dest and len(P.ports) > 1: dest = sorted([p for p in P.ports if p is not start], key=lambda p: p["rank"])[0]
     for p in (start, dest):
-        if p not in major: major.insert(0, p)
+        if p and p not in major: major.insert(0, p)
+    start = start or dict(name=""); dest = dest or dict(name="")
     # port features first (dredged channels must exist before the grids are built)
     infos = []
     seen = set(); equipped = []
@@ -661,11 +754,15 @@ def build(rid, outdir):
         inf = build_port_features(P, p, big=big)
         if inf and big: inf["port"] = p; infos.append(inf); equipped.append((px, py))
         elif inf and p in major: p["near"] = True
-    build_names(P); build_shoals(P)
+    build_names(P); build_shoals(P); build_dangers(P, infos)
+    if R.get("gen"):
+        seas = [n["t"] for n in P.feat["names"] if not n["land"]][:3]; lands = [n["t"].title() for n in P.feat["names"] if n["land"] and n["s"] >= 15][:4]
+        R["desc"] = ", ".join(seas + lands) or "Open ocean"
+        if seas: R["name"] = R["name"].replace("General", seas[0].title() + " ·", 1)
     # --- cells
-    pfx = R["pfx"]; nid = {1: 0, 2: 0, 3: 0, 4: 0}
+    pfx = R["pfx"]; nid = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
     def cid(b): nid[b] += 1; return f"{pfx}{b}{nid[b]:05d}"
-    P.add_cell(cid(1), 1, f"{R['name']} overview", 0, 0, P.WX, P.WY, 1.0, P.feat["drg"])
+    P.add_cell(cid(1), 1, f"{R['name']} overview", 0, 0, P.WX, P.WY, 2.0 if R.get("gen") else 1.0, P.feat["drg"])
     # band 2: 5°x5° tiles that contain coast
     T2 = 5.0
     lon = P.lon0
@@ -673,26 +770,34 @@ def build(rid, outdir):
         lat = P.lat0
         while lat < P.lat1 - 0.01:
             x0, y0 = P.xy(lon, lat); x1, y1 = P.xy(min(lon + T2, P.lon1), min(lat + T2, P.lat1))
-            if P.land_tree.query(box(x0, y0, x1, y1)).size and (~P.cg["land"][int(y0):int(y1) + 1, int(x0):int(x1) + 1]).any():
-                P.add_cell(cid(2), 2, f"General {abs(lat):.0f}°{'N' if lat >= 0 else 'S'} {abs(lon):.0f}°{'E' if lon >= 0 else 'W'}", x0, y0, x1, y1, 0.5, P.feat["drg"])
+            if (~P.cg["land"][int(y0):int(y1) + 1, int(x0):int(x1) + 1]).any():
+                coast = P.land_tree.query(box(x0 - 10, y0 - 10, x1 + 10, y1 + 10)).size > 0
+                P.add_cell(cid(2), 2, f"General {abs(lat):.0f}°{'N' if lat >= 0 else 'S'} {abs(lon):.0f}°{'E' if lon >= 0 else 'W'}", x0, y0, x1, y1, 0.5 if coast else 1.0, P.feat["drg"])
             lat += T2
         lon += T2
     # band 3: coastal cells around major ports (2.4° x 2.4°)
     done3 = []
     for inf in infos:
         p = inf["port"]; cx, cy = inf["x"], inf["y"]
-        if p["rank"] > 4 or any(math.hypot(cx - a, cy - b) < 50 for a, b in done3): continue
+        if any(math.hypot(cx - a, cy - b) < 45 for a, b in done3): continue
         done3.append((cx, cy))
-        x0, y0 = max(0, cx - 50), max(0, cy - 50); x1, y1 = min(P.WX, cx + 50), min(P.WY, cy + 50)
-        P.add_cell(cid(3), 3, f"{p['name']} and approaches (coastal)", x0, y0, x1, y1, 0.25, P.feat["drg"])
+        x0, y0 = max(0, cx - 40), max(0, cy - 40); x1, y1 = min(P.WX, cx + 40), min(P.WY, cy + 40)
+        P.add_cell(cid(3), 3, f"{p['name']} coastal (voyage)", x0, y0, x1, y1, 0.25, P.feat["drg"])
     # band 4: approach cells (20 NM box) for major ports
     for inf in infos:
         p = inf["port"]; cx, cy = inf["x"], inf["y"]
         if any(c["band"] == 4 and c["box"][0] <= cx <= c["box"][2] and c["box"][1] <= cy <= c["box"][3] for c in P.cells): continue
         x0, y0 = max(0, cx - 11), max(0, cy - 11); x1, y1 = min(P.WX, cx + 11), min(P.WY, cy + 11)
         P.add_cell(cid(4), 4, f"{p['name']} approaches", x0, y0, x1, y1, 0.075, P.feat["drg"])
+    # band 5: harbour cells (berths, inner channel) for every equipped port
+    nid[5] = 0
+    for inf in infos:
+        p = inf["port"]; cx, cy = inf["x"], inf["y"]
+        x0, y0 = max(0, cx - 3.5), max(0, cy - 3.5); x1, y1 = min(P.WX, cx + 3.5), min(P.WY, cy + 3.5)
+        P.add_cell(cid(5), 5, f"{p['name']} harbour", x0, y0, x1, y1, 0.02, P.feat["drg"])
     # --- general (overview land), AIS, sample route, AIO, ENC list
     general = P.land_rings(0, 0, P.WX, P.WY, 1.5)
+    if len(infos) < 2: return write_pack(P, R, rid, outdir, general, infos)
     s_inf = next((i for i in infos if i["port"] is start), None) or infos[0]; start = s_inf["port"]
     d_inf = next((i for i in infos if i["port"] is dest and i is not s_inf), None) or next(i for i in infos if i is not s_inf); dest = d_inf["port"]
     print(f"  start {start['name']} → dest {dest['name']}")
@@ -718,18 +823,28 @@ def build(rid, outdir):
     mid = rt[len(rt) // 2]; mlo, mla = P.ll(*mid)
     P.aio = [dict(id="T&P 0211(T)/26", kind="T", circle=[round(v, 4) for v in P.ll(d_inf["x"] + math.sin(math.radians(d_inf["brg"])) * 1.5, d_inf["y"] + math.cos(math.radians(d_inf["brg"])) * 1.5)], r=0.4, title=f"{dest['name']}: dredging in the approach channel", text="Dredging operations in the approach channel. Least depth reduced to 9.0 m. Dredger on station, pass at slow speed, VHF 12.", depth=9.0),
              dict(id="T&P 0237(P)/26", kind="P", circle=[round(mlo + 0.15, 4), round(mla - 0.12, 4)], r=0.5, title="New dangerous wreck reported", text="Sunken vessel reported, depth unknown, not yet surveyed. Give a wide berth (≥ 1 NM).", depth=5)]
-    # ENC catalogue (one cell deliberately NOT up to date for the update exercise)
+    P.enc_build()
+    return write_pack(P, R, rid, outdir, general, infos, dict(start=dict(lon=round(slo, 4), lat=round(sla, 4), hdg=round(hdg), port=start["name"]), dest=dest["name"], sample=sample))
+
+def _enc_build(P):
     rng = P.rng
     for k, c in enumerate(P.cells):
         lo0, la0 = P.ll(c["box"][0], c["box"][1]); lo1, la1 = P.ll(c["box"][2], c["box"][3])
         ed, upd = rng.randint(2, 5), rng.randint(4, 14)
         lat = upd + (3 if (c["band"] == 4 and k == len(P.cells) - 2) else 0)
         P.enc.append([c["id"], c["band"], c["name"], [round(lo0, 3), round(la0, 3), round(lo1, 3), round(la1, 3)], ed, upd, lat, f"2026-{rng.randint(6,9):02d}-{rng.randint(1,28):02d}", "2027-06-30"])
-    # --- write
+Pack.enc_build = _enc_build
+
+def write_pack(P, R, rid, outdir, general, infos, voy=None):
+    if voy is None:   # open-ocean / remote pack: start in deep water near the first port, else the middle of the area
+        if not P.enc: P.enc_build()
+        if infos: inf = infos[0]; x, y, brg = inf["x"] + math.sin(math.radians(inf["brg"])) * inf.get("L", 3), inf["y"] + math.cos(math.radians(inf["brg"])) * inf.get("L", 3), inf["brg"]; port = inf["port"]["name"]
+        else:
+            w = P.water_near(P.WX / 2, P.WY / 2, maxr=400) or (P.WX / 2, P.WY / 2); x, y = w; brg, _ = P.sea_dir(x, y); port = "open sea"
+        lo, la = P.ll(x, y); voy = dict(start=dict(lon=round(lo, 4), lat=round(la, 4), hdg=round(brg), port=port), dest="", sample=[])
     offs = [0]
     for b in P.depth_blobs: offs.append(offs[-1] + len(b))
-    chart = dict(pack=rid, name=R["name"], desc=R["desc"], lon0=P.lon0, lat0=P.lat0, lon1=P.lon1, lat1=P.lat1, C=P.C, WX=P.WX, WY=P.WY, iala=R["iala"], tz=R["tz"],
-                 start=dict(lon=round(slo, 4), lat=round(sla, 4), hdg=round(hdg), port=start["name"]), dest=dest["name"], sample=sample,
+    chart = dict(pack=rid, name=R["name"], desc=R["desc"], gen=bool(R.get("gen")), lon0=P.lon0, lat0=P.lat0, lon1=P.lon1, lat1=P.lat1, C=P.C, WX=P.WX, WY=P.WY, iala=R["iala"], tz=R["tz"], **voy,
                  cells=P.cells, offs=offs[:-1], general=general, shoals=P.shoals, peaks=[], drg=[], feat=P.feat, ais=P.ais, aio=P.aio, enc=P.enc,
                  credit="Coastline: OpenStreetMap contributors (ODbL) via geo-maps; bathymetry, ports and names: Natural Earth (public domain). Depths, aids, traffic and notices are simulated training data.")
     os.makedirs(outdir, exist_ok=True)
