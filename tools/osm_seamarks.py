@@ -26,7 +26,7 @@ UA = "ecademy-ecdis-pack-generator/1.0"
 AREAS = {
     "sgstrait": dict(region="sea", bb=(103.35, 1.05, 104.55, 1.50), name="Singapore Strait"),
     # Sumatra / Peninsular Malaysia: One Fathom Bank TSS, Port Klang, Penang, Dumai, Belawan, Malacca; stops where sgstrait starts
-    "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75),
+    "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75, land_from="ecdis_sea_chart.gz"),
 }
 SRC = "OpenStreetMap / OpenSeaMap (ODbL)"
 
@@ -39,12 +39,15 @@ def fetch(aid, refresh=False):
     T = A.get("tile")
     if T:   # big area: one Overpass query per tile, merged (an object on a tile edge is kept once)
         seen, els, base = set(), [], ""
+        land = pack_land(A["land_from"]) if A.get("land_from") else None
         lo = lo0
         while lo < lo1 - 1e-9:
             la = la0
             while la < la1 - 1e-9:
                 tb = (round(lo, 3), round(la, 3), round(min(lo + T, lo1), 3), round(min(la + T, la1), 3))
                 tf = os.path.join(CACHE, "tiles", f"{aid}_{tb[0]}_{tb[1]}.json.gz")
+                if land is not None and box(*tb).difference(land).area < 0.005 * box(*tb).area:
+                    la += T; continue                                      # all land in the pack: no seamarks needed
                 if os.path.exists(tf): js = json.load(gzip.open(tf))           # resume an interrupted download
                 else:
                     js = query(tb); os.makedirs(os.path.dirname(tf), exist_ok=True)
@@ -62,6 +65,17 @@ def fetch(aid, refresh=False):
     with gzip.open(fn, "wt") as f: json.dump(js, f, separators=(",", ":"))
     print(f"  {aid}: {len(js['elements'])} seamark elements (OSM base {js['osm3s'].get('timestamp_osm_base', '?')})")
     return js
+
+def pack_land(name):
+    """land of an existing chart pack (overview rings, NM grid) as lon/lat polygons"""
+    j = json.load(gzip.open(os.path.join(HERE, "..", "assets", name)))
+    ps = []
+    for r in j["general"]:
+        pts = [(j["lon0"] + r[i] / (60 * j["C"]), j["lat0"] + r[i + 1] / 60) for i in range(0, len(r) - 1, 2)]
+        if len(pts) >= 3:
+            p = Polygon(pts).buffer(0)
+            if not p.is_empty: ps.append(p)
+    return unary_union(ps)
 
 def query(bb):
     lo0, la0, lo1, la1 = bb
