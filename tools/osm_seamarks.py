@@ -34,6 +34,19 @@ AREAS = {
     "cebu": dict(region="ph", bb=(123.6, 10.05, 124.2, 10.6), name="Cebu and Mactan", tile=0.75, land_from="ecdis_chart.gz"),
     # North-West Europe pack
     "dover": dict(region="nweu", bb=(0.8, 50.6, 2.3, 51.45), name="Dover Strait", tile=0.75, land_from="ecdis_nweu_chart.gz"),
+    # other major straits (each in the pack that covers it; Suez and Gibraltar are also inside a neighbouring pack's box)
+    "hormuz": dict(region="gulf", bb=(55.8, 25.8, 57.2, 27.0), name="Strait of Hormuz", tile=0.75, land_from="ecdis_gulf_chart.gz"),
+    "babelmandeb": dict(region="gulf", bb=(42.9, 12.2, 43.8, 13.2), name="Bab-el-Mandeb", tile=0.75, land_from="ecdis_gulf_chart.gz"),
+    "suez": dict(region="gulf", bb=(32.2, 29.85, 32.65, 31.35), name="Suez Canal and Gulf of Suez", tile=0.75, land_from="ecdis_gulf_chart.gz"),
+    "gibraltar": dict(region="med", bb=(-6.1, 35.75, -5.2, 36.2), name="Strait of Gibraltar", tile=0.75, land_from="ecdis_med_chart.gz"),
+    "bosporus": dict(region="med", bb=(28.9, 40.95, 29.2, 41.3), name="Bosporus", tile=0.75, land_from="ecdis_med_chart.gz"),
+    "dardanelles": dict(region="med", bb=(26.1, 40.0, 26.7, 40.5), name="Dardanelles", tile=0.75, land_from="ecdis_med_chart.gz"),
+    "messina": dict(region="med", bb=(15.5, 37.9, 15.75, 38.3), name="Strait of Messina", tile=0.75, land_from="ecdis_med_chart.gz"),
+    "oresund": dict(region="nweu", bb=(12.4, 55.4, 13.0, 56.15), name="Oresund", tile=0.75, land_from="ecdis_nweu_chart.gz"),
+    "korea": dict(region="ea", bb=(128.7, 34.6, 129.5, 35.3), name="Korea Strait (Busan)", tile=0.75, land_from="ecdis_ea_chart.gz"),
+    "sunda": dict(region="sea", bb=(105.0, -6.6, 106.3, -5.5), name="Sunda Strait", tile=0.75, land_from="ecdis_sea_chart.gz"),
+    "lombok": dict(region="sea", bb=(115.4, -9.0, 116.1, -8.2), name="Lombok Strait", tile=0.75, land_from="ecdis_sea_chart.gz"),
+    "torres": dict(region="aus", bb=(141.8, -11.0, 143.0, -9.8), name="Torres Strait", tile=0.75, land_from="ecdis_aus_chart.gz"),
 }
 SRC = "OpenStreetMap / OpenSeaMap (ODbL)"
 
@@ -362,12 +375,12 @@ def apply_real_seamarks(feat, aid, js=None, iala="A", cover=None):
     js = js or fetch(aid)
     inb = (lambda lo, la: bb[0] <= lo <= bb[2] and bb[1] <= la <= bb[3]) if cover is None else (lambda lo, la: cover.covers(Point(lo, la)))
     n0 = len(feat["obj"])
-    feat["obj"] = [o for o in feat["obj"] if o.get("src") == "osm" or not (o["c"] in SIM_OBJ and inb(o["lon"], o["lat"]))]   # never remove real data of another area
+    feat["obj"] = [o for o in feat["obj"] if o.get("src") or not (o["c"] in SIM_OBJ and inb(o["lon"], o["lat"]))]   # never remove real data of another area
     def area_in(a):
         if a.get("circle"): return inb(a["circle"][0], a["circle"][1])
         return Polygon(a["ring"]).intersects(B)
-    feat["areas"] = [a for a in feat["areas"] if a.get("src") == "osm" or not (a["c"] in SIM_AREA and area_in(a))]
-    feat["lines"] = [l for l in feat["lines"] if l.get("src") == "osm" or not (l["c"] in SIM_LINE and any(inb(*p) for p in l["pts"]))]
+    feat["areas"] = [a for a in feat["areas"] if a.get("src") or not (a["c"] in SIM_AREA and area_in(a))]
+    feat["lines"] = [l for l in feat["lines"] if l.get("src") or not (l["c"] in SIM_LINE and any(inb(*p) for p in l["pts"]))]
     removed = n0 - len(feat["obj"])
     R = convert(js, iala, bb)
     have = {x["att"].get("SORIND") for k in ("obj", "areas", "lines") for x in feat[k] if x.get("src") == "osm"}
