@@ -57,7 +57,7 @@
 "name": "Persian Gulf & Red Sea",
 "desc": "Persian Gulf, Strait of Hormuz, Gulf of Aden, Red Sea, Suez",
 "group": "Middle East & Africa",
-"chart": "ecdis_gulf_chart.gz?v=d6",
+"chart": "ecdis_gulf_chart.gz?v=d7",
 "depth": "ecdis_gulf_depth.gz?v=d6",
 "cells": 113,
 "start": "Dubai (Jebel Ali)",
