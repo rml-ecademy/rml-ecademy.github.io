@@ -2,6 +2,7 @@
 
 <html lang="en">
 <head>
+<script>/* ECADEMY_HTTPS: the simulators decrypt with WebCrypto, which browsers only allow over https */if(location.protocol==="http:"&&!/^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname))location.replace("https://"+location.host+location.pathname+location.search+location.hash);</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#EAF0F6" name="theme-color"/>
@@ -2829,6 +2830,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(res.error){ let msg = 'This simulator could not be opened. Please try again.'; try { const j = await res.error.context.json(); if(j.message) msg = j.message; } catch(_){} throw new Error(msg); }
     if(!bin.ok) throw new Error('The simulator file could not be downloaded. Check your connection.');
     const buf = new Uint8Array(await bin.arrayBuffer());
+    if(!window.crypto || !crypto.subtle) throw new Error('This browser blocked the secure decryption. Open https://ecademymaritime.com (with https) in Chrome or Safari, then try again.');
     const key = await crypto.subtle.importKey('raw', b64(res.data.key), 'AES-GCM', false, ['decrypt']);
     const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv: buf.slice(0,12) }, key, buf.slice(12));
     let html = new TextDecoder().decode(plain);
