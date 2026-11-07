@@ -111,57 +111,84 @@ def process(pid, adir, sigma_nm):
 
 
 def seams(pid, adir, width_nm=2.0):
-    """make neighbouring cells meet: near its box edge, blend each cell's depth into the depth of the cell
-    that is shown next to it (lower band, or an earlier cell of the same band), so contours run on across
-    the cell boundary instead of stopping or jumping there"""
+    """make the depths of neighbouring ENC cells agree where the chart shows one next to the other.
+
+    The ECDIS shows, at each point, the covering cell with the highest band (then the earliest of that band),
+    so a visible boundary is either a cell's box edge or the edge of a better cell lying over it. Cells are
+    done best-first; for each, the part of it that is shown is found on a padded grid, and near every visible
+    boundary with a better cell (within width_nm) its depth is shifted by a correction that tapers to zero,
+    so that at the boundary it equals the better cell's (already final) depth there."""
     cf, df = os.path.join(adir, f"ecdis_{pid}_chart.gz"), os.path.join(adir, f"ecdis_{pid}_depth.gz")
     js = json.load(gzip.open(cf))
-    if js.get("seams"): print(f"  {pid}: seams already done, skipped"); return
+    if js.get("seams2"): print(f"  {pid}: seams already done, skipped"); return
     raw = gzip.open(df).read(); offs = js["offs"] + [len(raw)]; cells = js["cells"]
-    grids = []
+    G0 = []
     for i, c in enumerate(cells):
         q = decode(raw[offs[i]:offs[i + 1]], c["nx"] * c["ny"]).reshape(c["ny"], c["nx"])
-        grids.append([q / 10.0 - 10, q == LAND_Q])
-    order = sorted(range(len(cells)), key=lambda i: (cells[i]["band"], i))
-    done = []
-    for i in order:
-        c = cells[i]; depth, land = grids[i]; res = c["res"]
-        bx = c["box"]; W = min(width_nm, 0.25 * min(bx[2] - bx[0], bx[3] - bx[1]))
-        cands = [k for k in done if (cells[k]["band"] < c["band"] or k < i)]
-        if not cands or W <= res: done.append(i); continue
-        X = c["x0"] + np.arange(c["nx"])[None, :] * res; Y = c["y0"] + np.arange(c["ny"])[:, None] * res
-        X = np.broadcast_to(X, depth.shape); Y = np.broadcast_to(Y, depth.shape)
-        edge = np.minimum.reduce([X - bx[0], bx[2] - X, Y - bx[1], bx[3] - Y])
-        band = (edge < W) & ~land
-        if not band.any(): done.append(i); continue
-        tgt = np.full(depth.shape, np.nan); best = np.full(depth.shape, -1)
-        px, py = X[band], Y[band]; tv = np.full(px.shape, np.nan); tb = np.full(px.shape, -1)
-        for k in cands:   # the cell shown under/next to this one: highest band, then earliest
-            o = cells[k]; ob = o["box"]
-            m = (px >= ob[0]) & (px <= ob[2]) & (py >= ob[1]) & (py <= ob[3]) & (o["band"] > tb)
-            if not m.any(): continue
-            d2, l2 = grids[k]
-            fi = (px[m] - o["x0"]) / o["res"]; fj = (py[m] - o["y0"]) / o["res"]
-            v = ndimage.map_coordinates(np.where(l2, np.nan, d2), [fj, fi], order=1, mode="nearest")
-            sel = np.where(m)[0]; tv[sel] = v; tb[sel] = o["band"]
-        tgt[band] = tv
-        w = np.clip(1 - edge / W, 0, 1)
-        ok = band & np.isfinite(tgt)
-        new = depth.copy(); new[ok] = w[ok] * tgt[ok] + (1 - w[ok]) * depth[ok]
-        new = np.where(land, depth, new)
-        grids[i][0] = new.astype(np.float32); done.append(i)
+        G0.append((q / 10.0 - 10, q == LAND_Q))
+    NAN = [np.where(l, np.nan, d) for d, l in G0]
+    pri = lambda k: (cells[k]["band"], -k)                     # what the ECDIS shows on top
+    def sample(k, x, y):                                       # depth of cell k at points (clamped to its grid; NaN on land)
+        o = cells[k]
+        return ndimage.map_coordinates(NAN[k], [(y - o["y0"]) / o["res"], (x - o["x0"]) / o["res"]], order=1, mode="nearest")
+    out = [None] * len(cells)
+    for i in sorted(range(len(cells)), key=lambda k: (-cells[k]["band"], k)):
+        c = cells[i]; depth, land = G0[i]; res = c["res"]; bx = c["box"]
+        W = min(width_nm, 0.25 * min(bx[2] - bx[0], bx[3] - bx[1]))
+        m = int(math.ceil(W / res)) + 1
+        ny, nx = depth.shape
+        X = c["x0"] + (np.arange(nx + 2 * m) - m) * res; Y = c["y0"] + (np.arange(ny + 2 * m) - m) * res
+        XX, YY = np.meshgrid(X, Y)
+        disp = np.full(XX.shape, -1); dpri = np.full(XX.shape, -1e9)
+        inside = (XX >= bx[0] - 1e-9) & (XX <= bx[2] + 1e-9) & (YY >= bx[1] - 1e-9) & (YY <= bx[3] + 1e-9)
+        disp[inside] = i; dpri[inside] = c["band"] * 1e6 - i
+        for k, o in enumerate(cells):
+            if k == i: continue
+            ob = o["box"]
+            if ob[2] < X[0] or ob[0] > X[-1] or ob[3] < Y[0] or ob[1] > Y[-1]: continue
+            mk = (XX >= ob[0]) & (XX <= ob[2]) & (YY >= ob[1]) & (YY <= ob[3]) & (o["band"] * 1e6 - k > dpri)
+            disp[mk] = k; dpri[mk] = o["band"] * 1e6 - k
+        vis = disp == i
+        other = (disp >= 0) & ~vis & (dpri > c["band"] * 1e6 - i)   # a better cell shown next to this one
+        if not other.any() or not vis.any(): out[i] = depth; continue
+        dist, (ji, ii) = ndimage.distance_transform_edt(~other, return_indices=True)
+        dist = dist * res
+        core = (slice(m, m + ny), slice(m, m + nx))
+        d = dist[core]; sj = ji[core]; si = ii[core]
+        near = vis[core] & (d < W) & ~land
+        if not near.any(): out[i] = depth; continue
+        nb = disp[sj[near], si[near]]                          # the better cell across the nearest boundary
+        px = X[np.nonzero(near)[1] + m]; py = Y[np.nonzero(near)[0] + m]
+        tgt = np.full(px.shape, np.nan)
+        for k in np.unique(nb):                                # its depth at this point (clamped to its edge)
+            sel = nb == k; tgt[sel] = sample(int(k), px[sel], py[sel])
+        w = 1 - d[near] / W
+        blend = np.where(np.isfinite(tgt), w * tgt + (1 - w) * depth[near], depth[near])
+        new = depth.copy(); new[near] = blend
+        # grid points of this cell hidden under a better cell, next to the boundary: take that cell's depth, so the
+        # interpolation across the boundary does not pull back towards the old value
+        dv = ndimage.distance_transform_edt(~vis)[core] * res
+        hid = other[core] & (dv < 2 * res + 1e-9) & ~land
+        if hid.any():
+            hx = X[np.nonzero(hid)[1] + m]; hy = Y[np.nonzero(hid)[0] + m]; hk = disp[core][hid]; hv = np.full(hx.shape, np.nan)
+            for k in np.unique(hk):
+                sel = hk == k; hv[sel] = sample(int(k), hx[sel], hy[sel])
+            cur = new[hid]; new[hid] = np.where(np.isfinite(hv), hv, cur)
+        new = np.where(land, depth, np.maximum(new, np.minimum(depth, 0.3)))
+        out[i] = new.astype(np.float32)
+        NAN[i] = np.where(land, np.nan, out[i])                 # worse cells match this final depth
     blobs = []
     for i, c in enumerate(cells):
-        depth, land = grids[i]
-        c["cont"] = contours(depth, land, c["x0"], c["y0"], c["res"], BAND_LEVELS[c["band"]], c["res"] * 0.6)
-        blobs.append(encode(depth, land))
+        land = G0[i][1]
+        c["cont"] = contours(out[i], land, c["x0"], c["y0"], c["res"], BAND_LEVELS[c["band"]], c["res"] * 0.6)
+        blobs.append(encode(out[i], land))
     o = [0]
-    for b in blobs: o.append(o[-1] + len(b))
-    js["offs"] = o[:-1]; js["seams"] = width_nm
+    for b_ in blobs: o.append(o[-1] + len(b_))
+    js["offs"] = o[:-1]; js["seams2"] = width_nm; js.pop("seams", None)
     with gzip.open(cf, "wb", compresslevel=9) as f: f.write(json.dumps(js, separators=(",", ":")).encode())
     with gzip.open(df, "wb", compresslevel=9) as f:
-        for b in blobs: f.write(b)
-    print(f"  {pid}: {len(cells)} cells, seams blended ({width_nm} NM)")
+        for b_ in blobs: f.write(b_)
+    print(f"  {pid}: {len(cells)} cells, visible seams matched ({width_nm} NM)")
 
 
 if __name__ == "__main__":
