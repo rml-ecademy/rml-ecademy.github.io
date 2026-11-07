@@ -28,6 +28,12 @@ AREAS = {
     # Sumatra / Peninsular Malaysia: One Fathom Bank TSS, Port Klang, Penang, Dumai, Belawan, Malacca; stops where sgstrait starts
     "malacca": dict(region="sea", bb=(98.0, 0.9, 103.349, 6.6), name="Malacca Strait", tile=0.75, land_from="ecdis_sea_chart.gz",
                     axis=[(98.3, 5.9), (100.3, 3.4), (101.3, 2.6), (102.3, 1.9), (103.35, 1.2)]),   # traffic route through the strait
+    # Philippines pack (hand-built Manila-Cebu features in the trainer; real seamarks replace them inside these boxes)
+    "manila": dict(region="ph", bb=(120.4, 14.15, 121.1, 14.85), name="Manila Bay", tile=0.75, land_from="ecdis_chart.gz"),
+    "verde": dict(region="ph", bb=(120.5, 13.35, 121.7, 13.95), name="Verde Island Passage", tile=0.75, land_from="ecdis_chart.gz"),
+    "cebu": dict(region="ph", bb=(123.6, 10.05, 124.2, 10.6), name="Cebu and Mactan", tile=0.75, land_from="ecdis_chart.gz"),
+    # North-West Europe pack
+    "dover": dict(region="nweu", bb=(0.8, 50.6, 2.3, 51.45), name="Dover Strait", tile=0.75, land_from="ecdis_nweu_chart.gz"),
 }
 SRC = "OpenStreetMap / OpenSeaMap (ODbL)"
 
@@ -394,15 +400,18 @@ def partial_tiles(aid):
 
 def patch(aid, chart_gz, partial=False):
     js = json.load(gzip.open(chart_gz))
+    js.setdefault("feat", {"obj": [], "areas": [], "lines": []})       # the Philippines pack keeps its own features in the trainer
+    for k in ("obj", "areas", "lines"): js["feat"].setdefault(k, [])
+    iala = js.get("iala") or ("B" if AREAS[aid]["region"] == "ph" else "A")
     for k in ("obj", "areas", "lines"):                                                  # idempotent re-run of this area
         js["feat"][k] = [x for x in js["feat"][k] if not (x.get("src") == "osm" and x.get("osm") == aid)]
     js["feat"]["real"] = [r for r in js["feat"].get("real", []) if r["id"] != aid]
     if partial:
-        osm, cover = partial_tiles(aid); apply_real_seamarks(js["feat"], aid, js=osm, iala=js.get("iala", "A"), cover=cover)
-    else: apply_real_seamarks(js["feat"], aid, iala=js.get("iala", "A"))
+        osm, cover = partial_tiles(aid); apply_real_seamarks(js["feat"], aid, js=osm, iala=iala, cover=cover)
+    else: apply_real_seamarks(js["feat"], aid, iala=iala)
     names = " and ".join(r["name"] for r in js["feat"]["real"])
-    js["desc"] = js["desc"].split(" · real OpenSeaMap")[0] + " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + names
-    js["credit"] = js["credit"].split(" Singapore Strait aids")[0].split(" Real aids")[0].replace(" Depths, aids", " Depths, other aids") + credit(names)
+    if "desc" in js: js["desc"] = js["desc"].split(" · real OpenSeaMap")[0] + " · real OpenSeaMap seamarks (buoys, lights, TSS, anchorages, wrecks) in the " + names
+    if "credit" in js: js["credit"] = js["credit"].split(" Singapore Strait aids")[0].split(" Real aids")[0].replace(" Depths, aids", " Depths, other aids") + credit(names)
     with gzip.open(chart_gz, "wb", compresslevel=9) as f: f.write(json.dumps(js, separators=(",", ":")).encode())
     print(f"  wrote {chart_gz} {os.path.getsize(chart_gz) / 1e6:.2f} MB")
 
