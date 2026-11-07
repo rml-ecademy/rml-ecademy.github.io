@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
+<head><script>if(location.protocol==='http:'&&!/^(localhost|127\.|192\.168\.)/.test(location.hostname))location.replace('https://'+location.host+location.pathname+location.search+location.hash)</script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <meta content="#EAF0F6" name="theme-color"/>
@@ -2820,6 +2820,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   window.ecademyGetHtml = async function(app){
     if (IN_APP) throw new Error('Open ECADEMY in Chrome or Safari to use the simulators (in-app browsers cannot run them).');
+    if (!(window.crypto && crypto.subtle)) throw new Error('This page is not on a secure connection. Open https://' + location.host + ' (with https) in Chrome or Safari, then try again.');
     const { data:{ session } } = await sb.auth.getSession();
     if(!session) throw new Error('Please log in to open this simulator.');
     const [bin, res] = await Promise.all([
