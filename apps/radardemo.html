@@ -514,6 +514,10 @@
       body.ppi-max .radar{align-items:flex-start}
       @media (max-width:1100px){.coach-grid{grid-template-columns:1fr 1fr}.coach-grid>div:last-child{grid-column:1/-1}}
       @media (max-width:700px){.coach-grid{grid-template-columns:1fr}}
+      /* ===== Auto-fit PPI: the whole radar circle stays on screen on every device (JS sets the exact size; these are the fallbacks) ===== */
+      @media (max-width:900px){.app{grid-template-columns:190px minmax(0,1fr)}.right{grid-column:1/-1}}
+      @media (max-width:620px){.app{grid-template-columns:1fr}.radar{grid-template-columns:1fr;order:-1}.ppiwrap{grid-column:auto;grid-row:auto;order:-1}.radar .side{grid-column:auto}.right{grid-column:auto}.radar canvas{width:100%}}
+      #ppi{max-width:100%}
 .sartbox{margin:6px 0;padding:8px 10px;background:#0d2318;border:1px solid #3ccf7a;border-radius:6px;color:#d6ffe6;font:12.5px/1.45 system-ui,Segoe UI,Arial}.sartbox .sartrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.sartbox button{padding:5px 9px}#sartres{margin-top:6px;color:#ffe9a0}
     </style>
 <style>@media (max-width:760px){.app{grid-template-columns:1fr !important}.app>*{grid-column:1/-1 !important;min-width:0}section.radar{grid-template-columns:1fr !important}section.radar>*{grid-column:1/-1 !important;min-width:0}html,body{overflow-x:hidden}}</style></head>
@@ -2351,11 +2355,36 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
         document.body.classList.remove("ppi-fit", "ppi-max");
         if (z !== "large") document.body.classList.add("ppi-" + z);
         document.querySelectorAll("#ppisize button").forEach(b => b.classList.toggle("on", b.dataset.z === z));
-        try { localStorage.setItem("ecademy_ppi", z); } catch (_) {}
+        try { localStorage.setItem("ecademy_ppi2", z); } catch (_) {}
       }
       $("ppisize").onclick = e => { const b = e.target.closest("[data-z]"); if (b) setPpiSize(b.dataset.z); };
-      let ppiPref = "large"; try { ppiPref = localStorage.getItem("ecademy_ppi") || "large"; } catch (_) {}
+      /* Auto-fit (FIT, the default): measure the space that is really there — header height (it wraps on narrow screens), the fixed
+         footer, the frame height when this radar runs inside the hub / Full Bridge / ECDIS — and size the PPI so the whole circle is
+         always visible without scrolling. LARGE and MAX stay as deliberate choices. */
+      function fitPpi() {
+        const c = $("ppi"); if (!c) return;
+        const linked = document.documentElement.classList.contains("linked"), large = !linked && !document.body.classList.contains("ppi-fit") && !document.body.classList.contains("ppi-max");
+        if (!linked && document.body.classList.contains("ppi-max")) { c.style.removeProperty("width"); return; }   // MAX: full width, scroll if needed
+        const wrap = c.parentElement, foot = document.querySelector(".education-warning");
+        const top = c.getBoundingClientRect().top + (window.scrollY || 0);
+        const footH = foot && getComputedStyle(foot).position === "fixed" ? foot.offsetHeight : 0;
+        const availW = (wrap ? wrap.getBoundingClientRect().width : c.parentElement.clientWidth) || window.innerWidth;
+        let availH = large ? window.innerHeight - top : window.innerHeight - top - footH - 8;   // FIT: whole circle clear of the footer; LARGE: fills the height
+        if (availH < Math.min(availW, 200)) availH = window.innerHeight - footH - 16;   // PPI sits lower on the page (phone): the circle still fits one screen once scrolled to
+        const size = Math.max(140, Math.floor(Math.min(availW, availH)));
+        if (!(Math.abs(parseFloat(c.style.width) - size) < 1)) c.style.setProperty("width", size + "px", "important");
+      }
+      let fitRaf = 0;
+      function fitPpiSoon() { if (fitRaf) return; fitRaf = requestAnimationFrame(() => { fitRaf = 0; fitPpi(); }); }
+      window.addEventListener("resize", fitPpiSoon);
+      window.addEventListener("orientationchange", () => setTimeout(fitPpiSoon, 150));
+      if (window.ResizeObserver) { const ro = new ResizeObserver(fitPpiSoon); ["ppi", "bridgeWrap", "linkbar"].forEach(id => { const el = $(id); if (el) ro.observe(el); }); const w = $("ppi").parentElement; if (w) ro.observe(w); const t = document.querySelector("header.top"); if (t) ro.observe(t); const f = document.querySelector(".education-warning"); if (f) ro.observe(f); }
+      window.fitPpi = fitPpi;
+      const _setPpiSize = setPpiSize; setPpiSize = function (z) { _setPpiSize(z); fitPpi(); };
+      let ppiPref = "fit"; try { ppiPref = localStorage.getItem("ecademy_ppi2") || "fit"; } catch (_) {}
       setPpiSize(ppiPref);
+      setTimeout(fitPpi, 50); setTimeout(fitPpi, 400); setTimeout(fitPpi, 1500);
+
       /* Set course: autopilot-style, turns the chosen way and steadies on the course. */
       let turnDir = "A";
       function steerTo(c) {
