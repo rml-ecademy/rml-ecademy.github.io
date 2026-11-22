@@ -2744,5 +2744,163 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
   window.ECADEMY_STEER = setMode; paint();
 })();
 </script>
+
+<style>
+  /* ===== Floating units: the ENGINE TELEGRAPH and the AUTO PILOT each open in their own window.
+     Drag by the title bar, resize from the corner, minimise, maximise, close. The PPI keeps its full size.
+     Inside the hub the autopilot window is the real ECADEMY Autopilot & Gyro Repeater unit (as in the Full Bridge and the ECDIS). ===== */
+  .dockpane.floated{display:none!important}
+  .docktabs button.open{background:#5dffad;color:#06110b;border-color:#5dffad}
+  .fwin{position:fixed;z-index:120;left:0;top:0;max-width:calc(100vw - 8px);background:#0b1114;border:1px solid #60756c;box-shadow:0 16px 50px #000,0 0 0 1px #000;display:flex;flex-direction:column}
+  .fwin.fronted{z-index:121}
+  .fwin.closed{visibility:hidden;pointer-events:none;left:-9999px!important}
+  .fbar{display:flex;align-items:center;gap:4px;padding:4px 5px 4px 9px;background:linear-gradient(#22312b,#111b18);border-bottom:1px solid #34483f;cursor:move;touch-action:none;user-select:none;-webkit-user-select:none}
+  .fbar b{flex:1;font:700 10.5px monospace;letter-spacing:.07em;color:#9fe0c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .fbar button{margin:0;padding:0;flex:0 0 26px;width:26px;height:22px;font:700 13px/1 monospace;cursor:pointer}
+  .fbar button:hover{border-color:#ffd84d;color:#ffd84d}
+  .fbody{overflow:hidden;position:relative}
+  .fwin.min .fbody{height:0!important;padding:0!important}
+  .fwin.min .fgrip{display:none}
+  .fgrip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;touch-action:none;z-index:3;background:linear-gradient(135deg,transparent 50%,#60756c 50%,#60756c 58%,transparent 58%,transparent 68%,#60756c 68%,#60756c 76%,transparent 76%,transparent 86%,#60756c 86%)}
+  .fgrip:hover{filter:brightness(1.8)}
+  .fwin.dragging iframe{pointer-events:none}
+  #apunit{display:block;width:100%;border:0;background:#0b1114;height:300px}
+  #telewin .fbody,#apwin.builtin .fbody{padding:8px 10px 14px}
+  .fwin .tele{margin:0;padding:0;border:0;background:transparent}
+  .fwin .tele>.k{display:none}
+  .fwin .tele svg{max-width:none;margin:0 auto 2px}
+  .fwin .helm{margin-top:6px}
+  .fwin #hwheel{max-width:none}
+  .fwin .title{margin-top:0}
+</style>
+<script>
+(function () {
+  if (window.RX_LINKED || window.ECADEMY_START === "linked") return;
+  const gid = id => document.getElementById(id);
+  const apPane = document.querySelector('.dockpane[data-pane=ap]'), telePane = document.querySelector('.dockpane[data-pane=tele]'), tabs = document.querySelector(".docktabs");
+  if (!apPane || !telePane || !tabs || gid("telewin")) return;
+  const wins = [];
+  /* ---------- a floating window ---------- */
+  function mkWin(o) {
+    const win = document.createElement("div"); win.id = o.id; win.className = "fwin"; win.setAttribute("role", "dialog"); win.setAttribute("aria-label", o.title);
+    win.innerHTML = '<div class="fbar"><b></b><button data-a="min" title="Minimise" aria-label="Minimise">&#8211;</button><button data-a="max" title="Maximise" aria-label="Maximise">&#9633;</button><button data-a="close" title="Close" aria-label="Close">&times;</button></div><div class="fbody"></div><div class="fgrip" title="Drag to make the unit smaller or larger"></div>';
+    win.querySelector(".fbar b").textContent = o.title; document.body.append(win);
+    const bar = win.querySelector(".fbar"), body = win.querySelector(".fbody"), grip = win.querySelector(".fgrip"), bMax = win.querySelector("[data-a=max]"), bMin = win.querySelector("[data-a=min]");
+    let st = { x: null, y: null, w: o.w, mode: "normal", open: true };
+    try { const s = JSON.parse(localStorage.getItem(o.key) || "null"); if (s && typeof s === "object") st = Object.assign(st, s); } catch (_) {}
+    const save = () => { try { localStorage.setItem(o.key, JSON.stringify(st)); } catch (_) {} };
+    const W = { win, body, st, pin: null, layout: o.layout || (() => {}) };
+    const clampW = w => Math.max(o.minW, Math.min(window.innerWidth - 8, Math.round(w)));
+    function size() {
+      const w = st.mode === "max" ? Math.max(o.minW, Math.min(window.innerWidth - 16, Math.round(o.maxW()))) : st.mode === "min" ? Math.max(190, Math.min(clampW(st.w), 300)) : clampW(st.w);
+      win.style.width = w + "px"; W.layout(w); return w;
+    }
+    function place() {
+      const vw = window.innerWidth, vh = window.innerHeight;
+      win.classList.toggle("min", st.mode === "min"); win.classList.toggle("closed", !st.open);
+      const w = size(), hh = win.offsetHeight;
+      let x = st.x, y = st.y;
+      if (st.mode === "max") { x = (vw - w) / 2; y = Math.max(4, (vh - hh) / 2); }
+      else if (x === null || y === null) { const d = o.def(w, hh); x = d[0]; y = d[1]; }
+      x = Math.max(84 - w, Math.min(vw - 80, x)); y = Math.max(0, Math.min(vh - 30, y));
+      win.style.left = Math.round(x) + "px"; win.style.top = Math.round(y) + "px";
+      bMax.innerHTML = st.mode === "max" ? "&#10064;" : "&#9633;"; bMax.title = st.mode === "max" ? "Restore size" : "Maximise"; bMin.title = st.mode === "min" ? "Restore" : "Minimise";
+      if (W.pin) { W.pin.classList.toggle("open", st.open); W.pin.setAttribute("aria-pressed", String(st.open)); }
+    }
+    const front = () => { wins.forEach(q => q.win.classList.toggle("fronted", q === W)); };
+    win.addEventListener("pointerdown", front, true);
+    win.querySelector("[data-a=close]").onclick = () => { st.open = false; save(); place(); };
+    bMin.onclick = () => { st.mode = st.mode === "min" ? "normal" : "min"; save(); place(); };
+    bMax.onclick = () => { st.mode = st.mode === "max" ? "normal" : "max"; save(); place(); };
+    let drag = null;
+    bar.addEventListener("pointerdown", e => { if (e.target.closest("button")) return; const r = win.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; win.classList.add("dragging"); try { bar.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
+    bar.addEventListener("pointermove", e => { if (!drag || st.mode === "max") return; st.x = e.clientX - drag.dx; st.y = e.clientY - drag.dy;
+      const w = win.offsetWidth; win.style.left = Math.max(84 - w, Math.min(window.innerWidth - 80, st.x)) + "px"; win.style.top = Math.max(0, Math.min(window.innerHeight - 30, st.y)) + "px"; });
+    const endDrag = () => { if (!drag) return; drag = null; win.classList.remove("dragging"); const r = win.getBoundingClientRect(); if (st.mode !== "max") { st.x = r.left; st.y = r.top; } save(); };
+    bar.addEventListener("pointerup", endDrag); bar.addEventListener("pointercancel", endDrag);
+    bar.addEventListener("dblclick", e => { if (!e.target.closest("button")) bMax.click(); });
+    /* resize from the corner: smaller or larger, the unit scales with the window */
+    let rs = null;
+    grip.addEventListener("pointerdown", e => { const r = win.getBoundingClientRect(); rs = { x0: e.clientX, w0: r.width }; if (st.mode !== "normal") { st.mode = "normal"; st.x = r.left; st.y = r.top; win.classList.remove("min"); } win.classList.add("dragging"); try { grip.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
+    grip.addEventListener("pointermove", e => { if (!rs) return; st.w = clampW(rs.w0 + (e.clientX - rs.x0)); size(); });
+    const endRs = () => { if (!rs) return; rs = null; win.classList.remove("dragging"); save(); place(); };
+    grip.addEventListener("pointerup", endRs); grip.addEventListener("pointercancel", endRs);
+    W.place = place; W.save = save; W.toggle = () => { st.open = !st.open; if (st.open && st.mode === "min") st.mode = "normal"; save(); place(); if (st.open) front(); };
+    wins.push(W); return W;
+  }
+  /* pin buttons at the bottom of the left panel: open / close each window */
+  function pinFor(key, W) { const old = tabs.querySelector('[data-dock=' + key + ']'); if (!old) return; const p = old.cloneNode(true); p.removeAttribute("data-dock"); p.classList.remove("on"); old.replaceWith(p); p.onclick = W.toggle; W.pin = p; }
+  const aside = document.querySelector(".app>aside.panel:not(.right)");
+  const underPins = (w, hh) => { const r = tabs.getBoundingClientRect(); return [Math.max(4, r.left), Math.min(window.innerHeight - hh - 36, r.bottom + 10)]; };
+  const lbl = document.querySelector(".pinlbl"); if (lbl) lbl.textContent = "UNITS · CLICK TO OPEN / CLOSE · DRAG TO MOVE";
+
+  /* ---------- ENGINE TELEGRAPH window ---------- */
+  const tele = telePane.querySelector(".tele");
+  const TW = mkWin({ id: "telewin", title: "TELEGRAPH", key: "ecademy_telewin2", w: aside ? Math.max(180, Math.round(tabs.getBoundingClientRect().width) || 190) : 200, minW: 110, maxW: () => Math.min(440, (window.innerHeight - 110) * 0.47), def: underPins,
+    layout: w => { if (tele) tele.style.zoom = Math.max(0.4, (w - 22) / 178).toFixed(3); } });        // the whole unit scales with the window
+  if (tele) TW.body.append(tele);
+  telePane.classList.add("floated"); pinFor("tele", TW);
+
+  /* ---------- AUTO PILOT window ---------- */
+  const botRight = (w, hh) => [window.innerWidth - w - 12, window.innerHeight - hh - 40];
+  function builtinAP() {
+    if (gid("apwin")) return;
+    const AW = mkWin({ id: "apwin", title: "STEERING · AUTO PILOT / HAND", key: "ecademy_apwin_b2", w: 240, minW: 130, maxW: () => Math.min(460, (window.innerHeight - 110) * 0.5), def: botRight,
+      layout: w => { if (inner) inner.style.zoom = Math.max(0.4, (w - 22) / 218).toFixed(3); } });
+    const inner = document.createElement("div"); AW.body.append(inner);
+    AW.win.classList.add("builtin"); [...apPane.children].forEach(n => { if (!n.matches("input[type=hidden]")) inner.append(n); });
+    const t = inner.querySelector(".title"); if (t) t.remove();
+    apPane.classList.add("floated"); pinFor("ap", AW); AW.place();
+  }
+  function realAP(html) {
+    if (/window\.ECADEMY_START = window\.ECADEMY_START \|\|/.test(html)) html = html.replace("window.ECADEMY_START = window.ECADEMY_START ||", 'window.ECADEMY_START = "linked" ||');
+    else html = html.replace(/<head[^>]*>/i, m => m + '<script>window.ECADEMY_START="linked";<\/script>');
+    const INJ = '<style>html.linked #linkbar{display:none!important}html.linked body{overflow:hidden!important}html.linked .wrap{padding:4px!important;display:block!important}' +
+      'html.linked .fitbox{width:auto!important;height:auto!important;overflow:visible!important;position:static!important}' +
+      'html.linked .con{transform:scale(var(--z,.36))!important;transform-origin:0 0!important;margin-bottom:var(--mb,0px)!important}</style>';
+    const i = html.lastIndexOf("</body>"); html = i > 0 ? html.slice(0, i) + INJ + html.slice(i) : html + INJ;
+    if (window.ECADEMY_STEER) window.ECADEMY_STEER("AUTO");
+    const f = document.createElement("iframe"); f.id = "apunit"; f.title = "Autopilot and gyro repeater"; f.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    let ratio = 0.74;                                // unit height / width, measured once it has loaded
+    function fit() {
+      try { const d = f.contentDocument, con = d && d.getElementById("dev"); if (!con || !f.clientWidth) return;
+        const z = (f.clientWidth - 8) / con.offsetWidth; ratio = (con.offsetHeight + 9 / z) / con.offsetWidth;
+        d.documentElement.style.setProperty("--z", z.toFixed(4)); d.documentElement.style.setProperty("--mb", (-(1 - z) * con.offsetHeight).toFixed(1) + "px");
+        const hgt = Math.ceil(con.offsetHeight * z + 9) + "px"; if (f.style.height !== hgt) f.style.height = hgt; } catch (_) {}
+    }
+    const AW = mkWin({ id: "apwin", title: "AUTOPILOT & GYRO REPEATER · STEERING", key: "ecademy_apwin2", w: 520, minW: 240, maxW: () => Math.min(1400, (window.innerHeight - 70) / ratio), def: botRight, layout: () => { fit(); setTimeout(fit, 60); } });
+    AW.body.append(f); f.srcdoc = html; apPane.classList.add("floated"); pinFor("ap", AW);
+    /* link: the unit steers own ship */
+    const course = gid("course");
+    let lastSet = null, holdUntil = 0, ready = false;
+    const hdgNow = () => n360(num("course"));
+    function ship(init) {
+      if (!f.contentWindow) return;
+      const m = { type: "ecademy-ship", init: !!init, hdg: hdgNow(), spd: Math.max(0.5, Math.abs(num("speed"))), acc: running ? 6 : 0, gyro: false };
+      if (init) { m.sel = "AUTO"; m.set = Math.round(hdgNow() * 10) / 10; holdUntil = performance.now() + 500; lastSet = hdgNow(); pendingTurn = 0;
+        try { const S = f.contentWindow.AP && f.contentWindow.AP.S(); if (S) { S.sea = "calm"; S.wind = 0; S.noise = 0; } } catch (_) {} }
+      try { f.contentWindow.postMessage(m, "*"); } catch (_) {}
+    }
+    window.addEventListener("message", e => { const m = e.data; if (!m || typeof m !== "object" || e.source !== f.contentWindow) return;
+      if (m.type === "ecademy-steer-ready") { ready = true; ship(true); AW.place(); gid("msg").textContent = "Steering unit linked: the Autopilot & Gyro Repeater unit now steers own ship on this radar. Drag the windows by their title bars; resize from the corner."; }
+      else if (m.type === "ecademy-steer" && ready) {
+        if (performance.now() < holdUntil) return;
+        if (lastSet !== null && Math.abs(sdiff(hdgNow(), lastSet)) > 0.02) { ship(true); return; }     // the radar gave own ship a new heading (new situation / reset): hand it to the unit
+        pendingTurn = 0;
+        if (running) { const hs = n360(m.hdg).toFixed(2); course.value = hs === "360.00" ? "0.00" : hs; lastSet = +course.value; if (typeof paintHelm === "function") paintHelm(); }
+      } });
+    setInterval(() => { if (ready) ship(false); }, 250);
+    f.addEventListener("load", () => { AW.place(); setTimeout(AW.place, 300); setTimeout(AW.place, 1200); });
+    setInterval(fit, 2000); AW.place();
+  }
+  if (window.ECADEMY_DOCK) window.ECADEMY_DOCK("none");
+  TW.place(); setTimeout(TW.place, 300);
+  let getHtml = null; try { if (parent && parent !== window && parent.ecademyGetHtml) getHtml = parent.ecademyGetHtml; } catch (_) {}
+  if (getHtml) getHtml("pilot").then(html => { if (html) realAP(html); else builtinAP(); }).catch(builtinAP);   // no access to the unit: built-in steering
+  else builtinAP();                                                                                                  // stand-alone / free demo / Full Bridge
+  window.addEventListener("resize", () => setTimeout(() => wins.forEach(q => q.place()), 60));
+  if (window.fitPpi) setTimeout(window.fitPpi, 60);
+})();
+</script>
 </body>
 </html>
