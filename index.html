@@ -2714,7 +2714,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   </div>
 </div>
 
-<!-- SHARE & EARN (every enrolled student has a referral link) -->
+<!-- SHARE & EARN (only for people the owner gave a referral link) -->
 <div class="enroll-modal" id="refModal" role="dialog" aria-modal="true" aria-labelledby="refH">
   <div class="enroll-box login-box">
     <button class="x" id="refClose" type="button" aria-label="Close">×</button>
@@ -3068,7 +3068,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(session){
       const who = displayName();
       const state = pkg ? pkg.name : pending ? 'Payment under review' : 'No active package';
-      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg ? '<a href="#" id="pillRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
+      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg && hasRef ? '<a href="#" id="pillRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
       pill.classList.toggle('ok', !!pkg); pill.onclick = null;
       $('pillOut').onclick = e => { e.preventDefault(); e.stopPropagation(); logout(); };
       $('pillDev').onclick = e => { e.preventDefault(); e.stopPropagation(); openDevices(); };
@@ -3081,9 +3081,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
       const who = esc(((member && member.name) || session.user.email).toUpperCase());
       bar.innerHTML = okSvg.replace('<svg','<svg style="width:12px;height:12px;fill:currentColor"') + '<span class="lead" id="barLead"> ENROLLED · ' + who + ' · ' + pkg.name.toUpperCase() + ' · ' + until.toUpperCase() + (preLaunch() ? ' · <span title="Enrolled before full launch: 50% off at full launch">★ PRE-LAUNCH 50%</span>' : '') + '<span class="caret">▴</span></span>' +
         '<span class="menu"><span class="info">' + who + '<br>' + esc(pkg.name) + ' · ' + esc(until) + '<br>' + esc(session.user.email) + (preLaunch() ? '<br><b style="color:#ffd77a">★ Pre-launch member · 50% off at full launch (June 2027)</b>' : '') + '</span>' +
-        (pkg === PACKAGES.A ? '' : '<a href="#plans">Upgrade</a>') + '<a href="#" id="barRef">Share my link' + refBadge() + '</a><a href="#" id="barDev">My devices</a><a href="#" id="barOut">Log out</a></span>';
+        (pkg === PACKAGES.A ? '' : '<a href="#plans">Upgrade</a>') + (hasRef ? '<a href="#" id="barRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="barDev">My devices</a><a href="#" id="barOut">Log out</a></span>';
       bar.classList.add('show'); bar.classList.toggle('open', !!bar._open);
-      $('barRef').onclick = e => { e.preventDefault(); bar._open = false; bar.classList.remove('open'); openReferral(); };
+      if($('barRef')) $('barRef').onclick = e => { e.preventDefault(); bar._open = false; bar.classList.remove('open'); openReferral(); };
       $('barDev').onclick = e => { e.preventDefault(); bar._open = false; bar.classList.remove('open'); openDevices(); };
       $('barOut').onclick = e => { e.preventDefault(); logout(); };
       $('barLead').onclick = () => { if(window.matchMedia('(max-width:640px)').matches){ bar._open = !bar._open; bar.classList.toggle('open', bar._open); } };
@@ -3236,9 +3236,9 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     const br = /EdgA?\//.test(l) ? 'Edge' : /OPR\//.test(l) ? 'Opera' : /SamsungBrowser/.test(l) ? 'Samsung Internet' : /Firefox/.test(l) ? 'Firefox' : /CriOS|Chrome/.test(l) ? 'Chrome' : /Safari/.test(l) ? 'Safari' : 'Browser';
     return os + ' · ' + br;
   }
-  /* ---------- referral: every enrolled student has their own link; the code is made on first open.
+  /* ---------- referral: a link exists only for people the owner selected by hand (no automatic student links).
      New enrollments through the link are announced by themselves when the student opens the hub. ---------- */
-  let refNew = 0;
+  let refNew = 0, hasRef = false;
   const refKey = () => 'ecad_ref_seen.' + (session ? session.user.id : '');
   const PRELAUNCH_END = new Date('2027-06-01T00:00:00+08:00');
   const preLaunch = () => !!(member && !isAdmin && new Date(member.created_at || 0) < PRELAUNCH_END);   // enrolled before full launch: renews at 50% off
@@ -3247,7 +3247,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   async function checkReferral(){
     if(!session || !pkg) return;
     try {
-      const { data } = await sb.rpc('my_referral'); if(!data || !data.ok) return;
+      const { data } = await sb.rpc('my_referral'); const had = hasRef; hasRef = !!(data && data.ok); if(had !== hasRef) render(); if(!hasRef) return;
       const n = (data.enrollees || []).length; let seen = null; try { seen = localStorage.getItem(refKey()); } catch(_){}
       if(seen === null){ refSeen(n); return; }            // first time on this device: start counting from here
       refNew = Math.max(0, n - Number(seen));
