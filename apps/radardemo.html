@@ -2545,8 +2545,12 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
   .dockstat span{display:flex;justify-content:space-between;align-items:baseline;padding:5px 7px;border:1px solid #2c4038;background:#06100c;font:10px monospace;color:#80958d;letter-spacing:.06em}
   .dockstat b{font:700 12.5px monospace;color:#66ffad;white-space:nowrap}
   .dockstat span{white-space:nowrap}
-  .docktabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:10px}
-  .docktabs button{padding:8px 1px;font:700 9.5px/1.2 monospace;letter-spacing:0;white-space:normal}
+  .docktabs{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .pinlbl{font:9px monospace;color:#80958d;letter-spacing:.08em;margin:10px 0 4px;padding-top:8px;border-top:1px solid #2c4038}
+  .dockpane[data-pane=ap],.dockpane[data-pane=tele]{margin-top:8px}
+  .dockpane[data-pane=ap]>.title{margin-top:4px}
+  .dockpane[data-pane=nav] .data{padding-top:3px;padding-bottom:3px}
+  .docktabs button{padding:9px 2px;font:700 10.5px/1.2 monospace;letter-spacing:.03em}
   .docktabs button.on{background:#5dffad;color:#06110b;border-color:#5dffad}
   .dockpane[hidden]{display:none}
   .dockpane>.title:first-child{margin-top:0}
@@ -2577,14 +2581,15 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
       if (n.classList.contains("title") && /HELM/.test(n.textContent)) { cur = "ap"; n.textContent = "AUTO PILOT · HELM ORDER"; }
       (n.classList.contains("tele") ? panes.tele : panes[cur]).append(n);
     });
-    const stat = document.createElement("div"); stat.className = "dockstat";
-    stat.innerHTML = '<span>HDG <b id="dkh">---</b></span><span>KN <b id="dks">--</b></span>';
     const tabs = document.createElement("div"); tabs.className = "docktabs"; tabs.setAttribute("role", "tablist");
-    tabs.innerHTML = '<button data-dock="ap" role="tab">AUTO PILOT</button><button data-dock="tele" role="tab">TELEGRAPH</button><button data-dock="nav" role="tab">NAV DATA</button>';
-    aside.prepend(stat, tabs, panes.ap, panes.tele, panes.nav);
+    tabs.innerHTML = '<button data-dock="ap" role="tab">AUTO PILOT</button><button data-dock="tele" role="tab">TELEGRAPH</button>';
+    const pinlbl = document.createElement("div"); pinlbl.className = "pinlbl"; pinlbl.textContent = "PINNED UNITS · ONE AT A TIME";
+    run.style.marginTop = "8px";
+    aside.prepend(panes.nav, run, panes.ap, panes.tele, pinlbl, tabs);
+    panes.ap.querySelectorAll("p.small").forEach(n => n.remove()); panes.nav.querySelectorAll("p.small").forEach(n => n.remove());
     function show(k) {
       if (!panes[k]) k = "ap";
-      Object.keys(panes).forEach(p => panes[p].hidden = p !== k);
+      ["ap", "tele"].forEach(p => panes[p].hidden = p !== k);
       tabs.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.dock === k); b.setAttribute("aria-selected", String(b.dataset.dock === k)); });
       try { localStorage.setItem("ecademy_dock", k); } catch (_) {}
       if (window.fitPpi) setTimeout(window.fitPpi, 30);
@@ -2592,7 +2597,6 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
     tabs.onclick = e => { const b = e.target.closest("[data-dock]"); if (b) show(b.dataset.dock); };
     let pref = "ap"; try { pref = localStorage.getItem("ecademy_dock") || "ap"; } catch (_) {}
     show(pref); window.ECADEMY_DOCK = show;
-    setInterval(() => { $("dkh").textContent = $("co").textContent; $("dks").textContent = $("so").textContent.replace(/\s*kn/i, ""); }, 300);
   }
 
   /* ---------- EBL / VRM: ON-OFF + reading + endless knob ---------- */
