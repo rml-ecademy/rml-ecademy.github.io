@@ -519,6 +519,21 @@
       @media (max-width:620px){.app{grid-template-columns:1fr}.radar{grid-template-columns:1fr;order:-1}.ppiwrap{grid-column:auto;grid-row:auto;order:-1}.radar .side{grid-column:auto}.right{grid-column:auto}.radar canvas{width:100%}}
       #ppi{max-width:100%}
 .sartbox{margin:6px 0;padding:8px 10px;background:#0d2318;border:1px solid #3ccf7a;border-radius:6px;color:#d6ffe6;font:12.5px/1.45 system-ui,Segoe UI,Arial}.sartbox .sartrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.sartbox button{padding:5px 9px}#sartres{margin-top:6px;color:#ffe9a0}
+
+      /* ===== Engine telegraph: lever type, the lamp beside the order lights green ===== */
+      .tele svg{max-width:210px;margin:6px auto 2px;touch-action:none;user-select:none;-webkit-user-select:none}
+      .tele svg .trow{cursor:pointer}
+      .tele svg .trow:hover .tcell{filter:brightness(1.12)}
+      .tele svg .trow:focus{outline:none}.tele svg .trow:focus-visible .tcell{stroke:#ffd84d;stroke-width:2}
+      .tele svg .tlamp{fill:#39413c;stroke:#0a0c0b;stroke-width:1.2;transition:fill .12s}
+      .tele svg .trow.on .tlamp{fill:#3dff72;filter:url(#teleglow)}
+      .tele svg .tcell{fill:#aeb4ac;stroke:#0a0c0b;stroke-width:1}
+      .tele svg .trow.on .tcell{fill:#f1f4ec}
+      .tele svg #telehandle{cursor:grab;transition:transform .16s ease-out}
+      .tele svg.drag #telehandle{cursor:grabbing}
+      .tele svg #teleactual{transition:transform .2s linear}
+      .telekey{display:flex;justify-content:space-between;font:9px monospace;color:#80958d;margin:0 2px 4px}
+      .telekey i{font-style:normal;color:#66dfff}
     </style>
 <style>@media (max-width:760px){.app{grid-template-columns:1fr !important}.app>*{grid-column:1/-1 !important;min-width:0}section.radar{grid-template-columns:1fr !important}section.radar>*{grid-column:1/-1 !important;min-width:0}html,body{overflow-x:hidden}}</style></head>
 <body><div id="demobar" style="position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;justify-content:space-between;padding:9px 16px;background:linear-gradient(90deg,#0a2235,#12516f);border-bottom:1px solid rgba(100,221,255,.45)">
@@ -592,9 +607,9 @@
 </div>
 <div class="tele">
 <span class="k">ENGINE TELEGRAPH</span>
-<svg aria-label="Engine order telegraph" id="telesvg" role="group" viewbox="0 0 220 124"></svg>
-<div id="eorder">HALF AHEAD</div>
-<div class="telebtns"><button id="teleastern">◀ ASTERN</button><button id="teleahead">AHEAD ▶</button></div>
+<svg aria-label="Engine order telegraph" id="telesvg" role="group" viewBox="0 0 220 312"></svg>
+<div id="eorder">HALF AHEAD</div><div class="telekey"><span>LAMP = ORDER</span><i>&#9664; ACTUAL STW</i></div>
+<div class="telebtns"><button id="teleastern">▼ ASTERN</button><button id="teleahead">▲ AHEAD</button></div>
 <label id="ospeedrow"><span>ORDERED STW</span><output id="ospeedout">12.0</output>
 <input aria-label="Ordered speed through water" id="ospeed" max="24" min="-8" step=".5" style="grid-column:1/-1" type="range" value="12"/></label>
 <div class="data"><span>STW (ACTUAL)</span><b id="so">12.0 kn</b></div>
@@ -1939,24 +1954,47 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
       }
       const SVGNS = "http://www.w3.org/2000/svg";
       function svgEl(tag, attrs, parent) { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; }
+      const TELE_Y0 = 30, TELE_RH = 28, TELE_LBL = ["FULL","HALF","SLOW","D.SLOW","STOP","D.SLOW","SLOW","HALF","FULL"];
+      let teleRows = [];
+      const teleY = v => TELE_Y0 + (8 - (teleAngle(v) + 90) / 22.5) * TELE_RH + TELE_RH / 2;   // FULL AHEAD at the top, FULL ASTERN at the bottom
       function buildTelegraph() {
-        const s = $("telesvg"), cx = 110, cy = 100, r1 = 56, r2 = 96;
-        const pt = (a, r) => [cx + Math.sin(a * D) * r, cy - Math.cos(a * D) * r];
+        const s = $("telesvg");
+        s.innerHTML = '<defs><linearGradient id="telebez" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2f31"/><stop offset="1" stop-color="#121415"/></linearGradient>' +
+          '<linearGradient id="teleknob" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a5f63"/><stop offset=".18" stop-color="#2a2d30"/><stop offset="1" stop-color="#050606"/></linearGradient>' +
+          '<filter id="teleglow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+        svgEl("rect", {x:3, y:3, width:214, height:306, rx:11, fill:"url(#telebez)", stroke:"#4a5053", "stroke-width":1.5}, s);
+        svgEl("rect", {x:10, y:10, width:200, height:292, rx:6, fill:"#0d0f10", stroke:"#000", "stroke-width":1}, s);
+        [[9,9],[211,9],[9,303],[211,303]].forEach(([x, y]) => { svgEl("circle", {cx:x, cy:y, r:3.2, fill:"#6d7477", stroke:"#1a1c1d"}, s); svgEl("line", {x1:x - 2, y1:y, x2:x + 2, y2:y, stroke:"#1a1c1d", "stroke-width":1}, s); });
+        svgEl("text", {x:74, y:25, "text-anchor":"middle", "font-size":9, "font-family":"Arial,sans-serif", "font-weight":700, "letter-spacing":1.5, fill:"#d5dbd7"}, s).textContent = "AHEAD";
+        svgEl("text", {x:74, y:296, "text-anchor":"middle", "font-size":9, "font-family":"Arial,sans-serif", "font-weight":700, "letter-spacing":1.5, fill:"#ff7468"}, s).textContent = "ASTERN";
+        svgEl("rect", {x:144, y:TELE_Y0 - 4, width:58, height:TELE_RH * 9 + 8, rx:7, fill:"#020303", stroke:"#34393c", "stroke-width":1.5}, s);
+        svgEl("line", {x1:173, y1:TELE_Y0 + 6, x2:173, y2:TELE_Y0 + TELE_RH * 9 - 6, stroke:"#1c1f21", "stroke-width":6, "stroke-linecap":"round"}, s);
+        teleRows = [];
         TELE.forEach((t, i) => {
-          const a = -90 + i * 22.5, [x0,y0] = pt(a - 11.25, r2), [x1,y1] = pt(a + 11.25, r2), [x2,y2] = pt(a + 11.25, r1), [x3,y3] = pt(a - 11.25, r1);
-          const g = svgEl("g", {class:"wedge", role:"button", tabindex:0, "aria-label":t[0]}, s);
-          svgEl("path", {d:`M${x0},${y0} A${r2},${r2} 0 0 1 ${x1},${y1} L${x2},${y2} A${r1},${r1} 0 0 0 ${x3},${y3} Z`, fill:i < 4 ? "#6e1d18" : i === 4 ? "#36433d" : "#1b5436", stroke:"#07100c", "stroke-width":1.5}, g);
-          const [tx, ty] = pt(a, (r1 + r2) / 2);
-          svgEl("text", {x:tx, y:ty + 3.5, "text-anchor":"middle", "font-size":i === 4 ? 9 : 10, "font-family":"monospace", "font-weight":700, fill:"#eaf3ef"}, g).textContent = ["F","H","S","DS","STOP","DS","S","H","F"][i];
+          const y = TELE_Y0 + (8 - i) * TELE_RH, astern = i < 4, stop = i === 4;
+          const g = svgEl("g", {class:"trow", role:"button", tabindex:0, "aria-label":t[0]}, s);
+          svgEl("rect", {class:"tlamp", x:18, y:y + 3, width:24, height:22, rx:3}, g);
+          svgEl("rect", {class:"tcell", x:50, y:y + 2, width:84, height:24, rx:1.5}, g);
+          svgEl("text", {x:92, y:y + 18.5, "text-anchor":"middle", "font-size":stop ? 13 : 12, "font-family":"Arial,Helvetica,sans-serif", "font-weight":700, "letter-spacing":.6, fill:astern ? "#c01d14" : "#0c0d0c"}, g).textContent = TELE_LBL[i];
           svgEl("title", {}, g).textContent = t[0] + " · " + t[1] + " kn";
           g.onclick = () => setEngine(i);
           g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setEngine(i); } };
+          teleRows[i] = g;
         });
-        svgEl("text", {x:10, y:121, "font-size":9, "font-family":"monospace", fill:"#ff8b80"}, s).textContent = "ASTERN";
-        svgEl("text", {x:210, y:121, "font-size":9, "font-family":"monospace", fill:"#7dffb8", "text-anchor":"end"}, s).textContent = "AHEAD";
-        teleActual = svgEl("circle", {cx, cy:cy - 44, r:4.5, fill:"#66dfff"}, s);
-        teleNeedle = svgEl("line", {x1:cx, y1:cy, x2:cx, y2:cy - r2 + 6, stroke:"#ffd84d", "stroke-width":3, "stroke-linecap":"round"}, s);
-        svgEl("circle", {cx, cy, r:7, fill:"#ffd84d"}, s);
+        teleActual = svgEl("polygon", {id:"teleactual", points:"203,0 212,-5.5 212,5.5", fill:"#66dfff", stroke:"#04222c", "stroke-width":.8}, s);
+        svgEl("title", {}, teleActual).textContent = "Actual speed through the water";
+        teleNeedle = svgEl("g", {id:"telehandle"}, s);
+        svgEl("rect", {x:134, y:-3.5, width:22, height:7, rx:2, fill:"#0a0b0b", stroke:"#4a4f52", "stroke-width":.8}, teleNeedle);
+        svgEl("rect", {x:149, y:-14, width:48, height:28, rx:8, fill:"url(#teleknob)", stroke:"#6a7074", "stroke-width":1}, teleNeedle);
+        [-6, 0, 6].forEach(d => svgEl("line", {x1:158, y1:d, x2:188, y2:d, stroke:"#000", "stroke-width":1.4, opacity:.7}, teleNeedle));
+        /* drag the lever up (ahead) or down (astern): it clicks into each order */
+        const idxAt = e => { const r = s.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * 312; return Math.max(0, Math.min(8, 8 - Math.floor((y - TELE_Y0) / TELE_RH))); };
+        let dragging = false;
+        const dragTo = e => { const i = idxAt(e); if (i !== engineIdx || engineFine) setEngine(i); };
+        s.addEventListener("pointerdown", e => { const r = s.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 220; if (x < 138) return; dragging = true; s.classList.add("drag"); try { s.setPointerCapture(e.pointerId); } catch (_) {} dragTo(e); e.preventDefault(); });
+        s.addEventListener("pointermove", e => { if (dragging) dragTo(e); });
+        const endDrag = () => { dragging = false; s.classList.remove("drag"); };
+        s.addEventListener("pointerup", endDrag); s.addEventListener("pointercancel", endDrag);
       }
       function paintHelm() {
         const h = num("course"), o = n360(h + pendingTurn), s = num("speed");
@@ -1965,9 +2003,9 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
         $("eorder").textContent = TELE[engineIdx][0] + (engineFine ? " · " + F(orderedSTW) + " kn" : "");
         $("ospeedout").textContent = F(orderedSTW);
         if (teleNeedle) {
-          const a = engineFine ? teleAngle(orderedSTW) : -90 + engineIdx * 22.5;
-          teleNeedle.setAttribute("transform", `rotate(${a} 110 100)`);
-          teleActual.setAttribute("transform", `rotate(${teleAngle(s)} 110 100)`);
+          teleNeedle.setAttribute("transform", `translate(0 ${teleY(engineFine ? orderedSTW : TELE[engineIdx][1]).toFixed(1)})`);
+          teleActual.setAttribute("transform", `translate(0 ${teleY(s).toFixed(1)})`);
+          teleRows.forEach((g, i) => g.classList.toggle("on", i === engineIdx));
         }
       }
       function syncOrders() {
