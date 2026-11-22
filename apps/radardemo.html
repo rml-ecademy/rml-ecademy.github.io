@@ -2538,5 +2538,122 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
         return {toggle};
       })();
 </script>
+
+<style>
+  /* ===== Pinned side units: NAV DATA / AUTO PILOT / TELEGRAPH open in the same place, no scrolling ===== */
+  .dockstat{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+  .dockstat span{display:flex;justify-content:space-between;align-items:baseline;padding:5px 7px;border:1px solid #2c4038;background:#06100c;font:10px monospace;color:#80958d;letter-spacing:.06em}
+  .dockstat b{font:700 12.5px monospace;color:#66ffad;white-space:nowrap}
+  .dockstat span{white-space:nowrap}
+  .docktabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:10px}
+  .docktabs button{padding:8px 1px;font:700 9.5px/1.2 monospace;letter-spacing:0;white-space:normal}
+  .docktabs button.on{background:#5dffad;color:#06110b;border-color:#5dffad}
+  .dockpane[hidden]{display:none}
+  .dockpane>.title:first-child{margin-top:0}
+  /* ===== EBL / VRM: ON-OFF with reading, endless rotary knob ===== */
+  .evbox{margin:0 0 8px;padding:6px;border:1px solid #2c4038;background:#06100c}
+  .evhead{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+  .evhead button{margin:0;padding:8px 2px;font:600 10.5px monospace;white-space:nowrap}
+  .evread{font:700 13px monospace;color:#5dffad;text-align:right;white-space:nowrap}
+  .evread.off{color:#5b6e66}
+  .evctl{display:grid;grid-template-columns:1fr 56px 1fr;gap:6px;align-items:center;margin-top:6px}
+  .evctl button{margin:0;padding:9px 0;font:700 15px monospace;touch-action:none;user-select:none;-webkit-user-select:none}
+  .knob{width:56px;height:56px;border-radius:50%;position:relative;cursor:grab;touch-action:none;background:radial-gradient(circle at 35% 30%,#5b6265,#232729 55%,#0b0d0e);border:1px solid #6a7074;box-shadow:0 2px 6px #000,inset 0 0 0 5px #15181a}
+  .knob:active{cursor:grabbing}
+  .knob:focus-visible{outline:2px solid #ffd84d;outline-offset:2px}
+  .knob i{position:absolute;left:50%;top:50%;width:4px;height:17px;margin:-24px 0 0 -2px;border-radius:2px;background:#ffd84d;transform-origin:2px 24px}
+  .evhint{font:9px monospace;color:#80958d;text-align:center;margin-top:4px;letter-spacing:.04em}
+</style>
+<script>
+(function () {
+  /* ---------- pinned side units ---------- */
+  const aside = document.querySelector(".app>aside.panel:not(.right)"), run = $("run");
+  if (aside && run && !aside.querySelector(".docktabs")) {
+    const mk = k => { const d = document.createElement("div"); d.className = "dockpane"; d.dataset.pane = k; return d; };
+    const panes = { nav: mk("nav"), ap: mk("ap"), tele: mk("tele") };
+    let cur = "nav";
+    [...aside.children].forEach(n => {
+      if (n === run) return;
+      if (n.classList.contains("title") && /HELM/.test(n.textContent)) { cur = "ap"; n.textContent = "AUTO PILOT · HELM ORDER"; }
+      (n.classList.contains("tele") ? panes.tele : panes[cur]).append(n);
+    });
+    const stat = document.createElement("div"); stat.className = "dockstat";
+    stat.innerHTML = '<span>HDG <b id="dkh">---</b></span><span>KN <b id="dks">--</b></span>';
+    const tabs = document.createElement("div"); tabs.className = "docktabs"; tabs.setAttribute("role", "tablist");
+    tabs.innerHTML = '<button data-dock="ap" role="tab">AUTO PILOT</button><button data-dock="tele" role="tab">TELEGRAPH</button><button data-dock="nav" role="tab">NAV DATA</button>';
+    aside.prepend(stat, tabs, panes.ap, panes.tele, panes.nav);
+    function show(k) {
+      if (!panes[k]) k = "ap";
+      Object.keys(panes).forEach(p => panes[p].hidden = p !== k);
+      tabs.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.dock === k); b.setAttribute("aria-selected", String(b.dataset.dock === k)); });
+      try { localStorage.setItem("ecademy_dock", k); } catch (_) {}
+      if (window.fitPpi) setTimeout(window.fitPpi, 30);
+    }
+    tabs.onclick = e => { const b = e.target.closest("[data-dock]"); if (b) show(b.dataset.dock); };
+    let pref = "ap"; try { pref = localStorage.getItem("ecademy_dock") || "ap"; } catch (_) {}
+    show(pref); window.ECADEMY_DOCK = show;
+    setInterval(() => { $("dkh").textContent = $("co").textContent; $("dks").textContent = $("so").textContent.replace(/\s*kn/i, ""); }, 300);
+  }
+
+  /* ---------- EBL / VRM: ON-OFF + reading + endless knob ---------- */
+  const ebl = $("ebl"), vrm = $("vrm"), eb = $("eblbtn"), vb = $("vrmbtn");
+  if (!ebl || !vrm || !eb || !vb || document.getElementById("eblknob")) return;
+  const oldRow = eb.parentElement, eLab = ebl.closest("label"), vLab = vrm.closest("label");
+  vrm.max = 24; vrm.step = 0.05;
+  function box(btn, id, l, r, lt, rt, hint) {
+    const d = document.createElement("div"); d.className = "evbox";
+    d.innerHTML = '<div class="evhead"><b class="evread" id="' + id + 'read"></b></div><div class="evctl"><button type="button" data-dir="-1" title="' + lt + '" aria-label="' + lt + '">' + l + '</button><div class="knob" id="' + id + 'knob" tabindex="0" role="slider" aria-label="' + id.toUpperCase() + ' knob"><i></i></div><button type="button" data-dir="1" title="' + rt + '" aria-label="' + rt + '">' + r + '</button></div><div class="evhint">' + hint + '</div>';
+    d.querySelector(".evhead").prepend(btn); return d;
+  }
+  const eBox = box(eb, "ebl", "&#8634;", "&#8635;", "Turn EBL anticlockwise", "Turn EBL clockwise", "TURN KNOB · OR HOLD");
+  const vBox = box(vb, "vrm", "&minus;", "+", "VRM in (smaller range)", "VRM out (larger range)", "TURN KNOB · OR HOLD");
+  oldRow.replaceWith(eBox, vBox);
+  eLab.style.display = "none"; vLab.style.display = "none";
+  const fire = el => el.dispatchEvent(new Event("input", { bubbles: true }));
+  const maxR = () => +($("range") ? $("range").value : 12) || 12;
+  let eVal = +ebl.value, vVal = +vrm.value, eRot = eVal, vRot = 0;
+  function paint() {
+    const eOn = eb.getAttribute("aria-pressed") === "true", vOn = vb.getAttribute("aria-pressed") === "true";
+    const er = $("eblread"), vr = $("vrmread");
+    er.textContent = String(Math.round(+ebl.value) % 360).padStart(3, "0") + "°"; er.classList.toggle("off", !eOn);
+    vr.textContent = (+vrm.value).toFixed(2) + " NM"; vr.classList.toggle("off", !vOn);
+    $("eblknob").firstChild.style.transform = "rotate(" + eRot + "deg)"; $("vrmknob").firstChild.style.transform = "rotate(" + vRot + "deg)";
+  }
+  function turnEbl(d) {                       // endless: 359° → 000° → 001° and back the other way
+    eVal = (((eVal + d) % 360) + 360) % 360; eRot += d;
+    const v = Math.round(eVal) % 360; if (v !== +ebl.value) { ebl.value = v; fire(ebl); }
+    paint();
+  }
+  function turnVrm(d) {
+    const m = maxR(), nv = Math.max(0, Math.min(m, vVal + d)); vRot += (nv - vVal) / m * 1080; vVal = nv;
+    const v = Math.round(vVal * 20) / 20; if (Math.abs(v - +vrm.value) > 1e-6) { vrm.value = v; fire(vrm); }
+    paint();
+  }
+  function knob(el, turn, perTurn, wheelStep) {
+    let last = null;
+    const ang = e => { const r = el.getBoundingClientRect(); return Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI; };
+    el.addEventListener("pointerdown", e => { last = ang(e); try { el.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
+    el.addEventListener("pointermove", e => { if (last === null) return; const a = ang(e); let d = a - last; if (d > 180) d -= 360; if (d < -180) d += 360; last = a; turn(d / 360 * perTurn()); });
+    const end = () => { last = null; }; el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+    el.addEventListener("wheel", e => { e.preventDefault(); turn((e.deltaY < 0 ? 1 : -1) * wheelStep()); }, { passive: false });
+    el.addEventListener("keydown", e => { const k = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key]; if (k) { e.preventDefault(); turn(k * wheelStep()); } });
+  }
+  function hold(btn, turn, step) {            // tap = one step; hold = keeps turning, faster the longer it is held
+    let t = null, n = 0;
+    const stop = () => { clearTimeout(t); t = null; };
+    const tick = () => { n++; turn(+btn.dataset.dir * step() * (n > 45 ? 5 : n > 15 ? 2 : 1)); t = setTimeout(tick, n === 1 ? 380 : 55); };
+    btn.addEventListener("pointerdown", e => { e.preventDefault(); stop(); n = 0; tick(); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => btn.addEventListener(ev, stop));
+    btn.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); turn(+btn.dataset.dir * step()); } });
+  }
+  knob($("eblknob"), turnEbl, () => 120, () => 1);
+  knob($("vrmknob"), turnVrm, () => maxR() / 3, () => maxR() <= 3 ? 0.05 : 0.1);
+  eBox.querySelectorAll("[data-dir]").forEach(b => hold(b, turnEbl, () => 1));
+  vBox.querySelectorAll("[data-dir]").forEach(b => hold(b, turnVrm, () => maxR() <= 3 ? 0.05 : 0.1));
+  eb.addEventListener("click", () => setTimeout(paint, 0)); vb.addEventListener("click", () => setTimeout(paint, 0));
+  setInterval(() => { if (Math.abs(+ebl.value - Math.round(eVal) % 360) > 0.5) { eVal = +ebl.value; eRot = eVal; } if (Math.abs(+vrm.value - vVal) > 0.03) vVal = +vrm.value; if (vVal > maxR()) turnVrm(0); paint(); }, 400);
+  paint();
+})();
+</script>
 </body>
 </html>
