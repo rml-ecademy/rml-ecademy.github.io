@@ -2583,18 +2583,18 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
     });
     const tabs = document.createElement("div"); tabs.className = "docktabs"; tabs.setAttribute("role", "tablist");
     tabs.innerHTML = '<button data-dock="ap" role="tab">AUTO PILOT</button><button data-dock="tele" role="tab">TELEGRAPH</button>';
-    const pinlbl = document.createElement("div"); pinlbl.className = "pinlbl"; pinlbl.textContent = "PINNED UNITS · ONE AT A TIME";
+    const pinlbl = document.createElement("div"); pinlbl.className = "pinlbl"; pinlbl.textContent = "PINNED UNITS · CLICK TO OPEN / CLOSE";
     run.style.marginTop = "8px";
     aside.prepend(panes.nav, run, panes.ap, panes.tele, pinlbl, tabs);
     panes.ap.querySelectorAll("p.small").forEach(n => n.remove()); panes.nav.querySelectorAll("p.small").forEach(n => n.remove());
     function show(k) {
-      if (!panes[k]) k = "ap";
+      if (k !== "none" && !panes[k]) k = "ap";
       ["ap", "tele"].forEach(p => panes[p].hidden = p !== k);
       tabs.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.dock === k); b.setAttribute("aria-selected", String(b.dataset.dock === k)); });
       try { localStorage.setItem("ecademy_dock", k); } catch (_) {}
       if (window.fitPpi) setTimeout(window.fitPpi, 30);
     }
-    tabs.onclick = e => { const b = e.target.closest("[data-dock]"); if (b) show(b.dataset.dock); };
+    tabs.onclick = e => { const b = e.target.closest("[data-dock]"); if (b) show(b.classList.contains("on") ? "none" : b.dataset.dock); };   // click the lit pin again to put the unit away
     let pref = "ap"; try { pref = localStorage.getItem("ecademy_dock") || "ap"; } catch (_) {}
     show(pref); window.ECADEMY_DOCK = show;
   }
