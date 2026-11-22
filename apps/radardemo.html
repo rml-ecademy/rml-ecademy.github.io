@@ -2659,5 +2659,90 @@ function updateRiskAlert() {}   // old collision-review form removed (v14)
   paint();
 })();
 </script>
+
+<style>
+  /* ===== Steering: AUTO PILOT or HAND (manual) with the helm wheel, same helm as the Autopilot & Gyro Repeater trainer ===== */
+  .steersel{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:4px 0 2px}
+  .dockpane[data-pane=ap] .helm{padding:6px 8px}
+  .dockpane[data-pane=ap]>.title{margin-bottom:4px}
+  .steersel button{padding:8px 2px;font:700 10.5px/1.2 monospace;letter-spacing:.03em}
+  .steersel button.on{background:#ffd84d;color:#1a1400;border-color:#ffd84d}
+  #handbox{margin-top:6px;padding:8px;border:1px solid #2c4038;background:#06100c}
+  #handbox[hidden]{display:none}
+  #handbox .k{font:10px monospace;color:#80958d;letter-spacing:.08em}
+  #hwheel{display:block;width:100%;max-width:176px;margin:6px auto 4px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 6px 6px rgba(0,0,0,.6))}
+  #hwheel:active{cursor:grabbing}
+  #hwheel:focus-visible{outline:2px solid #ffd84d;outline-offset:2px}
+  .hwbtns{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:4px;margin:4px 0 6px}
+  .hwbtns button{padding:7px 0;font:600 10.5px monospace}
+  .hwbtns .p{color:#ff8b80;border-color:#6a3a34}.hwbtns .s{color:#7dffb8;border-color:#2f6a4c}
+  #handbox .data b.p{color:#ff8b80}#handbox .data b.s{color:#7dffb8}
+</style>
+<script>
+(function () {
+  const gid = id => document.getElementById(id);
+  const ap = document.querySelector('.dockpane[data-pane=ap]'); if (!ap || gid("hwheel")) return;
+  const boxes = [...ap.querySelectorAll(".helm")]; if (!boxes.length) return;
+  const title = ap.querySelector(".title"); if (title) title.textContent = "STEERING";
+  const gy = gid("co"); if (gy && gy.closest(".data")) gy.closest(".data").style.display = "none";            // heading is already at the top of NAV DATA
+  const sel = document.createElement("div"); sel.className = "steersel"; sel.setAttribute("role", "group"); sel.setAttribute("aria-label", "Steering mode selector");
+  sel.innerHTML = '<button data-steer="AUTO" class="on" aria-pressed="true">AUTO PILOT</button><button data-steer="HAND" aria-pressed="false">HAND · MANUAL</button>';
+  const hand = document.createElement("div"); hand.id = "handbox"; hand.hidden = true;
+  hand.innerHTML = '<span class="k">HELM · TURN THE WHEEL · MAX 35°</span><svg id="hwheel" viewBox="-150 -150 300 300" tabindex="0" role="slider" aria-label="Helm wheel, rudder order" aria-valuemin="-35" aria-valuemax="35"></svg>' +
+    '<div class="hwbtns"><button class="p" data-hw="-5">&#9664; 5° P</button><button data-hw="0">MIDSHIPS</button><button class="s" data-hw="5">S 5° &#9654;</button></div>' +
+    '<div class="data"><span>RUDDER ORDER</span><b id="hwOrd">0°</b></div><div class="data"><span>RUDDER ACTUAL</span><b id="hwRud">0°</b></div><div class="data"><span>RATE OF TURN</span><b id="hwRot">0°/min</b></div>';
+  boxes[0].before(sel); boxes[boxes.length - 1].after(hand);
+  /* helm drawing: same unit as the Autopilot & Gyro Repeater trainer */
+  const w = gid("hwheel");
+  (function () { let p = '<rect x="-78" y="-108" width="156" height="200" rx="4" fill="#26292c" stroke="#45494d" stroke-width="2"/>';
+    for (const [x, y] of [[-68, -98], [68, -98], [-68, 82], [68, 82]]) p += `<circle cx="${x}" cy="${y}" r="5" fill="#666"/>`;
+    const arc = (a0, a1, col) => { const P = a => [Math.sin(a * Math.PI / 180) * 60, -12 - Math.cos(a * Math.PI / 180) * 60]; const [x0, y0] = P(a0), [x1, y1] = P(a1); return `<path d="M${x0} ${y0} A60 60 0 0 1 ${x1} ${y1}" stroke="${col}" stroke-width="12" fill="none"/>`; };
+    p += arc(-70, -2, "#b02a2a") + arc(2, 70, "#1a8a3a");
+    for (let d = -35; d <= 35; d += 5) { const a = d * 2 * Math.PI / 180; p += `<line x1="${Math.sin(a) * 68}" y1="${-12 - Math.cos(a) * 68}" x2="${Math.sin(a) * (d % 10 ? 74 : 78)}" y2="${-12 - Math.cos(a) * (d % 10 ? 74 : 78)}" stroke="#eee" stroke-width="${d % 10 ? 1 : 2}"/>`; }
+    p += '<polygon id="hwact" points="0,-94 -6,-106 6,-106" fill="#66dfff"/><line id="hwptr" x1="0" y1="-12" x2="0" y2="-84" stroke="#ff2a2a" stroke-width="3"/>';
+    const hh = '<circle r="122" fill="none" stroke="#0c0c0c" stroke-width="26"/><circle r="131" fill="none" stroke="#3a3a3a" stroke-width="1.5"/><circle r="113" fill="none" stroke="#3a3a3a" stroke-width="1.5"/><rect x="-124" y="-24" width="248" height="48" rx="10" fill="#0e0e0e" stroke="#3a3a3a" stroke-width="1.5"/><circle r="36" fill="#1a1a1a" stroke="#000" stroke-width="3"/><circle r="17" fill="#6a5a4a"/><polygon points="0,-6 5,-3 5,3 0,6 -5,3 -5,-3" fill="#c8c8c8"/>';
+    w.innerHTML = `<g>${p}</g><g id="hwg">${hh}</g>`; })();
+  let mode = "AUTO", ord = 0, rud = 0, rot = 0, drag = null;
+  const clamp = v => Math.max(-35, Math.min(35, v));
+  const side = v => Math.abs(v) < 0.5 ? "0°" : (v < 0 ? "P " : "S ") + Math.round(Math.abs(v)) + "°";
+  const cls = (el, v) => { el.classList.toggle("p", v <= -0.5); el.classList.toggle("s", v >= 0.5); };
+  function paint() {
+    gid("hwg").setAttribute("transform", `rotate(${ord * 3})`); gid("hwptr").setAttribute("transform", `rotate(${ord * 2} 0 -12)`); gid("hwact").setAttribute("transform", `rotate(${rud * 2} 0 -12)`);
+    gid("hwOrd").textContent = side(ord); cls(gid("hwOrd"), ord); gid("hwRud").textContent = side(rud); cls(gid("hwRud"), rud);
+    const rm = rot * 60; gid("hwRot").textContent = Math.abs(rm) < 0.5 ? "0°/min" : (rm < 0 ? "P " : "S ") + Math.round(Math.abs(rm)) + "°/min"; cls(gid("hwRot"), rm);
+    w.setAttribute("aria-valuenow", Math.round(ord));
+  }
+  function setMode(m) {
+    mode = m; pendingTurn = 0; ord = 0; if (m === "AUTO") rot = 0;
+    sel.querySelectorAll("button").forEach(b => { const on = b.dataset.steer === m; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+    boxes.forEach(b => b.hidden = m === "HAND"); hand.hidden = m !== "HAND";
+    if (typeof paintHelm === "function") paintHelm();
+    const hd = String(Math.round(n360(num("course"))) % 360).padStart(3, "0");
+    gid("msg").textContent = m === "HAND" ? "HAND steering: you are steering with the wheel. The ship keeps turning while the rudder is on. Put the wheel MIDSHIPS to stop the turn, and meet her with opposite rudder to steady." : "AUTO PILOT engaged: holding the present heading " + hd + "°. Use SET COURSE to alter.";
+    paint(); if (window.fitPpi) setTimeout(window.fitPpi, 30);
+  }
+  sel.onclick = e => { const b = e.target.closest("[data-steer]"); if (b && b.dataset.steer !== mode) setMode(b.dataset.steer); };
+  w.addEventListener("pointerdown", e => { const r = w.getBoundingClientRect(); drag = { cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; drag.a = Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx); try { w.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
+  w.addEventListener("pointermove", e => { if (!drag) return; const a = Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx); let d = a - drag.a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; drag.a = a; ord = clamp(ord + d * 180 / Math.PI / 3); paint(); });
+  ["pointerup", "pointercancel"].forEach(ev => w.addEventListener(ev, () => drag = null));
+  w.addEventListener("keydown", e => { const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key]; if (k) { e.preventDefault(); ord = clamp(Math.round(ord) + k); paint(); } });
+  hand.querySelector(".hwbtns").onclick = e => { const b = e.target.closest("[data-hw]"); if (!b) return; const v = +b.dataset.hw; ord = v === 0 ? 0 : clamp(Math.round(ord / 5) * 5 + v); paint(); };
+  /* hand steering: rudder follows the wheel (follow-up), the ship answers the rudder. 200 ms real = 1.2 s simulated, as for the rest of the trainer */
+  setInterval(() => {
+    const dt = 1.2, go = running && !window.RX_LINKED;
+    if (mode !== "HAND") { if (Math.abs(rud) > 0.01) { rud += Math.max(-3, Math.min(3, -rud)); paint(); } return; }
+    if (go) {
+      rud += Math.max(-2.5 * dt, Math.min(2.5 * dt, ord - rud));
+      const s = num("speed"), k = Math.max(0.12, Math.min(1.15, Math.abs(s) / 12)) * (s < -0.2 ? -0.6 : 1);
+      rot += (0.0215 * rud * k - rot) / 10 * dt;                       // 35° of rudder at sea speed gives about 45°/min
+      pendingTurn = 0; gid("course").value = n360(num("course") + rot * dt).toFixed(2);
+      if (typeof paintHelm === "function") paintHelm();
+    }
+    paint();
+  }, 200);
+  if (typeof syncOrders === "function") { const _so = syncOrders; syncOrders = function () { _so.apply(this, arguments); ord = 0; rud = 0; rot = 0; paint(); }; }
+  window.ECADEMY_STEER = setMode; paint();
+})();
+</script>
 </body>
 </html>
