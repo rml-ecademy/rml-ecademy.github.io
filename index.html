@@ -3068,7 +3068,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     if(session){
       const who = displayName();
       const state = pkg ? pkg.name : pending ? 'Payment under review' : 'No active package';
-      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (pkg && hasRef ? '<a href="#" id="pillRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
+      pill.innerHTML = (pkg ? okSvg : pending ? clockSvg : lockSvg) + '<span>' + esc(who) + ' · ' + state + '</span><a href="#" id="pillDev">Devices</a>' + (hasRef ? '<a href="#" id="pillRef">Share my link' + refBadge() + '</a>' : '') + '<a href="#" id="pillOut">Log out</a>';
       pill.classList.toggle('ok', !!pkg); pill.onclick = null;
       $('pillOut').onclick = e => { e.preventDefault(); e.stopPropagation(); logout(); };
       $('pillDev').onclick = e => { e.preventDefault(); e.stopPropagation(); openDevices(); };
@@ -3245,7 +3245,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
   function refSeen(n){ refNew = 0; try { localStorage.setItem(refKey(), String(n)); } catch(_){} }
   const refBadge = () => refNew > 0 ? ' <span class="ref-badge">' + refNew + ' new</span>' : '';
   async function checkReferral(){
-    if(!session || !pkg) return;
+    if(!session){ hasRef = false; return; }
     try {
       const { data } = await sb.rpc('my_referral'); const had = hasRef; hasRef = !!(data && data.ok); if(had !== hasRef) render(); if(!hasRef) return;
       const n = (data.enrollees || []).length; let seen = null; try { seen = localStorage.getItem(refKey()); } catch(_){}

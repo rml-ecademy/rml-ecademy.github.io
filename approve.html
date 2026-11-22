@@ -147,7 +147,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     <div class="panel" id="p-accounts">
       <section class="card">
         <h2>Students <span class="badge zero" id="tn2">0</span></h2>
-        <p class="sub">Everyone with an account. <b>Their link</b> shows only for the people you gave a referral link to. <b>Not yet paid</b> = follow up on Messenger.</p>
+        <p class="sub">Everyone with an account. Nobody gets a referral link by default: press <b>Give link</b> for the person you choose (for example an instructor), <b>Remove link</b> to take it back. <b>Not yet paid</b> = follow up on Messenger.</p>
         <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button><button data-f="soon">Renewal due (30 d)</button></div>
         <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., code" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div>
         <div class="twrap"><table class="tbl"><thead><tr><th>Student</th><th>Status</th><th>Package</th><th>Their link</th><th>Referred by</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
@@ -165,7 +165,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
         <div class="twrap"><table class="tbl aff"><thead><tr><th>Pay to</th><th>For enrolling</th><th>Package</th><th>Student paid</th><th>Commission</th><th>Status</th><th></th></tr></thead><tbody id="crows"></tbody></table></div>
         <details class="adv" style="margin-top:16px">
           <summary>Add a non-student partner (agency, page admin)</summary>
-          <p class="sub" style="margin-top:8px">Links are not automatic: only the people you add here get one. Their link is <b>ecademymaritime.com/?ref=CODE</b>; press <b>Copy kit</b> to send it to them.</p>
+          <p class="sub" style="margin-top:8px">Links are not automatic. For someone with an ECADEMY account, use <b>Give link</b> in Accounts; add a partner here only if they have no account. A partner's link is <b>ecademymaritime.com/?ref=CODE</b>; press <b>Copy kit</b> to send it to them.</p>
           <form id="af" class="affform">
             <div><label for="aName">Name</label><input id="aName" required placeholder="Juan dela Cruz" autocomplete="off"></div>
             <div><label for="aCode">Code</label><input id="aCode" required placeholder="JUAN25" pattern="[A-Za-z0-9]{3,20}" style="text-transform:uppercase" autocomplete="off"></div>
@@ -381,7 +381,8 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       const fb = a.fb ? '<a href="https://m.me/' + encodeURIComponent(a.fb.replace(/\s+/g, '')) + '" target="_blank" rel="noopener">' + esc(a.fb) + '</a>' : '<span style="color:var(--mute)">—</span>';
       const until = m ? (m.expires_at ? day(m.expires_at) : 'Lifetime') : '—';
       const dev = m ? (m.devices || 0) + ' / 5' + (m.active ? '<small>on: ' + esc(m.active.kind === 'computer' ? 'laptop/PC' : m.active.kind) + ' · ' + ago(m.active.at) + '</small>' : '<small>not logged in</small>') : '—';
-      const own = a.ref_code ? '<span class="ref"><b>' + esc(a.ref_code) + '</b></span><small><button class="btn ghost mini" data-s="copyref">Copy link</button>' + (a.ref_enrollees ? ' · ' + a.ref_enrollees + ' enrolled' : '') + '</small>' : '<span style="color:var(--mute)">—</span>';
+      const own = a.ref_code && a.ref_active ? '<span class="ref"><b>' + esc(a.ref_code) + '</b></span><small><button class="btn ghost mini" data-s="copyref">Copy link</button> <button class="btn ghost mini" data-s="refoff">Remove link</button>' + (a.ref_enrollees ? ' · ' + a.ref_enrollees + ' enrolled' : '') + '</small>'
+        : (a.ref_code ? '<span style="color:var(--mute)">' + esc(a.ref_code) + ' · off</span>' + (a.ref_enrollees ? '<small>' + a.ref_enrollees + ' enrolled before</small>' : '') : '') + '<small><button class="btn ghost mini" data-s="refon">Give link</button></small>';
       const by = a.referred_by ? esc(a.referred_by) + (m && m.aff_code && m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
       const acts = a.is_admin ? '' : '<div class="rowacts">' +
         (s.key === 'unpaid' || s.key === 'declined' ? '<button class="btn ghost mini" data-s="lead">Follow up</button>' : '') +
@@ -413,6 +414,13 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       return;
     }
     if(b.dataset.s === 'copyref') return copyBtn(b, 'https://ecademymaritime.com/?ref=' + a.ref_code, 'Link');
+    if(b.dataset.s === 'refon' || b.dataset.s === 'refoff'){ const on = b.dataset.s === 'refon';
+      if(!confirm(on ? 'Give ' + who + ' a referral link?\n\nThey will see "Share my link" when they log in, with who enrolled through it and their commission.' : 'Remove the referral link of ' + who + '?\n\nThe link stops working and "Share my link" disappears from their account. Commissions already recorded stay.')) return;
+      b.disabled = true;
+      try { const { data, error } = await sb.rpc('admin_set_referral', { p_user: uid, p_on: on }); if(error || !data || !data.ok) throw new Error((error && error.message) || (data && data.message) || 'Could not save.');
+        await load(); if(on) showMsg('Referral link for ' + who, 'Hi ' + first(a.name) + ', here is your own ECADEMY link to share:\n\nhttps://ecademymaritime.com/?ref=' + data.code + '\n\nLog in at https://ecademymaritime.com and open "Share my link" to see who enrolled through it and your commission.\n\nECADEMY Maritime'); else toast('Link removed.'); }
+      catch(err){ alert(err.message); b.disabled = false; }
+      return; }
     if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
     if(b.dataset.s === 'renew'){ $('email').value = a.email; $('name').value = a.name || ''; if(m) $('pkg').value = m.package; $('extend').checked = true; $('newLink').checked = false; $('eerr').textContent = (m && new Date(m.created_at || 0) < PRELAUNCH_END) ? '★ Pre-launch member: renewal is 50% of the full price (All Access ₱8,699 → ₱4,350).' : ''; showTab('tools'); setTimeout(() => $('val').focus(), 400); return; }
     b.disabled = true;
