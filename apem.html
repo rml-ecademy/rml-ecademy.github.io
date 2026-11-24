@@ -126,7 +126,7 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
     $('main').innerHTML = `<h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
       <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Lessons built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
       <div class="card"><p>The map on the left shows every competency and its status for your account. The status comes from the server, from the prerequisite rules and your recorded results.</p>
-      <p>${MAP.lessons.some(l => l.code === 'INTRO') ? 'Start with the Introduction.' : ''} Lessons for the competencies are built and released one at a time. A competency marked Available with no lesson released yet cannot be opened.</p></div>`;
+      <p>${MAP.lessons.some(l => l.code === 'INTRO') ? 'Start with the Introduction.' : ''} Lessons for the competencies are built and released one at a time. A competency with no lesson built yet cannot be opened, whatever its status.</p><p class="note">Lessons built so far: ${MAP.lessons.map(l => esc(l.code)).join(', ') || 'none'}.</p></div>`;
     renderSide();
   }
 
@@ -159,7 +159,7 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
     if (!session) { $('side').innerHTML = ''; $('main').innerHTML = '<div class="card"><h2>Sign in required</h2><p>Sign in to ECADEMY first, then open APEM again from the Second Officer menu.</p><p><a href="index.html">Go to ECADEMY</a></p></div>'; return; }
     try {
       MAP = await call({ action: 'map' });
-      if (MAP.admin) { $('ownerBar').hidden = false; $('ownerBar').textContent = 'Owner preview: this page and its lessons are visible to admin accounts only until each lesson is released.'; }
+      if (MAP.admin) { $('ownerBar').hidden = false; $('ownerBar').textContent = 'Owner preview: visible to admin accounts only until each lesson is released.' + (MAP.locks_off ? ' Locks are OFF for your admin account during development. Students remain locked.' : ''); if (MAP.locks_off) LABEL.available = 'Open'; }
       renderOverview();
     } catch (e) { $('side').innerHTML = ''; $('main').innerHTML = `<div class="card"><p class="err">${esc(e.message)}</p><p><a href="index.html">Back to ECADEMY</a></p></div>`; }
   }
