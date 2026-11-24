@@ -33,7 +33,7 @@ details.stg{margin-top:8px;border:1px solid var(--rule);border-radius:10px;backg
 .ttl{flex:1;min-width:0}.st{font-size:.72rem;white-space:nowrap;border:1px solid var(--rule);border-radius:999px;padding:1px 8px;color:var(--lock)}
 .st.available{color:var(--accent);border-color:var(--accent)}.st.passed{color:var(--ok);border-color:var(--ok)}.st.in_progress,.st.requires_correction{color:var(--warn);border-color:var(--warn)}
 ul.sub{list-style:none;margin:2px 0 8px;padding:0 0 0 12px;border-left:1px solid var(--rule)}
-button.lk{display:block;margin-top:3px;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:7px;padding:3px 9px;font:600 .78rem inherit;cursor:pointer}button.lk:hover,button.lk:focus-visible{background:var(--accent);color:#0f1a24;outline:0}ul.sub li.on .ttl{color:var(--ink)}
+.plk{padding:2px 9px 6px 61px}button.lk{display:block;margin-top:3px;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:7px;padding:3px 9px;font:600 .78rem inherit;cursor:pointer}button.lk:hover,button.lk:focus-visible{background:var(--accent);color:#0f1a24;outline:0}ul.sub li.on .ttl{color:var(--ink)}
 ul.sub li{display:flex;gap:8px;align-items:baseline;padding:3px 8px;font-size:.88rem;color:var(--mute)}
 .card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;max-width:920px}
 .card p{margin:0 0 12px}.pts{margin:14px 0 4px;padding:12px 16px 12px 34px;background:var(--panel2);border-radius:10px}.pts li{margin:3px 0}
@@ -128,7 +128,8 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
       h += `<details class="stg" data-k="S:${st}"${OPEN.has('S:' + st) ? ' open' : ''}><summary><span class="ttl sname">${esc(name)}</span><span class="st">${done} / ${parents.length}</span></summary><div class="stgbody">`;
       for (const p of parents) {
         const subs = nodes.filter(n => n.parent_id === p.id).sort((a, b) => a.display_order - b.display_order);
-        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary><ul class="sub">` +
+        const PL = MAP.lessons.find(l => l.competency_id === p.id);
+        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary>${PL && p.status !== 'locked' ? `<div class="plk"><button class="lk" data-open="${esc(PL.code)}">Open explanation</button></div>` : ''}<ul class="sub">` +
           subs.map(s => { const L = MAP.lessons.find(l => l.competency_id === s.id); return `<li${current === s.id ? ' class="on"' : ''}><span class="cid">${esc(s.id.slice(-3))}</span><span class="ttl">${esc(s.title || '')}${L && s.status !== 'locked' ? ` <button class="lk" data-open="${esc(L.code)}">Open explanation</button>` : ''}</span><span class="st ${esc(s.status)}">${esc(LABEL[s.status] || s.status)}</span></li>`; }).join('') + '</ul></details>';
       }
       h += '</div></details>';
@@ -143,7 +144,7 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
     const n = MAP.nodes, par = n.filter(x => x.kind === 'parent'), sub = n.filter(x => x.kind === 'subskill');
     const built = MAP.lessons.filter(l => l.competency_id).length;
     $('main').innerHTML = `<h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
-      <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Lessons built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
+      <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Explanations built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
       <div class="card"><p>The map on the left shows every competency and its status for your account. The status comes from the server, from the prerequisite rules and your recorded results.</p>
       <p>${MAP.lessons.some(l => l.code === 'INTRO') ? 'Start with the Introduction.' : ''} Lessons for the competencies are built and released one at a time. A competency with no lesson built yet cannot be opened, whatever its status.</p><p class="note">Lessons built so far: ${MAP.lessons.map(l => esc(l.code)).join(', ') || 'none'}.</p></div>`;
     renderSide();
@@ -155,7 +156,19 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
     try {
       const d = await call({ action: 'lesson', code });
       current = code; renderSide();
-      const L = d.lesson, S = L.content.screens || [], media = Object.fromEntries((d.media || []).map(m => [m.asset_code, m]));
+      const L = d.lesson;
+      if (L.content.enc) {   // encrypted lesson file: the server releases its key only if this lesson is open for this account
+        const r = await fetch('apem-content/' + L.content.file, { cache: 'no-cache' });
+        if (!r.ok) throw new Error('The lesson file could not be downloaded. Check your connection and try again.');
+        const buf = new Uint8Array(await r.arrayBuffer());
+        if (new TextDecoder().decode(buf.slice(0, 5)) !== 'APEM1') throw new Error('The lesson file is not valid.');
+        let bin = ''; buf.slice(5, 261).forEach(b => bin += String.fromCharCode(b));
+        const k = await call({ action: 'lesson_key', code, wk: btoa(bin) });
+        const key = await crypto.subtle.importKey('raw', Uint8Array.from(atob(k.key), c => c.charCodeAt(0)), 'AES-GCM', false, ['decrypt']);
+        const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(261, 273) }, key, buf.slice(273));
+        L.content = JSON.parse(new TextDecoder().decode(plain));
+      }
+      const S = L.content.screens || [], media = Object.fromEntries((d.media || []).map(m => [m.asset_code, m]));
       let i = 0;
       const draw = () => {
         const s = S[i]; let vis = '';
