@@ -1709,6 +1709,7 @@ h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:
 <summary>Passage Planning — APEM</summary>
 <div class="subtopics">
 <p class="role-note">The Integrated APEM Voyage Planning and Navigation Simulator is being rebuilt. New lessons will open here one competency at a time.</p>
+<a class="topic-btn" id="apemOwnerLink" href="apem.html" style="display:none;text-decoration:none">APEM · owner preview (not visible to students)</a>
 </div>
 </details>
 
@@ -3021,6 +3022,7 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     } else stopWatch();
     valid = isAdmin || (!!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date()));
     pkg = valid ? (isAdmin ? PACKAGES.A : PACKAGES[member.package]) : null;
+    { const al = document.getElementById('apemOwnerLink'); if(al) al.style.display = isAdmin ? '' : 'none'; }   // APEM is owner-only until each lesson is released
     render();
     schedulePendingPoll();
     checkReferral();
