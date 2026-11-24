@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1b2733">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>ECADEMY · APEM Voyage Planning and Navigation Simulator</title>
 <style>
 :root{--bg:#1b2733;--panel:#223242;--panel2:#283b4e;--rule:#34495d;--ink:#e6edf3;--mute:#9db1c3;--accent:#7fbfe6;--ok:#6fd0a8;--warn:#e6b85c;--lock:#7f93a6}
@@ -45,6 +46,25 @@ button.b{background:var(--accent);color:#0f1a24;border:0;border-radius:9px;paddi
 button.b.ghost{background:none;color:var(--ink);border:1px solid var(--rule)}button.b:disabled{opacity:.4;cursor:default}
 .count{color:var(--mute);font-size:.88rem;flex:1;text-align:center}
 table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5px 10px;border-bottom:1px solid var(--rule)}table.v td:first-child{color:var(--mute)}
+button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var(--mute)}button.lk:disabled:hover{background:none;color:var(--mute)}button.lk.cur{background:var(--accent);color:#0f1a24}.plk button.lk{margin-bottom:4px;width:100%;text-align:left}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}.chip{background:var(--panel);border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 .82rem inherit;cursor:pointer}.chip.on{border-color:var(--accent);color:var(--accent)}.chip.done{border-color:var(--ok);color:var(--ok)}.chip:disabled{opacity:.4;cursor:default}
+.ex{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}@media (max-width:1100px){.ex{grid-template-columns:1fr}}
+.docs{position:sticky;top:8px}@media (max-width:1100px){.docs{position:static}}
+.tabs{display:flex;flex-wrap:wrap;gap:4px}.tab{background:var(--panel);border:1px solid var(--rule);border-bottom:0;color:var(--mute);border-radius:8px 8px 0 0;padding:7px 12px;font:600 .82rem ui-monospace,Consolas,monospace;cursor:pointer}.tab.on{background:#f4f1e8;color:#1c2630}
+.paper{background:#f4f1e8;color:#1c2630;border-radius:0 8px 8px 8px;padding:18px 20px;font-family:Georgia,"Times New Roman",serif;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.paper header{display:block;background:none;border:0;border-bottom:2px solid #1c2630;padding:0 0 8px;margin-bottom:10px}.paper .pt{font-weight:700;font-size:1.05rem}.paper .pm{font:.78rem ui-monospace,Consolas,monospace;color:#4b5763}
+.paper ol{margin:0;padding-left:26px}.paper li{margin:6px 0;line-height:1.5}.paper li::marker{font:.75rem ui-monospace,Consolas,monospace;color:#6b7783}
+.paper footer{margin-top:14px;padding-top:8px;border-top:1px solid #b9b3a1;font-size:.86rem;display:flex;flex-direction:column;gap:4px}.paper footer span{font:.68rem ui-monospace,Consolas,monospace;color:#8a2f22;letter-spacing:.04em}
+.form{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:16px 18px}.form h2{font-size:1.1rem;margin-bottom:6px}.form>p{color:var(--mute);margin:0 0 12px;font-size:.92rem}
+.fld{padding:10px 0;border-top:1px solid var(--rule)}.fld.good{border-left:3px solid var(--ok);padding-left:10px}.fld.bad{border-left:3px solid #ff9d8a;padding-left:10px}
+.fl{display:block;font-weight:600;font-size:.92rem;margin-bottom:4px}.help{color:var(--mute);font-size:.8rem;margin-bottom:4px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ctl select,.ctl input,.reg select{background:#16212c;color:var(--ink);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;font:inherit;font-size:.92rem;max-width:100%}
+.ctl input[type=text]{min-width:180px}.ctl input.hm{min-width:0;width:84px;font-family:ui-monospace,Consolas,monospace}.ctl input[type=number]{width:120px}.row2,.row3{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}.utc{color:var(--mute);font-size:.82rem}
+.chk{display:flex;flex-wrap:wrap;gap:4px 14px}.chk label{font-size:.9rem}.src{font-size:.78rem;color:var(--mute);display:inline-flex;gap:5px;align-items:center;margin-left:auto}
+.fb{font-size:.84rem;margin-top:5px}.fb.good{color:var(--ok)}.fb.bad{color:#ffb4a8}
+.reg{border-top:1px solid var(--rule);padding-top:10px}.regh{font-weight:600;font-size:.92rem;margin-bottom:6px}.regrow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--panel2);border-radius:8px;padding:8px;margin-bottom:6px}.regrow.good{outline:1px solid var(--ok)}.regrow.bad{outline:1px solid #ff9d8a}
+.regrow label{display:flex;flex-direction:column;font-size:.72rem;color:var(--mute);gap:2px;min-width:0}.regrow label.wide{flex:1 1 220px}.regrow select{max-width:260px}.regrow .fb{flex-basis:100%}button.b.sm{padding:6px 10px;font-size:.8rem}
+.out{margin-top:14px;border-radius:10px;padding:12px 14px;font-size:.92rem}.out.good{background:#1f3a34;border:1px solid var(--ok)}.out.bad{background:#3d2622;border:1px solid #ff9d8a}.out .b{margin-left:8px}
 .note{color:var(--mute);font-size:.88rem}.err{color:#ffb4a8}
 .sum{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.sum div{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px 14px;min-width:120px}.sum b{display:block;font-size:1.4rem}
 .sum span{color:var(--mute);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
@@ -128,9 +148,12 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
       h += `<details class="stg" data-k="S:${st}"${OPEN.has('S:' + st) ? ' open' : ''}><summary><span class="ttl sname">${esc(name)}</span><span class="st">${done} / ${parents.length}</span></summary><div class="stgbody">`;
       for (const p of parents) {
         const subs = nodes.filter(n => n.parent_id === p.id).sort((a, b) => a.display_order - b.display_order);
-        const PL = MAP.lessons.find(l => l.competency_id === p.id);
-        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary>${PL && p.status !== 'locked' ? `<div class="plk"><button class="lk" data-open="${esc(PL.code)}">Open explanation</button></div>` : ''}<ul class="sub">` +
-          subs.map(s => { const L = MAP.lessons.find(l => l.competency_id === s.id); return `<li${current === s.id ? ' class="on"' : ''}><span class="cid">${esc(s.id.slice(-3))}</span><span class="ttl">${esc(s.title || '')}${L && s.status !== 'locked' ? ` <button class="lk" data-open="${esc(L.code)}">Open explanation</button>` : ''}</span><span class="st ${esc(s.status)}">${esc(LABEL[s.status] || s.status)}</span></li>`; }).join('') + '</ul></details>';
+        const PLs = MAP.lessons.filter(l => l.competency_id === p.id || (l.kind === 'exercise' && (l.competency_id || '').startsWith(p.id + '.')))
+          .sort((a, b) => (a.kind === 'exercise') - (b.kind === 'exercise') || a.code.localeCompare(b.code));
+        const kup = l => l.kind !== 'exercise' ? 'Knowledge: explanation' : (l.code.endsWith('.G') ? 'Understanding: guided exercise' : 'Proficiency: independent exercise');
+        const lstat = l => (nodes.find(n => n.id === l.competency_id) || {}).status;
+        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary>${PLs.length ? `<div class="plk">${PLs.map(l => lstat(l) === 'locked' ? `<button class="lk" disabled>${kup(l)} (locked)</button>` : `<button class="lk${current === l.code ? ' cur' : ''}" data-open="${esc(l.code)}">${kup(l)}</button>`).join('')}</div>` : ''}<ul class="sub">` +
+          subs.map(s => { const L = MAP.lessons.find(l => l.competency_id === s.id && l.kind !== 'exercise'); return `<li${current === s.id ? ' class="on"' : ''}><span class="cid">${esc(s.id.slice(-3))}</span><span class="ttl">${esc(s.title || '')}${L && s.status !== 'locked' ? ` <button class="lk" data-open="${esc(L.code)}">Open explanation</button>` : ''}</span><span class="st ${esc(s.status)}">${esc(LABEL[s.status] || s.status)}</span></li>`; }).join('') + '</ul></details>';
       }
       h += '</div></details>';
     }
@@ -142,9 +165,9 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
   function renderOverview(){
     current = null;
     const n = MAP.nodes, par = n.filter(x => x.kind === 'parent'), sub = n.filter(x => x.kind === 'subskill');
-    const built = MAP.lessons.filter(l => l.competency_id).length;
+    const built = MAP.lessons.filter(l => l.competency_id && l.kind !== 'exercise').length, exb = MAP.lessons.filter(l => l.kind === 'exercise').length;
     $('main').innerHTML = `<h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
-      <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Explanations built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
+      <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Explanations built</span></div><div><b>${exb}</b><span>Exercises built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
       <div class="card"><p>The map on the left shows every competency and its status for your account. The status comes from the server, from the prerequisite rules and your recorded results.</p>
       <p>${MAP.lessons.some(l => l.code === 'INTRO') ? 'Start with the Introduction.' : ''} Lessons for the competencies are built and released one at a time. A competency with no lesson built yet cannot be opened, whatever its status.</p><p class="note">Lessons built so far: ${MAP.lessons.map(l => esc(l.code)).join(', ') || 'none'}.</p></div>`;
     renderSide();
@@ -168,11 +191,13 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
         const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(261, 273) }, key, buf.slice(273));
         L.content = JSON.parse(new TextDecoder().decode(plain));
       }
+      if (L.content.kind === 'exercise') { current = code; renderSide(); return renderExercise(L); }
       const S = L.content.screens || [], media = Object.fromEntries((d.media || []).map(m => [m.asset_code, m]));
       let i = 0;
       const draw = () => {
         const s = S[i]; let vis = '';
         if (s.visual && s.visual.diagram && DIAGRAM[s.visual.diagram]) { const g = DIAGRAM[s.visual.diagram](); vis = `<figure class="vis" style="margin-left:0;margin-right:0">${g.svg}<figcaption>${esc(g.alt)}</figcaption></figure>`; }
+        else if (s.visual && s.visual.video) vis = `<figure class="vis" style="margin-left:0;margin-right:0"><video controls preload="metadata" playsinline style="width:100%;border-radius:8px;background:#000" src="${esc(s.visual.src)}"></video><figcaption>${esc(s.visual.label || '')} (${esc(s.visual.video)}). Captions are shown in the picture. Silent draft animation: narration and realistic footage will replace it.</figcaption></figure>`;
         else if (s.visual && s.visual.pending) { const m = media[s.visual.pending]; vis = `<div class="pending" role="note">${esc(s.visual.label || 'Media')}<br>Pending production (${esc(s.visual.pending)}${m ? ', status: ' + esc(m.status.replace('_', ' ')) : ''}). Not yet available.</div>`; }
         main.innerHTML = `<h1>${esc(L.content.title)}</h1><p class="note">Screen ${i + 1} of ${S.length}. ${L.content.kind === 'knowledge' ? 'Knowledge section. The guided exercise and the proficiency check for this topic are not built yet.' : 'This introduction has no assessment.'}</p>
           <div class="card"><h2>${esc(s.h)}</h2>${(s.p || []).map(p => `<p>${esc(p)}</p>`).join('')}${vis}${(s.points || []).length ? `<ul class="pts">${s.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}</div>
@@ -184,6 +209,133 @@ table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5
       };
       draw();
     } catch (e) { main.innerHTML = `<div class="card"><p class="err">${esc(e.message)}</p><button class="b ghost" id="bk">Back to course map</button></div>`; $('bk').onclick = renderOverview; }
+  }
+
+  /* ---------- exercises: documents on the left, structured form on the right; every answer is checked by the server ---------- */
+  const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'k-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12));
+  const draftGet = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (_) { return null; } };
+  const draftSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
+
+  async function renderExercise(L) {
+    const X = L.content, comp = L.code.split('.')[0], main = $('main');
+    let work = {};
+    try { work = (await call({ action: 'my_work', code: comp })).steps || {}; } catch (_) {}
+    const state = {};                      // per step: { values, sources }
+    for (const s of X.steps) {
+      const saved = work[s.key] && work[s.key].input, d = draftGet('apem:draft:' + s.key);
+      state[s.key] = (d && d.values) ? d : (saved && saved.values ? { values: saved.values, sources: saved.sources || {} } : { values: {}, sources: {} });
+    }
+    const passed = k => !!(work[k] && work[k].passed);
+    const stStatus = k => { const n = MAP.nodes.find(x => x.id === k); return n ? n.status : 'locked'; };
+    let si = X.steps.findIndex(s => !passed(s.key)); if (si < 0) si = X.steps.length - 1;
+    let docId = X.docs[0].id, last = null;
+
+    const opt = (name, val, blank) => (blank ? '<option value=""></option>' : '') + X.options[name].map(([v, t]) => `<option value="${esc(v)}"${v === val ? ' selected' : ''}>${esc(t)}</option>`).join('');
+    const docOpt = val => '<option value=""></option>' + X.docs.map(d => `<option value="${esc(d.id)}"${d.id === val ? ' selected' : ''}>${esc(d.id)}</option>`).join('');
+
+    function control(f, def, v) {
+      switch (def.type) {
+        case 'doc': return `<select data-f="${f}">${docOpt(v)}</select>`;
+        case 'select': return `<select data-f="${f}">${opt(def.opts, v, true)}</select>`;
+        case 'text': return `<input type="text" data-f="${f}" value="${esc(v || '')}" autocomplete="off">`;
+        case 'num': return `<input type="number" step="any" inputmode="decimal" data-f="${f}" value="${esc(v ?? '')}">`;
+        case 'multi': return `<div class="chk">` + X.options[def.opts].map(([c, t]) => `<label><input type="checkbox" data-f="${f}" data-m="${esc(c)}"${(v || []).includes(c) ? ' checked' : ''}> ${esc(t)}</label>`).join('') + `</div>`;
+        case 'qty': return `<span class="row2"><input type="number" step="any" inputmode="decimal" data-f="${f}" data-p="v" value="${esc(v && v.v !== undefined ? v.v : '')}"><select data-f="${f}" data-p="u">${opt('units', (v && v.u) || 'MT', false)}</select></span>`;
+        case 'dt': return `<span class="row3"><input type="date" data-f="${f}" data-p="d" value="${esc((v && v.d) || '')}"><input type="text" class="hm" inputmode="numeric" placeholder="HH:MM" maxlength="5" aria-label="Time, 24-hour" data-f="${f}" data-p="t" value="${esc((v && v.t) || '')}"><select data-f="${f}" data-p="off" aria-label="UTC offset"><option value=""></option>${opt('offsets', v && v.off, false)}</select></span>`;
+        case 'dtutc': return `<span class="row3"><input type="date" data-f="${f}" data-p="d" value="${esc((v && v.d) || '')}"><input type="text" class="hm" inputmode="numeric" placeholder="HH:MM" maxlength="5" aria-label="Time, 24-hour" data-f="${f}" data-p="t" value="${esc((v && v.t) || '')}"><span class="utc">UTC</span></span>`;
+      }
+      return '';
+    }
+    function registerHtml(step, rows, res) {
+      const full = step.register_mode === 'full';
+      const rr = (res && res.rows) || [];
+      let h = `<div class="reg"><div class="regh">Action register${full ? '' : ' (issue, source and status)'}</div>`;
+      rows.forEach((r, i) => {
+        const fb = rr.find(x => x.issue === r.issue && !x.missing);
+        h += `<div class="regrow${fb ? (fb.ok ? ' good' : ' bad') : ''}" data-i="${i}">
+          <label>Issue<select data-r="issue">${opt('issues', r.issue, true)}</select></label>
+          <label>Source<select data-r="src">${docOpt(r.src)}</select></label>
+          <label>Status<select data-r="status">${opt('issue_status', r.status, true)}</select></label>
+          ${full ? `<label class="wide">Action<select data-r="action">${opt('actions', r.action, true)}</select></label><label>Responsible<select data-r="owner">${opt('owners', r.owner, true)}</select></label>` : ''}
+          <button type="button" class="b ghost sm" data-del="${i}">Remove</button>
+          ${fb && !fb.ok ? `<div class="fb bad">${esc(fb.msg)}</div>` : ''}${fb && fb.ok ? '<div class="fb good">Correct</div>' : ''}</div>`;
+      });
+      const miss = rr.filter(x => x.missing);
+      if (miss.length) h += `<div class="fb bad">${miss.length} required issue${miss.length > 1 ? 's are' : ' is'} not recorded${miss.some(m => m.issue) ? ': ' + miss.map(m => esc((X.options.issues.find(o => o[0] === m.issue) || [0, m.issue])[1])).join('; ') : ''}. ${esc(miss[0].msg)}</div>`;
+      return h + `<button type="button" class="b ghost sm" id="addrow">Add issue</button></div>`;
+    }
+
+    function draw() {
+      const step = X.steps[si], st = state[step.key], res = last && last.step === step.key ? last.res : null;
+      if (step.fields.includes('register') && !Array.isArray(st.values.register)) {
+        const prev = X.steps[si - 1];                       // carry the register forward from the previous step
+        st.values.register = prev && Array.isArray(state[prev.key].values.register) ? JSON.parse(JSON.stringify(state[prev.key].values.register)) : [];
+      }
+      const doc = X.docs.find(d => d.id === docId);
+      const chips = X.steps.length > 1 ? `<div class="steps">` + X.steps.map((s, i) => { const lock = stStatus(s.key) === 'locked' && !passed(s.key); return `<button class="chip${i === si ? ' on' : ''}${passed(s.key) ? ' done' : ''}" data-step="${i}"${lock ? ' disabled' : ''} title="${esc(s.title)}">${esc(s.key.slice(-2))}${passed(s.key) ? ' passed' : ''}</button>`; }).join('') + `</div>` : '';
+      const fieldsHtml = step.fields.map(f => {
+        if (f === 'register') return registerHtml(step, st.values.register, res && res.fields.register);
+        const def = X.fields[f], r = res && res.fields[f];
+        return `<div class="fld${r ? (r.ok ? ' good' : ' bad') : ''}"><label class="fl">${esc(def.label)}</label>${def.help ? `<div class="help">${esc(def.help)}</div>` : ''}
+          <div class="ctl">${control(f, def, st.values[f])}${def.src ? `<label class="src">Source <select data-s="${f}">${docOpt(st.sources[f])}</select></label>` : ''}</div>
+          ${r ? (r.ok ? '<div class="fb good">Correct</div>' : `<div class="fb bad">${esc(r.msg)}</div>`) : ''}</div>`;
+      }).join('');
+      let outcome = '';
+      if (res) {
+        if (res.passed) {
+          const lastStep = si === X.steps.length - 1;
+          outcome = `<div class="out good"><b>${X.mode === 'practice' ? 'Proficiency exercise passed.' : 'Step ' + esc(step.key) + ' is correct.'}</b> ${res.good} of ${res.total} items correct.` +
+            (X.mode === 'practice' ? (res.parent_passed ? ' ' + esc(comp) + ' is complete.' : '') + (res.unlocked.length ? ' Now open: ' + res.unlocked.map(esc).join(', ') + '.' : '')
+              : (lastStep ? ' The guided exercise is complete. Open the proficiency exercise from the course map.' : '')) +
+            (!lastStep ? ` <button class="b" id="nextstep">Next step</button>` : ` <button class="b ghost" id="tomap">Back to course map</button>`) + `</div>`;
+        } else outcome = `<div class="out bad"><b>Not yet correct.</b> ${res.good} of ${res.total} items correct. Attempt ${res.attempt_no}. ` +
+          (X.mode === 'practice' ? 'The items marked need attention. Correct them and submit again.' : (res.level === 1 ? 'Each error is marked. Correct and submit again.' : res.level === 2 ? 'The principle for each error is shown.' : 'The method for each error is shown.')) + `</div>`;
+      } else if (passed(step.key)) outcome = `<div class="out good">You have already passed this step. Your saved answers are shown.</div>`;
+      main.innerHTML = `<h1>${esc(X.title)}</h1><p class="note">${esc(X.intro)}</p>${chips}
+        <div class="ex"><section class="docs" aria-label="Voyage documents">
+          <div class="tabs">${X.docs.map(d => `<button class="tab${d.id === docId ? ' on' : ''}" data-doc="${esc(d.id)}">${esc(d.id)}</button>`).join('')}</div>
+          <article class="paper"><header><div class="pt">${esc(doc.title)}${doc.rev ? ' · ' + esc(doc.rev) : ''}</div><div class="pm">Reference ${esc(doc.id)} · Issued ${esc(doc.issued)}</div></header>
+            <ol>${doc.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ol><footer>Signed: ${esc(doc.issuer)}<span>SYNTHETIC TRAINING DOCUMENT · NOT FOR NAVIGATION</span></footer></article></section>
+        <section class="form" aria-label="Your findings"><h2>${esc(step.key)} ${esc(step.title)}</h2><p>${esc(step.instruction)}</p>${fieldsHtml}
+          <div class="nav"><button class="b" id="submit">Submit for checking</button><span class="count" id="busy"></span></div>${outcome}</section></div>
+        ${MAP.admin ? `<p class="note" style="margin-top:16px">Owner preview. ${esc(X.notice || '')}</p>` : ''}`;
+      wire(step, st);
+    }
+
+    function wire(step, st) {
+      const save = () => draftSet('apem:draft:' + step.key, st);
+      main.querySelectorAll('[data-doc]').forEach(b => b.onclick = () => { docId = b.dataset.doc; draw(); });
+      main.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { si = +b.dataset.step; draw(); main.focus(); });
+      main.querySelectorAll('[data-f]').forEach(el => el.oninput = el.onchange = () => {
+        const f = el.dataset.f, def = X.fields[f];
+        if (def.type === 'multi') st.values[f] = [...main.querySelectorAll(`[data-f="${f}"]`)].filter(c => c.checked).map(c => c.dataset.m);
+        else if (el.dataset.p) { const o = Object.assign({}, st.values[f] || (def.type === 'qty' ? { u: 'MT' } : {})); let val = el.value;
+          if (el.dataset.p === 't') { const m = val.trim().match(/^(\d{1,2})[:.]?(\d{2})$/); if (m && +m[1] < 24 && +m[2] < 60) val = m[1].padStart(2, '0') + ':' + m[2]; }
+          o[el.dataset.p] = val; st.values[f] = o; }
+        else st.values[f] = def.type === 'num' ? (el.value === '' ? '' : Number(el.value)) : el.value;
+        save();
+      });
+      main.querySelectorAll('[data-s]').forEach(el => el.onchange = () => { st.sources[el.dataset.s] = el.value; save(); });
+      main.querySelectorAll('.regrow').forEach(row => row.querySelectorAll('[data-r]').forEach(el => el.onchange = () => { st.values.register[+row.dataset.i][el.dataset.r] = el.value; save(); }));
+      main.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { st.values.register.splice(+b.dataset.del, 1); save(); draw(); });
+      if ($('addrow')) $('addrow').onclick = () => { st.values.register.push({ issue: '', src: '', status: '', action: '', owner: '' }); save(); draw(); };
+      if ($('nextstep')) $('nextstep').onclick = () => { si++; last = null; draw(); main.focus(); };
+      if ($('tomap')) $('tomap').onclick = renderOverview;
+      $('submit').onclick = async () => {
+        const btn = $('submit'); btn.disabled = true; $('busy').textContent = 'Checking…';
+        try {
+          const values = {}; for (const f of step.fields) values[f] = st.values[f];
+          if (X.fields.cargo_qty && step.fields.includes('cargo_qty') && values.cargo_qty && !values.cargo_qty.u) values.cargo_qty.u = 'MT';
+          const sources = {}; for (const f of step.fields) if (X.fields[f].src) sources[f] = st.sources[f] || '';
+          const res = await call({ action: 'submit', code: comp, step: step.key, mode: X.mode, key: uuid(), values, sources });
+          last = { step: step.key, res };
+          if (res.passed) { work[step.key] = { passed: true, input: { values, sources } }; try { localStorage.removeItem('apem:draft:' + step.key); } catch (_) {} }
+          try { MAP = await call({ action: 'map' }); if (MAP.locks_off) LABEL.available = 'Open'; renderSide(); } catch (_) {}
+          draw(); main.focus();
+        } catch (e) { btn.disabled = false; $('busy').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+      };
+    }
+    draw();
   }
 
   async function init(){
