@@ -884,9 +884,10 @@
       function bearingText(value) {return ((value%360+360)%360).toFixed(1).padStart(5,"0")+"° T";}
       function paintTargetSpeeds(t,suffix="") {
         const g=targetGround(t), w=targetWater(t), sog=Math.hypot(g.x,g.y)*3600, stw=Math.hypot(w.x,w.y)*3600;
-        $("tclabel"+suffix).textContent="COG"; $("tslabel"+suffix).textContent="SOG";
-        $("tc"+suffix).textContent=t.tracked && sog>.01?bearingText(B(g.x,g.y)):"---";
-        $("ts"+suffix).textContent=t.tracked?F(sog,2)+" kn":"---";
+        const sea=stabilization==="SEA";
+        $("tclabel"+suffix).textContent=sea?"CTW":"COG"; $("tslabel"+suffix).textContent=sea?"STW":"SOG";
+        $("tc"+suffix).textContent=t.tracked && (sea?stw:sog)>.01?bearingText(sea?B(w.x,w.y):B(g.x,g.y)):"---";
+        $("ts"+suffix).textContent=t.tracked?F(sea?stw:sog,2)+" kn":"---";
         $("ttc"+suffix).textContent=t.tracked && stw>.01?bearingText(B(w.x,w.y)):"---";
         $("tstw"+suffix).textContent=t.tracked?F(stw,2)+" kn":"---";
       }
@@ -988,18 +989,18 @@
       secondCard.prepend(secondPicker);
       $("target").after(secondCard);
       // three or more acquired targets: every target keeps its own data card in the same layout, made smaller so that up to five fit
+      ["ttc","tstw","ttc2","tstw2"].forEach(i => { $(i).parentElement.style.display = "none"; });
       const acqBox = document.createElement("div"); acqBox.id = "acqlist"; acqBox.className = "acqcards"; acqBox.hidden = true; secondCard.after(acqBox);
       acqBox.addEventListener("pointerdown", e => { const r = e.target.closest("[data-acq]"); if (r && r.dataset.acq !== selected) { selected = r.dataset.acq; update(); } });
       function updateAcqList() {
         const all = targets.filter(t => t.tracked), many = all.length >= 3, list = all.filter(t => t.id !== selected);
-        acqBox.hidden = !many; $("target").classList.toggle("compact", many); $("ttc").previousElementSibling.textContent = many ? "TC*" : "TC* / WATER";
+        acqBox.hidden = !many; $("target").classList.toggle("compact", many);
         if (!many) return false;
         const row = (l, v) => '<div class="data"><span>' + l + '</span><b>' + v + '</b></div>';
         acqBox.innerHTML = list.map(t => {
-          const a = A(t), g = targetGround(t), w = targetWater(t), sog = Math.hypot(g.x, g.y) * 3600, stw = Math.hypot(w.x, w.y) * 3600, bad = a.tcpa > 0 && a.tcpa < num("tcpalimit") && a.cpa < num("cpalimit");
+          const a = A(t), sea = stabilization === "SEA", v = sea ? targetWater(t) : targetGround(t), spd = Math.hypot(v.x, v.y) * 3600, bad = a.tcpa > 0 && a.tcpa < num("tcpalimit") && a.cpa < num("cpalimit");
           return '<div class="target compact' + (bad ? " danger" : "") + '" data-acq="' + t.id + '">' + row("TARGET", t.id + " · " + t.name) + '<div class="grid">' +
-            row("BRG", F(a.b) + "°") + row("RNG", F(a.r) + " NM") + row("COG", sog > .01 ? bearingText(B(g.x, g.y)) : "---") + row("SOG", F(sog, 2) + " kn") +
-            row("TC*", stw > .01 ? bearingText(B(w.x, w.y)) : "---") + row("STW*", F(stw, 2) + " kn") + row("CPA", F(a.cpa, 2) + " NM") + row("TCPA", F(a.tcpa) + " min") + '</div></div>';
+            row("BRG", F(a.b) + "°") + row("RNG", F(a.r) + " NM") + row(sea ? "CTW" : "COG", spd > .01 ? bearingText(B(v.x, v.y)) : "---") + row(sea ? "STW" : "SOG", F(spd, 2) + " kn") + row("CPA", F(a.cpa, 2) + " NM") + row("TCPA", F(a.tcpa) + " min") + '</div></div>';
         }).join("");
         return true;
       }
