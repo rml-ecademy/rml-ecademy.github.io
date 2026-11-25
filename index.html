@@ -1710,6 +1710,7 @@ h1.hero-logo{padding-right:90px}h1.hero-logo img{width:100%!important;max-width:
 <div class="subtopics">
 <p class="role-note">The Integrated APEM Voyage Planning and Navigation Simulator is being rebuilt. New lessons will open here one competency at a time.</p>
 <a class="topic-btn" id="apemOwnerLink" href="apem.html" style="display:none;text-decoration:none">APEM · owner preview (not visible to students)</a>
+<a class="topic-btn" id="portGuideLink" href="port-guide.html" style="display:none;text-decoration:none">World Port Guide · port positions and port data</a>
 </div>
 </details>
 
@@ -3022,7 +3023,8 @@ wefax: { title: 'Weather Fax Receiver & Chart Reading', src: 'app-wefax', file: 
     } else stopWatch();
     valid = isAdmin || (!!member && !member.revoked && (!member.expires_at || new Date(member.expires_at) > new Date()));
     pkg = valid ? (isAdmin ? PACKAGES.A : PACKAGES[member.package]) : null;
-    { const al = document.getElementById('apemOwnerLink'); if(al) al.style.display = isAdmin ? '' : 'none'; }   // APEM is owner-only until each lesson is released
+    { const al = document.getElementById('apemOwnerLink'); if(al) al.style.display = isAdmin ? '' : 'none'; }
+    { const pg = document.getElementById('portGuideLink'); if(pg) pg.style.display = isAdmin ? '' : 'none'; }   // World Port Guide: owner only until the owner releases it to students (change isAdmin to valid)   // APEM is owner-only until each lesson is released
     render();
     schedulePendingPoll();
     checkReferral();

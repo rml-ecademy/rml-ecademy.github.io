@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if(location.protocol==="http:"&&!/^(localhost|127\.|0\.0\.0\.0)/.test(location.hostname))location.replace("https://"+location.host+location.pathname+location.search+location.hash);</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#111111">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>ECADEMY · World Port Guide</title>
+<style>
+:root{--rule:#d6d6d2;--ink:#111111;--mute:#3a3a3a;--soft:#f2f2f0;--ok:#1a7f4b;--no:#b42318}
+*{box-sizing:border-box}
+html,body{margin:0;background:#ffffff;color:var(--ink);font:500 16px/1.5 "Albert Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{display:flex;align-items:center;gap:14px;padding:12px 18px;background:#111111;color:#ffffff}
+header b{letter-spacing:.06em}header .t{flex:1;min-width:0}header .t small{display:block;color:#c8c8c8;font-size:.8rem}
+header a{color:#ffffff;text-decoration:none;border:1px solid #6a6a6a;border-radius:8px;padding:7px 12px;font-size:.88rem;font-weight:700;white-space:nowrap}
+.disc{background:var(--soft);border-bottom:1px solid var(--rule);padding:6px 18px;font-size:.78rem;font-weight:700;letter-spacing:.02em;text-align:center}
+.shell{display:grid;grid-template-columns:360px minmax(0,1fr);min-height:calc(100vh - 110px)}
+aside{border-right:1px solid var(--rule);padding:14px 12px;display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 110px);position:sticky;top:0}
+main{padding:20px 24px 60px;min-width:0}
+input,select,button{font:inherit}
+.in{width:100%;border:1px solid #8c8c8c;border-radius:8px;padding:9px 10px;background:#fff;color:var(--ink);font-weight:600}
+.lab{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+#list{flex:1;overflow:auto;border:1px solid var(--rule);border-radius:8px;min-height:160px}
+.pi{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:7px 10px;cursor:pointer;color:var(--ink)}
+.pi:hover,.pi:focus-visible{background:var(--soft);outline:0}.pi.on{background:#111;color:#fff}.pi b{display:block;font-weight:800}.pi small{font-size:.78rem;color:inherit;opacity:.8;font-weight:600}
+.count{font-size:.8rem;color:var(--mute);font-weight:700}
+h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin:0;font-weight:800}
+.page{border:1px solid #111;border-radius:4px;max-width:980px;background:#fff}
+.ph{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #111;padding:8px 16px;font:800 .74rem ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase}
+.pb{padding:16px}.sub{color:var(--mute);font-weight:700;margin:2px 0 12px}
+.pos{border:2px solid #111;border-radius:4px;padding:12px 14px;margin:0 0 14px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+.pos .ll{font:800 1.45rem ui-monospace,Consolas,monospace;letter-spacing:.02em}.pos small{display:block;font:600 .82rem ui-monospace,Consolas,monospace;color:var(--mute)}
+.btn{background:#111;color:#fff;border:1px solid #111;border-radius:8px;padding:8px 12px;font-weight:800;font-size:.84rem;cursor:pointer}.btn.ghost{background:#fff;color:#111}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+.sec{border:1px solid var(--rule);border-radius:4px}.sec h2{background:var(--soft);border-bottom:1px solid var(--rule);padding:7px 10px}
+.sec table{width:100%;border-collapse:collapse;font-size:.92rem}.sec td{padding:5px 10px;border-bottom:1px solid #ecece9;vertical-align:top}.sec tr:last-child td{border-bottom:0}
+.sec td:first-child{color:var(--mute);font-weight:600;width:58%}.sec td:last-child{font-weight:800}
+.y{color:var(--ok)}.n{color:var(--no)}.ns{color:#8c8c8c;font-weight:600!important}
+.p2p{border:1px solid #111;border-radius:4px;max-width:980px;margin:0 0 16px}.p2p h2{background:#111;color:#fff;padding:7px 12px}
+.p2p .row{display:grid;grid-template-columns:1fr 1fr;gap:0}.p2p .cell{padding:10px 12px;border-bottom:1px solid var(--rule)}.p2p .cell+.cell{border-left:1px solid var(--rule)}
+.p2p .cell b{display:block;font-weight:800}.p2p .cell small{font:600 .84rem ui-monospace,Consolas,monospace;color:var(--mute)}.p2p .x{float:right;background:none;border:0;cursor:pointer;font-weight:800;font-size:.8rem;text-decoration:underline}
+.p2p table{width:100%;border-collapse:collapse}.p2p td{padding:7px 12px;border-bottom:1px solid var(--rule)}.p2p td:last-child{font:800 1rem ui-monospace,Consolas,monospace;text-align:right}
+.note{color:var(--mute);font-size:.86rem;font-weight:600}.p2p .note{padding:8px 12px;margin:0}
+.intro{max-width:980px}.intro p{margin:0 0 10px}
+@media (max-width:900px){.shell{grid-template-columns:1fr}aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule)}#list{max-height:38vh}main{padding:14px 12px 50px}.p2p .row{grid-template-columns:1fr}.p2p .cell+.cell{border-left:0}.pos .ll{font-size:1.15rem}}
+@media print{header,.disc,aside,.acts,.p2p .x{display:none!important}.shell{display:block}main{padding:0}}
+</style>
+</head>
+<body>
+<header><div class="t"><b>ECADEMY</b> · World Port Guide<small>Port positions and port data for voyage planning practice</small></div><a href="apem.html">APEM</a><a href="index.html">Back to ECADEMY</a></header>
+<div class="disc">FOR TRAINING AND EDUCATIONAL PURPOSES ONLY. NOT FOR ACTUAL SHIP NAVIGATION. VERIFY EVERY VALUE IN THE CURRENT OFFICIAL PUBLICATIONS.</div>
+<div class="shell">
+  <aside id="side"></aside>
+  <main id="main" tabindex="-1"><p class="note">Loading…</p></main>
+</div>
+<script src="assets/supabase-2.117.2.js"></script>
+<script>
+(() => {
+  const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
+  const SB_KEY = 'sb_publishable_i1yPRozADgoCxDsU676f_A_bISeo-4I';   // publishable key: safe in the browser
+  const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fold = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  let D = null, F = {}, PORTS = [], cur = null, from = null, to = null, shown = [];
+
+  /* ---------- positions and port-to-port figures ---------- */
+  const dm = (v, lat) => { const a = Math.abs(v); let d = Math.floor(a), m = Math.round((a - d) * 600) / 10; if (m >= 60) { d += 1; m = 0; } return String(d).padStart(lat ? 2 : 3, '0') + '°' + m.toFixed(1).padStart(4, '0') + "'" + (lat ? (v < 0 ? 'S' : 'N') : (v < 0 ? 'W' : 'E')); };
+  const posText = p => dm(p.lat, true) + '  ' + dm(p.lon, false);
+  const R = 3440.065, rad = Math.PI / 180;
+  function legs(a, b) {
+    const f1 = a.lat * rad, f2 = b.lat * rad; let dl = (b.lon - a.lon) * rad; if (dl > Math.PI) dl -= 2 * Math.PI; if (dl < -Math.PI) dl += 2 * Math.PI;
+    const h = Math.sin((f2 - f1) / 2) ** 2 + Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2, gc = 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    const gcb = (Math.atan2(Math.sin(dl) * Math.cos(f2), Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl)) / rad + 360) % 360;
+    const dpsi = Math.log(Math.tan(Math.PI / 4 + f2 / 2) / Math.tan(Math.PI / 4 + f1 / 2)), q = Math.abs(dpsi) > 1e-12 ? (f2 - f1) / dpsi : Math.cos(f1);
+    return { gc, gcb, rl: Math.hypot(f2 - f1, q * dl) * R, rlb: (Math.atan2(dl, dpsi) / rad + 360) % 360 };
+  }
+
+  /* ---------- the entry: one page per port, as in a port guide ---------- */
+  const YN = v => v === 1 ? '<span class="y">Yes</span>' : v === 0 ? '<span class="n">No</span>' : '<span class="ns">Not stated</span>';
+  const M = v => v == null ? '<span class="ns">Not stated</span>' : esc(v) + ' m';
+  const T = v => v == null || v === '' ? '<span class="ns">Not stated</span>' : esc(v);
+  const SECT = [
+    ['Harbour', [['Size', 'harbor_size', T], ['Type', 'harbor_type', T], ['Principal use', 'harbor_use', T], ['Shelter afforded', 'shelter_afforded', T], ['Good holding ground', 'good_holding_ground', YN], ['Turning area', 'turning_area', YN]]],
+    ['Depths and tide', [['Tidal range', 'tidal_range_m', M], ['Channel depth', 'channel_depth_m', M], ['Anchorage depth', 'anchorage_depth_m', M], ['Cargo pier depth', 'cargo_pier_depth_m', M], ['Oil terminal depth', 'oil_terminal_depth_m', M], ['LNG terminal depth', 'lng_terminal_depth_m', M], ['Entrance width', 'entrance_width_m', M]]],
+    ['Maximum vessel size', [['Length', 'max_vessel_length_m', M], ['Beam', 'max_vessel_beam_m', M], ['Draft', 'max_vessel_draft_m', M], ['Offshore berth: length', 'offshore_max_vessel_length_m', M], ['Offshore berth: beam', 'offshore_max_vessel_beam_m', M], ['Offshore berth: draft', 'offshore_max_vessel_draft_m', M]]],
+    ['Entrance restrictions', [['Tide', 'entrance_restriction_tide', YN], ['Heavy swell', 'entrance_restriction_heavy_swell', YN], ['Ice', 'entrance_restriction_ice', YN], ['Other', 'entrance_restriction_other', YN], ['Overhead limits', 'overhead_limits', YN]]],
+    ['Pilotage and tugs', [['Pilotage compulsory', 'pilotage_compulsory', YN], ['Pilotage available', 'pilotage_available', YN], ['Pilotage advisable', 'pilotage_advisable', YN], ['Local assistance', 'pilotage_local_assistance', YN], ['Tugs: assistance', 'tugs_assistance', YN], ['Tugs: salvage', 'tugs_salvage', YN]]],
+    ['Reporting and control', [['ETA message required', 'eta_message_required', YN], ['Vessel traffic service', 'vessel_traffic_service', YN], ['Traffic separation scheme', 'traffic_separation_scheme', YN], ['First port of entry', 'first_port_of_entry', YN], ['Quarantine: pratique', 'quarantine_pratique', YN], ['Quarantine: sanitation', 'quarantine_sanitation', YN], ['Port security', 'port_security', YN]]],
+    ['Communications', [['Telephone', 'comm_telephone', YN], ['Telefax', 'comm_telefax', YN], ['Radio', 'comm_radio', YN], ['Radiotelephone', 'comm_radiotelephone', YN], ['Airport', 'comm_airport', YN], ['Rail', 'comm_rail', YN]]],
+    ['Berths and cargo facilities', [['Wharves', 'facility_wharves', YN], ['Anchorage', 'facility_anchorage', YN], ['Dangerous cargo anchorage', 'facility_dangerous_cargo_anchorage', YN], ['Solid bulk', 'facility_solid_bulk', YN], ['Liquid bulk', 'facility_liquid_bulk', YN], ['Container', 'facility_container', YN], ['Breakbulk', 'facility_breakbulk', YN], ['Ro-ro', 'facility_ro_ro', YN], ['Oil terminal', 'facility_oil_terminal', YN], ['LNG terminal', 'facility_lng_terminal', YN]]],
+    ['Cranes and lifts', [['Fixed cranes', 'crane_fixed', YN], ['Mobile cranes', 'crane_mobile', YN], ['Floating cranes', 'crane_floating', YN], ['Container cranes', 'crane_container', YN], ['Lift 100 tons and over', 'lift_over_100_tons', YN], ['Lift 50 to 100 tons', 'lift_50_100_tons', YN], ['Lift 25 to 49 tons', 'lift_25_49_tons', YN], ['Lift up to 24 tons', 'lift_0_24_tons', YN]]],
+    ['Supplies and services', [['Fuel oil', 'supply_fuel_oil', YN], ['Diesel oil', 'supply_diesel_oil', YN], ['Potable water', 'supply_potable_water', YN], ['Provisions', 'supply_provisions', YN], ['Deck supplies', 'supply_deck', YN], ['Engine supplies', 'supply_engine', YN], ['Medical facilities', 'medical_facilities', YN], ['Garbage disposal', 'garbage_disposal', YN], ['Dirty ballast disposal', 'dirty_ballast_disposal', YN]]],
+    ['Repairs', [['Repairs', 'repairs', T], ['Dry dock', 'dry_dock', T], ['Marine railway', 'railway', T], ['Electrical repair', 'service_electrical_repair', YN], ['Navigation equipment', 'service_navigation_equipment', YN]]]
+  ];
+  function entry(p) {
+    const g = k => p.get(k), chart = g('standard_nautical_chart');
+    return `<div class="page"><div class="ph"><span>World Port Guide · ${esc(g('country_name'))}</span><span>WPI No. ${esc(g('wpi_number'))}</span></div><div class="pb">
+      <h1>${esc(p.name)}</h1><div class="sub">${g('alternate_name') ? 'Also: ' + esc(g('alternate_name')) + ' · ' : ''}${esc(g('country_name'))}${g('region') ? ' · ' + esc(g('region')) : ''} · ${esc(g('water_body'))}</div>
+      <div class="pos"><div><div class="ll" id="ll">${posText(p)}</div><small>Decimal: ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)} · position of the port as given in the index, not a berth or pilot station</small></div>
+        <div class="acts"><button class="btn ghost" id="copy">Copy position</button><button class="btn" id="setf">Set as departure</button><button class="btn" id="sett">Set as arrival</button><button class="btn ghost" id="prt">Print</button></div></div>
+      <div class="grid"><div class="sec"><h2>Identification and references</h2><table>
+        <tr><td>UN/LOCODE</td><td>${T(g('locode'))}</td></tr><tr><td>NAVAREA</td><td>${T(g('navarea'))}</td></tr>
+        <tr><td>Sailing directions</td><td>${T(g('sailing_directions'))}</td></tr><tr><td>Standard nautical chart (NGA)</td><td>${chart && String(chart) !== '0' ? esc(chart) : '<span class="ns">Not stated</span>'}</td></tr>
+        <tr><td>Digital nautical chart (NGA)</td><td>${T(g('digital_nautical_chart'))}</td></tr></table></div>` +
+      SECT.map(([h, rows]) => `<div class="sec"><h2>${h}</h2><table>${rows.map(([l, k, f]) => `<tr><td>${l}</td><td>${f(g(k))}</td></tr>`).join('')}</table></div>`).join('') + `</div>
+      <p class="note" style="margin:14px 0 0">Source: ${esc(D.source)}. "Not stated" means the index gives no value. It does not mean "none". Chart and publication numbers are those of the U.S. National Geospatial-Intelligence Agency: use the charts and publications carried on your own ship.</p></div></div>`;
+  }
+  function p2p() {
+    if (!from && !to) return '';
+    const cell = (p, lab, k) => `<div class="cell"><span class="lab">${lab}</span>${p ? `<button class="x" data-clr="${k}">remove</button><b>${esc(p.name)}, ${esc(p.get('country_name'))}</b><small>${posText(p)}</small>` : '<b class="ns" style="font-weight:600">Open a port and press "Set as ' + (k === 'f' ? 'departure' : 'arrival') + '".</b>'}</div>`;
+    let t = '';
+    if (from && to) { const L = legs(from, to);
+      t = `<table><tr><td>Great circle distance</td><td>${L.gc.toFixed(0)} NM</td></tr><tr><td>Great circle initial course</td><td>${L.gcb.toFixed(1).padStart(5, '0')}° T</td></tr><tr><td>Rhumb line distance</td><td>${L.rl.toFixed(0)} NM</td></tr><tr><td>Rhumb line course</td><td>${L.rlb.toFixed(1).padStart(5, '0')}° T</td></tr></table>
+        <p class="note">Straight-line figures between the two port positions, over land or sea. They are not a passage distance. The distance of a voyage comes from the planned route, berth to berth, and is normally longer.</p>`; }
+    return `<div class="p2p"><h2>Port to port</h2><div class="row">${cell(from, 'Departure', 'f')}${cell(to, 'Arrival', 't')}</div>${t}</div>`;
+  }
+  function render() {
+    const main = $('main');
+    main.innerHTML = p2p() + (cur ? entry(cur) : `<div class="intro"><h1>World Port Guide</h1><p class="sub">${D.count.toLocaleString()} ports in ${D.dict.country_name.length} countries.</p>
+      <p>Use this guide the way a port guide is used on board: find the port, read its position, and note the port data needed for the appraisal of a voyage.</p>
+      <p>Search by port name, country or UN/LOCODE, or choose a country to browse its ports. Open a port to see its page. Set one port as departure and another as arrival to see both positions together.</p>
+      <p class="note">Source: ${esc(D.source)}. The index is a general reference. Positions are of the port, to about one minute of arc. Depths, limits and services change: always confirm with the current charts, sailing directions, port authority and agent.</p></div>`);
+    main.querySelectorAll('[data-clr]').forEach(b => b.onclick = () => { if (b.dataset.clr === 'f') from = null; else to = null; render(); });
+    if (cur) {
+      $('copy').onclick = async () => { const t = cur.name + ', ' + cur.get('country_name') + ': ' + posText(cur); try { await navigator.clipboard.writeText(t); $('copy').textContent = 'Copied'; } catch (_) { $('copy').textContent = 'Select and copy the position'; } setTimeout(() => { if ($('copy')) $('copy').textContent = 'Copy position'; }, 1800); };
+      $('setf').onclick = () => { from = cur; render(); main.scrollTop = 0; window.scrollTo(0, 0); };
+      $('sett').onclick = () => { to = cur; render(); window.scrollTo(0, 0); };
+      $('prt').onclick = () => window.print();
+    }
+  }
+  function open(p, push) { cur = p; if (push !== false) history.replaceState(null, '', '#wpi=' + p.get('wpi_number')); render(); list(); if (window.innerWidth <= 900) $('main').scrollIntoView(); }
+
+  /* ---------- the index: search and browse by country ---------- */
+  function list() {
+    const q = fold($('q').value.trim()), c = $('country').value;
+    let r = PORTS;
+    if (c !== '') r = r.filter(p => p.ci === +c);
+    if (q) { const words = q.split(/\s+/); r = r.filter(p => words.every(w => p.key.includes(w))); if (q.length >= 2) r = r.slice().sort((a, b) => (fold(b.name).startsWith(q) - fold(a.name).startsWith(q)) || a.name.localeCompare(b.name)); }
+    shown = r.slice(0, 400);
+    $('count').textContent = (!q && c === '') ? 'Type a name or choose a country.' : r.length + (r.length === 1 ? ' port' : ' ports') + (r.length > 400 ? '. Showing the first 400: refine the search.' : '');
+    $('list').innerHTML = (!q && c === '') ? '' : shown.map((p, i) => `<button class="pi${p === cur ? ' on' : ''}" data-i="${i}"><b>${esc(p.name)}</b><small>${esc(p.get('country_name'))}${p.get('locode') ? ' · ' + esc(p.get('locode')) : ''} · ${dm(p.lat, true)} ${dm(p.lon, false)}</small></button>`).join('');
+    $('list').querySelectorAll('[data-i]').forEach(b => b.onclick = () => open(shown[+b.dataset.i]));
+  }
+  function start() {
+    D.fields.forEach((k, i) => { F[k] = i; });
+    const dict = D.dict;
+    PORTS = D.rows.map(r => { const p = { r, name: r[F.name], lat: r[F.latitude], lon: r[F.longitude], ci: r[F.country_name] };
+      p.get = k => { const v = r[F[k]]; return v == null ? null : (dict[k] ? dict[k][v] : v); };
+      p.key = fold(p.name + ' ' + (r[F.alternate_name] || '') + ' ' + (r[F.locode] || '') + ' ' + dict.country_name[p.ci]); return p; });
+    const cs = dict.country_name.map((n, i) => [n, i]).sort((a, b) => a[0].localeCompare(b[0]));
+    const n = {}; PORTS.forEach(p => { n[p.ci] = (n[p.ci] || 0) + 1; });
+    $('side').innerHTML = `<span class="lab">Find a port</span><input class="in" id="q" type="search" placeholder="Port name, country or UN/LOCODE" autocomplete="off" aria-label="Find a port">
+      <span class="lab">Browse by country</span><select class="in" id="country" aria-label="Country"><option value="">All countries</option>${cs.map(([nm, i]) => `<option value="${i}">${esc(nm)} (${n[i]})</option>`).join('')}</select>
+      <span class="count" id="count"></span><div id="list" role="list"></div>`;
+    let t = null; $('q').oninput = () => { clearTimeout(t); t = setTimeout(list, 120); }; $('country').onchange = list;
+    const m = /wpi=(\d+)/.exec(location.hash); const p0 = m && PORTS.find(p => String(p.get('wpi_number')) === m[1]);
+    list(); if (p0) open(p0, false); else render();
+  }
+  async function init() {
+    const stop = h => { $('side').innerHTML = ''; $('main').innerHTML = `<div class="intro">${h}<p><a href="index.html">Go to ECADEMY</a></p></div>`; };
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return stop('<h1>Sign in required</h1><p>Sign in to ECADEMY first, then open the World Port Guide again.</p>');
+    try {
+      const { data, error } = await sb.rpc('my_status'); if (error) throw error;
+      const m = data && data.member, ok = !!(data && (data.admin || (m && !m.revoked && (!m.expires_at || new Date(m.expires_at) > new Date()))));
+      if (!ok) return stop('<h1>An active ECADEMY account is required</h1><p>The World Port Guide is part of ECADEMY training.</p>');
+      const r = await fetch('media/ports/world-ports.json'); if (!r.ok) throw new Error('The port data could not be downloaded. Check your connection and try again.');
+      D = await r.json(); start();
+    } catch (e) { stop('<p style="color:#b42318;font-weight:700">' + esc(e.message || 'The guide could not be opened.') + '</p>'); }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
