@@ -45,6 +45,13 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
 .p2p table{width:100%;border-collapse:collapse}.p2p td{padding:7px 12px;border-bottom:1px solid var(--rule)}.p2p td:last-child{font:800 1rem ui-monospace,Consolas,monospace;text-align:right}
 .note{color:var(--mute);font-size:.86rem;font-weight:600}.p2p .note{padding:8px 12px;margin:0}
 .intro{max-width:980px}.intro p{margin:0 0 10px}
+.syn{background:#111;color:#fff;font:800 .72rem ui-monospace,Consolas,monospace;letter-spacing:.08em;padding:6px 16px;text-transform:uppercase}
+.sec.wide{grid-column:1/-1}.sec td.v{font-weight:700}.sec.txt td:first-child{width:34%}
+.quick{display:grid;gap:6px}.quick button{text-align:left}
+.lesson{max-width:900px}.lesson h1{margin-bottom:4px}.lesson h3{font-size:1.08rem;font-weight:800;margin:22px 0 6px;border-bottom:2px solid #111;padding-bottom:4px}.lesson p{margin:0 0 10px}.lesson li{margin:4px 0}
+.lesson table{border-collapse:collapse;width:100%;margin:8px 0;font-size:.94rem}.lesson th,.lesson td{border:1px solid var(--rule);padding:6px 9px;text-align:left;vertical-align:top}.lesson th{background:var(--soft)}
+.lesson details{border:1px solid var(--rule);border-radius:4px;margin:6px 0;padding:8px 12px}.lesson summary{font-weight:800;cursor:pointer}.lesson details p{margin:8px 0 0}
+.key{border-left:4px solid #111;background:var(--soft);padding:9px 12px;margin:10px 0;font-weight:700}
 @media (max-width:900px){.shell{grid-template-columns:1fr}aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--rule)}#list{max-height:38vh}main{padding:14px 12px 50px}.p2p .row{grid-template-columns:1fr}.p2p .cell+.cell{border-left:0}.pos .ll{font-size:1.15rem}}
 @media print{header,.disc,aside,.acts,.p2p .x{display:none!important}.shell{display:block}main{padding:0}}
 </style>
@@ -65,7 +72,83 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fold = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  let D = null, F = {}, PORTS = [], cur = null, from = null, to = null, shown = [];
+  let D = null, F = {}, PORTS = [], cur = null, from = null, to = null, shown = [], view = 'port';
+
+  /* ---------- synthetic training ports of the course voyage TR-001. PROPOSED values, pending the owner's approval. Not real places. ---------- */
+  const TRAIN = [
+    { id: 'ALPHA', name: 'Alpha Port', role: 'Departure port of voyage TR-001', lat: 16.0, lon: 125.0, sections: [
+      ['General', [['Status', 'Synthetic training port. It does not exist. The position lies in open sea on a training chart.'], ['Local time', 'UTC+08:00'], ['Port position', "16°00.0'N 125°00.0'E (reference position of the port, not a berth)"], ['Datum', 'WGS 84'], ['Information dated', '1 November 2026. Confirm every item with the agent.']]],
+      ['Pilotage', [['Requirement', 'Compulsory for vessels of 500 GT and over.'], ['Pilot boarding position', "16°03.5'N 125°04.0'E, 1 NM north-east of Alpha Fairway Buoy"], ['Notice', 'ETD or ETA to Alpha Pilots through the agent 24 hours and 2 hours before. Confirm on VHF 1 hour before.'], ['Boarding', 'Speed 6 to 8 kn. Pilot ladder on the lee side, as instructed by the pilot.'], ['Disembarkation outbound', 'At the pilot boarding position.']]],
+      ['Communications', [['Alpha Port Control', 'VHF Ch 12, listening watch Ch 16'], ['Alpha Pilots', 'VHF Ch 14'], ['Reporting', 'Report to Port Control before unberthing and when clear of the fairway buoy.']]],
+      ['Approach channel and turning basin', [['Channel length', '4.2 NM from the fairway buoy to the turning basin'], ['Channel width', '180 m'], ['Maintained depth', '12.5 m below chart datum. Last survey June 2026.'], ['Turning basin', 'Diameter 400 m, depth 12.5 m below chart datum'], ['Speed limit', '8 kn in the channel, 5 kn in the basin']]],
+      ['Berths', [['A1 general cargo', 'Length 200 m. Depth alongside 10.5 m. Maximum draft 9.80 m.'], ['A2 bagged and bulk cargo', 'Length 230 m. Depth alongside 11.8 m. Maximum LOA 200 m, beam 32.3 m, draft 10.50 m.'], ['A3 tankers', 'Length 180 m. Depth alongside 9.5 m.'], ['Air draft', 'No overhead obstructions.']]],
+      ['Tugs and mooring', [['Tugs', 'Three tugs of 40 t bollard pull.'], ['Requirement', 'Two tugs compulsory for vessels over 150 m LOA.'], ['Mooring', 'Shore linesmen. Minimum 4 and 2 each end.']]],
+      ['Anchorage', [['Alpha Outer Anchorage', "Centred 16°05.0'N 125°06.5'E, radius 1 NM"], ['Depth and bottom', '25 to 30 m. Sand and mud. Good holding.'], ['Restriction', 'Anchoring is prohibited within 0.5 NM of the channel.']]],
+      ['Tide, density and weather', [['Tide', 'Semi-diurnal. Springs about 1.8 m and 0.3 m above chart datum. Use the tide tables for the day.'], ['Water density', '1.025 t/m³'], ['Weather limits', 'Berthing and unberthing suspended in sustained wind over 25 kn.'], ['Port under-keel clearance', 'Not less than 1.0 m in the channel and basin.']]] ] },
+    { id: 'BRAVO', name: 'Bravo Port', role: 'Arrival port of voyage TR-001', lat: 20.75, lon: 126.5, sections: [
+      ['General', [['Status', 'Synthetic training port. It does not exist. The position lies in open sea on a training chart.'], ['Local time', 'UTC+08:00'], ['Port position', "20°45.0'N 126°30.0'E (reference position of the port, not a berth)"], ['Datum', 'WGS 84'], ['Information dated', '1 November 2026. Confirm every item with the agent.']]],
+      ['Pilotage', [['Requirement', 'Compulsory for all vessels over 300 GT.'], ['Pilot boarding position', "20°40.0'N 126°27.0'E, Bravo Pilot Station"], ['Notice', 'ETA to Bravo Pilots through the agent 24 hours and 12 hours before arrival. Confirm on VHF 2 hours before.'], ['Boarding', 'Speed 6 kn. Pilot ladder on the lee side, as instructed by the pilot.'], ['Booking', 'A pilot is assigned only after the berth is confirmed by the terminal.']]],
+      ['Communications', [['Bravo Port Control', 'VHF Ch 11, listening watch Ch 16'], ['Bravo Pilots', 'VHF Ch 09'], ['Reporting', 'Call Port Control 10 NM from the pilot station and on passing the breakwater.']]],
+      ['Approach channel and turning basin', [['Channel length', '6.5 NM from the pilot station to the turning basin'], ['Channel width', '150 m'], ['Maintained depth', '11.8 m below chart datum. Last survey August 2026.'], ['Turning basin', 'Diameter 380 m, depth 11.5 m below chart datum'], ['Speed limit', '7 kn in the channel, 4 kn inside the breakwater']]],
+      ['Berths', [['B1 and B2 containers', 'Length 300 m each. Depth alongside 12.0 m.'], ['B3 general cargo', 'Length 190 m. Depth alongside 10.0 m. Maximum draft 9.40 m.'], ['B4 bagged and bulk cargo', 'Length 220 m. Depth alongside 11.0 m. Maximum LOA 195 m, beam 30.0 m, draft 10.30 m.'], ['B5 small craft', 'Length 90 m. Depth alongside 5.0 m.'], ['Air draft', 'No overhead obstructions.']]],
+      ['Restrictions', [['Deep-draught vessels', 'Vessels with a draft over 10.0 m are scheduled by Port Control according to the tide. Confirm the transit time with the agent.'], ['Daylight', 'Night berthing is permitted at B1 to B4.'], ['Port under-keel clearance', 'Not less than 1.0 m in the channel and basin.'], ['Weather limits', 'Pilotage suspended in sustained wind over 30 kn or visibility under 0.5 NM.']]],
+      ['Tugs and mooring', [['Tugs', 'Four tugs of 45 t bollard pull.'], ['Requirement', 'Two tugs compulsory for vessels over 160 m LOA.'], ['Mooring', 'Shore linesmen. Port side alongside is usual at B4.']]],
+      ['Anchorage', [['Bravo Waiting Anchorage', "Centred 20°38.0'N 126°24.0'E, radius 1.5 NM"], ['Depth and bottom', '30 to 40 m. Mud. Good holding.'], ['Restriction', 'Vessels wait at anchor when the berth is not confirmed.']]],
+      ['Tide and density', [['Tide', 'Semi-diurnal. Springs about 2.1 m and 0.4 m above chart datum. Use the tide tables for the day.'], ['Water density', '1.025 t/m³']]] ] }
+  ];
+  const LESSON = `<div class="lesson"><h1>How to use a port guide</h1><p class="sub">Appraisal · publications · ports and pilotage</p>
+    <h3>What a port guide is for</h3>
+    <p>A chart shows the water. A port guide tells you what the port requires of the ship: where the pilot boards, how deep the channel and the berth are, how large a ship the berth accepts, how many tugs are compulsory, which VHF channels to call and how much notice to give.</p>
+    <p>During appraisal the navigating officer uses it for both ends of the voyage, the departure port and the arrival port, each appraised separately.</p>
+    <h3>Where port information comes from</h3>
+    <table><tr><th>Source</th><th>Used for</th></tr>
+      <tr><td>Port guides, such as the Guide to Port Entry</td><td>Berths, limits, pilotage, tugs, documents, port services, in one entry per port.</td></tr>
+      <tr><td>Admiralty List of Radio Signals, Volume 6</td><td>Pilot services, vessel traffic services and port operations: channels, call signs, reporting.</td></tr>
+      <tr><td>Sailing Directions</td><td>Approaches, local dangers, landmarks, general description of the port.</td></tr>
+      <tr><td>World Port Index</td><td>A general index of ports with their positions and main characteristics. The index in this guide.</td></tr>
+      <tr><td>Port authority notices and the agent</td><td>The latest depths, restrictions and berth arrangements.</td></tr></table>
+    <div class="key">A book gives the information as it was when printed. The port authority and the agent give it as it is today. Where they differ, the latest confirmed information is used, and the difference is recorded.</div>
+    <h3>Finding the right port</h3>
+    <p>Search by name, then check the country and the position. Many port names are repeated: this index alone lists five ports named Georgetown and five named Rockport. The UN/LOCODE, two letters for the country and three for the place, identifies one port only: PHMNL is Manila, PHCEB is Cebu.</p>
+    <h3>Four positions that are not the same</h3>
+    <table><tr><th>Position</th><th>What it is</th><th>Use in the plan</th></tr>
+      <tr><td>Port position</td><td>One reference point for the whole port, to about a minute of arc.</td><td>To find the port and for first estimates only. Never a waypoint.</td></tr>
+      <tr><td>Pilot boarding position</td><td>Where the pilot embarks or disembarks.</td><td>The end of the sea passage. The requested ETA normally refers to it.</td></tr>
+      <tr><td>Anchorage</td><td>A designated area with its centre and limits.</td><td>The waiting position and a contingency.</td></tr>
+      <tr><td>Berth</td><td>Where the ship lies alongside.</td><td>The start and the end of a berth-to-berth plan.</td></tr></table>
+    <p>Positions taken from a guide are checked against the largest-scale chart of the port before they are used. A position copied wrongly by one degree is 60 miles away.</p>
+    <h3>What to extract for the appraisal</h3>
+    <table><tr><th>From the entry</th><th>Compare with</th></tr>
+      <tr><td>Berth: maximum LOA, beam, draft, air draft, depth alongside</td><td>The ship's dimensions and her actual arrival draft.</td></tr>
+      <tr><td>Channel and turning basin: depth, width, date of survey</td><td>Draft, squat at the transit speed, tide, required under-keel clearance.</td></tr>
+      <tr><td>Restrictions: tide, daylight, weather, deep-draught rules</td><td>The requested arrival time.</td></tr>
+      <tr><td>Pilotage: compulsory or not, boarding position, notice, boarding speed</td><td>The reporting deadlines already found in the voyage orders.</td></tr>
+      <tr><td>Tugs: number compulsory, bollard pull</td><td>The ship's size and manoeuvring characteristics.</td></tr>
+      <tr><td>VHF channels and reporting points</td><td>The bridge communications plan.</td></tr>
+      <tr><td>Anchorage: position, depth, holding ground</td><td>Contingency if the berth or the pilot is delayed.</td></tr>
+      <tr><td>Water density</td><td>The draft on arrival.</td></tr></table>
+    <h3>Worked example: MV ECADEMY at Bravo Port, berth B4</h3>
+    <p>MV ECADEMY has LOA 189.99 m and beam 28.50 m. Her departure drafts for voyage TR-001 are 9.80 m forward and 10.20 m aft. The Bravo Port entry gives for B4 a maximum LOA of 195 m, a maximum beam of 30.0 m and a maximum draft of 10.30 m.</p>
+    <table><tr><th>Item</th><th>Ship</th><th>Berth limit</th><th>Finding</th></tr>
+      <tr><td>LOA</td><td>189.99 m</td><td>195 m</td><td>Within the limit, margin 5.01 m.</td></tr>
+      <tr><td>Beam</td><td>28.50 m</td><td>30.0 m</td><td>Within the limit.</td></tr>
+      <tr><td>Draft</td><td>Arrival draft not yet calculated</td><td>10.30 m</td><td>Open item. The departure draft of 10.20 m is not the arrival draft.</td></tr>
+      <tr><td>Deep-draught rule</td><td>Draft over 10.0 m is possible</td><td>Scheduled by Port Control by the tide</td><td>Open item. The requested arrival time may not be the transit time.</td></tr>
+      <tr><td>Berth</td><td>B4 provisional</td><td></td><td>Open item from the voyage orders. No pilot is assigned until the berth is confirmed.</td></tr></table>
+    <p>The entry does not close the appraisal. It turns general questions into exact ones for the agent, the Chief Officer and the Master.</p>
+    <h3>Record the source</h3>
+    <p>For every item taken from a guide, record the value, the publication and its date, and the status: confirmed by the agent, or still to be confirmed. This continues the Voyage Orders Review Record started in A01.</p>
+    <h3>Common mistakes</h3>
+    <ul><li>Using the port position as a waypoint.</li><li>Reading the entry of another port with the same name.</li><li>Treating the pilot station ETA as the berth ETA.</li><li>Comparing the berth limit with the summer draft or the departure draft in place of the calculated arrival draft.</li><li>Relying on a depth without its survey date.</li><li>Using an old edition without confirming with the agent.</li></ul>
+    <h3>Practice with the training ports</h3>
+    <p>Open Alpha Port and Bravo Port from the menu, find each answer in the entry, then check it here.</p>
+    <details><summary>1. What is the pilot boarding position at Bravo Port?</summary><p>20°40.0'N 126°27.0'E, Bravo Pilot Station. It is not the port position, 20°45.0'N 126°30.0'E.</p></details>
+    <details><summary>2. How much notice do Bravo Pilots require?</summary><p>ETA through the agent 24 hours and 12 hours before arrival, confirmed on VHF 2 hours before. The voyage orders asked for an ETA to the agent 12 hours before. The port requires more than the orders, so both are recorded.</p></details>
+    <details><summary>3. How many tugs are compulsory for MV ECADEMY at Alpha Port, and why?</summary><p>Two. Her LOA of 189.99 m is over 150 m.</p></details>
+    <details><summary>4. Which VHF channel is used to call Alpha Pilots, and which for Alpha Port Control?</summary><p>Alpha Pilots on Ch 14. Alpha Port Control on Ch 12, with a listening watch on Ch 16.</p></details>
+    <details><summary>5. Where would MV ECADEMY wait if berth B4 is not confirmed on arrival?</summary><p>At Bravo Waiting Anchorage, centred 20°38.0'N 126°24.0'E, radius 1.5 NM, depth 30 to 40 m, mud, good holding.</p></details>
+    <details><summary>6. The channel at Bravo Port is maintained at 11.8 m. What else is needed before saying the ship can transit?</summary><p>The calculated arrival draft, the squat at the transit speed, the height of tide at the time of transit, the date and quality of the survey, and the required under-keel clearance of the port and the company. These are gathered in the tides and under-keel clearance topic and calculated in Planning.</p></details>
+    <p class="note">Alpha Port and Bravo Port are synthetic training ports. Their values are invented for voyage TR-001 and do not describe any real place.</p></div>`;
 
   /* ---------- positions and port-to-port figures ---------- */
   const dm = (v, lat) => { const a = Math.abs(v); let d = Math.floor(a), m = Math.round((a - d) * 600) / 10; if (m >= 60) { d += 1; m = 0; } return String(d).padStart(lat ? 2 : 3, '0') + '°' + m.toFixed(1).padStart(4, '0') + "'" + (lat ? (v < 0 ? 'S' : 'N') : (v < 0 ? 'W' : 'E')); };
@@ -96,7 +179,16 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
     ['Supplies and services', [['Fuel oil', 'supply_fuel_oil', YN], ['Diesel oil', 'supply_diesel_oil', YN], ['Potable water', 'supply_potable_water', YN], ['Provisions', 'supply_provisions', YN], ['Deck supplies', 'supply_deck', YN], ['Engine supplies', 'supply_engine', YN], ['Medical facilities', 'medical_facilities', YN], ['Garbage disposal', 'garbage_disposal', YN], ['Dirty ballast disposal', 'dirty_ballast_disposal', YN]]],
     ['Repairs', [['Repairs', 'repairs', T], ['Dry dock', 'dry_dock', T], ['Marine railway', 'railway', T], ['Electrical repair', 'service_electrical_repair', YN], ['Navigation equipment', 'service_navigation_equipment', YN]]]
   ];
+  function entryTrain(p) {
+    return `<div class="page"><div class="syn">Synthetic training port · voyage TR-001 · not a real place · not for navigation</div><div class="ph"><span>Port guide entry · training</span><span>${esc(p.t.role)}</span></div><div class="pb">
+      <h1>${esc(p.name)}</h1><div class="sub">Training chart · local time UTC+08:00</div>
+      <div class="pos"><div><div class="ll" id="ll">${posText(p)}</div><small>Port position. The pilot boarding position, anchorage and berths are given below.</small></div>
+        <div class="acts"><button class="btn ghost" id="copy">Copy position</button><button class="btn" id="setf">Set as departure</button><button class="btn" id="sett">Set as arrival</button><button class="btn ghost" id="prt">Print</button></div></div>
+      <div class="grid">` + p.t.sections.map(([h, rows]) => `<div class="sec wide txt"><h2>${esc(h)}</h2><table>${rows.map(([l, v]) => `<tr><td>${esc(l)}</td><td class="v">${esc(v)}</td></tr>`).join('')}</table></div>`).join('') + `</div>
+      <p class="note" style="margin:14px 0 0">Written for ECADEMY training. It is laid out like a port guide entry so that the information can be found and extracted in the same way. Draft values, subject to the technical review of the course owner.</p></div></div>`;
+  }
   function entry(p) {
+    if (p.t) return entryTrain(p);
     const g = k => p.get(k), chart = g('standard_nautical_chart');
     return `<div class="page"><div class="ph"><span>World Port Guide · ${esc(g('country_name'))}</span><span>WPI No. ${esc(g('wpi_number'))}</span></div><div class="pb">
       <h1>${esc(p.name)}</h1><div class="sub">${g('alternate_name') ? 'Also: ' + esc(g('alternate_name')) + ' · ' : ''}${esc(g('country_name'))}${g('region') ? ' · ' + esc(g('region')) : ''} · ${esc(g('water_body'))}</div>
@@ -120,8 +212,10 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
   }
   function render() {
     const main = $('main');
+    if (view === 'lesson') { main.innerHTML = LESSON; return; }
     main.innerHTML = p2p() + (cur ? entry(cur) : `<div class="intro"><h1>World Port Guide</h1><p class="sub">${D.count.toLocaleString()} ports in ${D.dict.country_name.length} countries.</p>
       <p>Use this guide the way a port guide is used on board: find the port, read its position, and note the port data needed for the appraisal of a voyage.</p>
+      <p>New to port guides? Start with "How to use a port guide" in the menu. The two training ports of the course voyage, Alpha Port and Bravo Port, have full entries for practice.</p>
       <p>Search by port name, country or UN/LOCODE, or choose a country to browse its ports. Open a port to see its page. Set one port as departure and another as arrival to see both positions together.</p>
       <p class="note">Source: ${esc(D.source)}. The index is a general reference. Positions are of the port, to about one minute of arc. Depths, limits and services change: always confirm with the current charts, sailing directions, port authority and agent.</p></div>`);
     main.querySelectorAll('[data-clr]').forEach(b => b.onclick = () => { if (b.dataset.clr === 'f') from = null; else to = null; render(); });
@@ -132,7 +226,7 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
       $('prt').onclick = () => window.print();
     }
   }
-  function open(p, push) { cur = p; if (push !== false) history.replaceState(null, '', '#wpi=' + p.get('wpi_number')); render(); list(); if (window.innerWidth <= 900) $('main').scrollIntoView(); }
+  function open(p, push) { cur = p; view = 'port'; if (push !== false) history.replaceState(null, '', p.t ? '#port=' + p.t.id : '#wpi=' + p.get('wpi_number')); render(); list(); if (window.innerWidth <= 900) $('main').scrollIntoView(); }
 
   /* ---------- the index: search and browse by country ---------- */
   function list() {
@@ -151,13 +245,19 @@ h1{font-size:1.7rem;margin:0;font-weight:800}h2{font-size:.78rem;letter-spacing:
     PORTS = D.rows.map(r => { const p = { r, name: r[F.name], lat: r[F.latitude], lon: r[F.longitude], ci: r[F.country_name] };
       p.get = k => { const v = r[F[k]]; return v == null ? null : (dict[k] ? dict[k][v] : v); };
       p.key = fold(p.name + ' ' + (r[F.alternate_name] || '') + ' ' + (r[F.locode] || '') + ' ' + dict.country_name[p.ci]); return p; });
+    const TP = TRAIN.map(t => { const p = { t, name: t.name, lat: t.lat, lon: t.lon, ci: -1 }; p.get = k => k === 'country_name' ? 'Synthetic training port' : k === 'locode' ? null : null; p.key = fold(t.name + ' training synthetic tr-001 ' + t.id); return p; });
+    PORTS = TP.concat(PORTS);
     const cs = dict.country_name.map((n, i) => [n, i]).sort((a, b) => a[0].localeCompare(b[0]));
     const n = {}; PORTS.forEach(p => { n[p.ci] = (n[p.ci] || 0) + 1; });
-    $('side').innerHTML = `<span class="lab">Find a port</span><input class="in" id="q" type="search" placeholder="Port name, country or UN/LOCODE" autocomplete="off" aria-label="Find a port">
+    $('side').innerHTML = `<div class="quick"><button class="btn" id="howto">How to use a port guide</button><button class="btn ghost" data-tp="0">Training port: Alpha Port (TR-001 departure)</button><button class="btn ghost" data-tp="1">Training port: Bravo Port (TR-001 arrival)</button></div>
+      <span class="lab">Find a port</span><input class="in" id="q" type="search" placeholder="Port name, country or UN/LOCODE" autocomplete="off" aria-label="Find a port">
       <span class="lab">Browse by country</span><select class="in" id="country" aria-label="Country"><option value="">All countries</option>${cs.map(([nm, i]) => `<option value="${i}">${esc(nm)} (${n[i]})</option>`).join('')}</select>
       <span class="count" id="count"></span><div id="list" role="list"></div>`;
+    $('howto').onclick = () => { view = 'lesson'; cur = null; history.replaceState(null, '', '#how-to'); render(); list(); window.scrollTo(0, 0); };
+    document.querySelectorAll('[data-tp]').forEach(b => b.onclick = () => open(TP[+b.dataset.tp]));
     let t = null; $('q').oninput = () => { clearTimeout(t); t = setTimeout(list, 120); }; $('country').onchange = list;
-    const m = /wpi=(\d+)/.exec(location.hash); const p0 = m && PORTS.find(p => String(p.get('wpi_number')) === m[1]);
+    const m = /wpi=(\d+)/.exec(location.hash), m2 = /port=(\w+)/.exec(location.hash); const p0 = m2 ? TP.find(p => p.t.id === m2[1]) : m && PORTS.find(p => !p.t && String(p.get('wpi_number')) === m[1]);
+    if (location.hash === '#how-to') view = 'lesson';
     list(); if (p0) open(p0, false); else render();
   }
   async function init() {
