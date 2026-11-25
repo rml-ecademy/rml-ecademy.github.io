@@ -165,7 +165,6 @@
           <select id="nvRate" aria-label="Playback speed"><option value="0.75">0.75x</option><option value="1" selected>1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option></select>
           <label><input type="checkbox" id="nvCc"${cc ? ' checked' : ''}> Subtitles</label><label><input type="checkbox" id="nvThru"${through ? ' checked' : ''}> Play through</label></div></div>
         ${s.explain.map(x => `<details><summary>${esc(x.h)}</summary><div>${x.html}</div></details>`).join('')}
-        <details><summary>Narration text</summary><div><p>${s.cues.map(c => esc(c[2])).join(' ')}</p></div></details>
         ${(s.practice || []).length ? `<h3>Practice</h3>` + s.practice.map(wHtml).join('') : ''}
         ${(s.check || []).length ? `<h3>Knowledge check</h3>` + s.check.map(wHtml).join('') : ''}
         <div class="nav"><button class="b ghost" id="nvPrev"${cur === 0 && !X.intro_video ? ' disabled' : ''}>Previous</button><span class="nv-st" id="nvSt"></span>${cur < S.length - 1 ? '<button class="b" id="nvNext">Next section</button>' : '<button class="b" id="nvDone">Back to course map</button>'}</div></div>`;
