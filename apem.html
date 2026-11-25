@@ -68,6 +68,9 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
 .note{color:var(--mute);font-size:.88rem}.err{color:#ffb4a8}
 .sum{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.sum div{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px 14px;min-width:120px}.sum b{display:block;font-size:1.4rem}
 .sum span{color:var(--mute);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,table.rec th{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}table.rec tr.sec th{background:var(--panel2);font-size:.82rem}table.rec tr.sec td{background:var(--panel2)}
+@media (max-width:700px){table.rec{font-size:.84rem}table.rec td,table.rec th{padding:5px 4px}}
+@media print{body{background:#fff;color:#000}header,.disc,.owner,aside,.nav{display:none!important}.shell{display:block}.card{border:0;background:#fff;color:#000}table.rec tr.sec th,table.rec tr.sec td{background:#eee;color:#000}}
 </style>
 </head>
 <body>
@@ -82,6 +85,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
   <main id="main" tabindex="-1"><p class="note">Loading…</p></main>
 </div>
 <script src="assets/supabase-2.117.2.js"></script>
+<script src="apem-narrated.js?v=2"></script>
 <script>
 (() => {
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
@@ -91,6 +95,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const STAGES = [['A','Appraisal'],['P','Planning'],['E','Execution'],['M','Monitoring'],['FINAL','Final assessment']];
   const LABEL = { locked:'Locked', available:'Available', in_progress:'In progress', passed:'Passed', requires_correction:'Requires correction', completed:'Completed', failed:'Failed', revalidation_required:'Revalidation required' };
+  const RECORDS = { A01: 'Voyage Orders Review Record' };   // the student's record produced by each competency's guided exercise
   let MAP = null, current = null; const OPEN = new Set();   // which dropdowns are open (kept when the list redraws)
 
   async function call(body){
@@ -152,20 +157,21 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
         const subs = nodes.filter(n => n.parent_id === p.id).sort((a, b) => a.display_order - b.display_order);
         const PLs = MAP.lessons.filter(l => l.competency_id === p.id || (l.kind === 'exercise' && (l.competency_id || '').startsWith(p.id + '.')))
           .sort((a, b) => (a.kind === 'exercise') - (b.kind === 'exercise') || a.code.localeCompare(b.code));
-        const kup = l => l.kind !== 'exercise' ? 'Knowledge: explanation' : (l.code.endsWith('.G') ? 'Understanding: guided exercise' : 'Proficiency: independent exercise');
+        const kup = l => l.kind === 'narrated' ? 'Knowledge: narrated lesson' : l.kind !== 'exercise' ? 'Knowledge: explanation' : (l.code.endsWith('.G') ? 'Understanding: guided exercise' : 'Proficiency: independent exercise');
         const lstat = l => (nodes.find(n => n.id === l.competency_id) || {}).status;
-        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary>${PLs.length ? `<div class="plk">${PLs.map(l => lstat(l) === 'locked' ? `<button class="lk" disabled>${kup(l)} (locked)</button>` : `<button class="lk${current === l.code ? ' cur' : ''}" data-open="${esc(l.code)}">${kup(l)}</button>`).join('')}</div>` : ''}<ul class="sub">` +
+        h += `<details data-k="${esc(p.id)}"${OPEN.has(p.id) ? ' open' : ''}><summary><span class="cid">${esc(p.id)}</span><span class="ttl">${esc(p.title || '')}</span><span class="st ${esc(p.status)}">${esc(LABEL[p.status] || p.status)}</span></summary>${PLs.length ? `<div class="plk">${PLs.map(l => lstat(l) === 'locked' ? `<button class="lk" disabled>${kup(l)} (locked)</button>` : `<button class="lk${current === l.code ? ' cur' : ''}" data-open="${esc(l.code)}">${kup(l)}</button>`).join('')}${RECORDS[p.id] && PLs.some(l => l.code === p.id + '.G') && lstat({ competency_id: p.id + '.01' }) !== 'locked' ? `<button class="lk${current === 'REC:' + p.id ? ' cur' : ''}" data-rec="${esc(p.id)}">${esc(RECORDS[p.id])}</button>` : ''}</div>` : ''}<ul class="sub">` +
           subs.map(s => { const L = MAP.lessons.find(l => l.competency_id === s.id && l.kind !== 'exercise'); return `<li${current === s.id ? ' class="on"' : ''}><span class="cid">${esc(s.id.slice(-3))}</span><span class="ttl">${esc(s.title || '')}${L && s.status !== 'locked' ? ` <button class="lk" data-open="${esc(L.code)}">Open explanation</button>` : ''}</span><span class="st ${esc(s.status)}">${esc(LABEL[s.status] || s.status)}</span></li>`; }).join('') + '</ul></details>';
       }
       h += '</div></details>';
     }
     side.innerHTML = h; bind();
   }
-  function bind(){ document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openLesson(b.dataset.open));
+  function bind(){ document.querySelectorAll('#side [data-open]').forEach(b => b.onclick = () => openLesson(b.dataset.open));
+    document.querySelectorAll('#side [data-rec]').forEach(b => b.onclick = () => renderRecord(b.dataset.rec));
     document.querySelectorAll('#side details[data-k]').forEach(d => d.addEventListener('toggle', () => { d.open ? OPEN.add(d.dataset.k) : OPEN.delete(d.dataset.k); })); }
 
   function renderOverview(){
-    current = null;
+    stopMedia(); current = null;
     const n = MAP.nodes, par = n.filter(x => x.kind === 'parent'), sub = n.filter(x => x.kind === 'subskill');
     const built = MAP.lessons.filter(l => l.competency_id && l.kind !== 'exercise').length, exb = MAP.lessons.filter(l => l.kind === 'exercise').length;
     $('main').innerHTML = `<h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
@@ -176,23 +182,39 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
   }
 
   /* ---------- lesson viewer (Introduction: no assessment) ---------- */
+  // when a lesson has more than one version, the map lists only the newest (the server serves the newest too)
+  const latestOnly = m => { const top = {}; for (const l of m.lessons) top[l.code] = Math.max(top[l.code] || 0, l.version || 1); m.lessons = m.lessons.filter(l => (l.version || 1) === top[l.code]); return m; };
+  const stopMedia = () => { if (window.APEM_NARRATED) window.APEM_NARRATED.stop(); };
+  // downloads a lesson; an encrypted lesson file is opened with a key the server releases only if the lesson is open for this account
+  async function loadLesson(code){
+    const d = await call({ action: 'lesson', code });
+    const L = d.lesson;
+    if (L.content.enc) {
+      const r = await fetch('apem-content/' + L.content.file, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('The lesson file could not be downloaded. Check your connection and try again.');
+      const buf = new Uint8Array(await r.arrayBuffer());
+      if (new TextDecoder().decode(buf.slice(0, 5)) !== 'APEM1') throw new Error('The lesson file is not valid.');
+      let bin = ''; buf.slice(5, 261).forEach(b => bin += String.fromCharCode(b));
+      const k = await call({ action: 'lesson_key', code, wk: btoa(bin) });
+      const key = await crypto.subtle.importKey('raw', Uint8Array.from(atob(k.key), c => c.charCodeAt(0)), 'AES-GCM', false, ['decrypt']);
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(261, 273) }, key, buf.slice(273));
+      L.content = JSON.parse(new TextDecoder().decode(plain));
+    }
+    return d;
+  }
+  // section progress of narrated lessons, saved to the student's account by a separate small server function
+  // OFF until the owner approves the new table (apem_lesson_progress) and server function (apem-progress): progress is then kept on the device only.
+  const ACCOUNT_PROGRESS = false;
+  async function progressCall(body){ const r = await sb.functions.invoke('apem-progress', { body }); if (r.error) throw new Error('progress'); return r.data; }
   async function openLesson(code){
+    stopMedia();
     const main = $('main'); main.innerHTML = '<p class="note">Loading…</p>';
     try {
-      const d = await call({ action: 'lesson', code });
+      const d = await loadLesson(code);
       current = code; renderSide();
       const L = d.lesson;
-      if (L.content.enc) {   // encrypted lesson file: the server releases its key only if this lesson is open for this account
-        const r = await fetch('apem-content/' + L.content.file, { cache: 'no-cache' });
-        if (!r.ok) throw new Error('The lesson file could not be downloaded. Check your connection and try again.');
-        const buf = new Uint8Array(await r.arrayBuffer());
-        if (new TextDecoder().decode(buf.slice(0, 5)) !== 'APEM1') throw new Error('The lesson file is not valid.');
-        let bin = ''; buf.slice(5, 261).forEach(b => bin += String.fromCharCode(b));
-        const k = await call({ action: 'lesson_key', code, wk: btoa(bin) });
-        const key = await crypto.subtle.importKey('raw', Uint8Array.from(atob(k.key), c => c.charCodeAt(0)), 'AES-GCM', false, ['decrypt']);
-        const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(261, 273) }, key, buf.slice(273));
-        L.content = JSON.parse(new TextDecoder().decode(plain));
-      }
+      if (L.content.kind === 'narrated') return window.APEM_NARRATED.render({ main, esc, lesson: L, admin: !!d.admin, open: openLesson, record: renderRecord, overview: renderOverview,
+        loadProgress: ACCOUNT_PROGRESS ? (c => progressCall({ action: 'get', code: c }).then(x => x.state)) : null, saveProgress: ACCOUNT_PROGRESS ? ((c, state) => progressCall({ action: 'set', code: c, state })) : null });
       if (L.content.kind === 'exercise') { current = code; renderSide(); return renderExercise(L); }
       const S = L.content.screens || [], media = Object.fromEntries((d.media || []).map(m => [m.asset_code, m]));
       let i = 0;
@@ -219,6 +241,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
   const draftSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
 
   async function renderExercise(L) {
+    stopMedia();
     const X = L.content, comp = L.code.split('.')[0], main = $('main');
     let work = {};
     try { work = (await call({ action: 'my_work', code: comp })).steps || {}; } catch (_) {}
@@ -293,7 +316,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
         } else outcome = `<div class="out bad"><b>Not yet correct.</b> ${res.good} of ${res.total} items correct. Attempt ${res.attempt_no}. ` +
           (X.mode === 'practice' ? 'The items marked need attention. Correct them and submit again.' : (res.level === 1 ? 'Each error is marked. Correct and submit again.' : res.level === 2 ? 'The principle for each error is shown.' : 'The method for each error is shown.')) + `</div>`;
       } else if (passed(step.key)) outcome = `<div class="out good">You have already passed this step. Your saved answers are shown.</div>`;
-      main.innerHTML = `<h1>${esc(X.title)}</h1><p class="note">${esc(X.intro)}</p>${chips}
+      main.innerHTML = `<h1>${esc(X.title)}</h1><p class="note">${esc(X.intro)}</p>${X.mode === 'guided' && RECORDS[comp] ? `<p><button class="b ghost sm" id="torec">${esc(RECORDS[comp])}</button></p>` : ''}${chips}
         <div class="ex"><section class="docs" aria-label="Voyage documents">
           <div class="tabs">${X.docs.map(d => `<button class="tab${d.id === docId ? ' on' : ''}" data-doc="${esc(d.id)}">${esc(d.id)}</button>`).join('')}</div>
           <article class="paper"><header><div class="pt">${esc(doc.title)}${doc.rev ? ' · ' + esc(doc.rev) : ''}</div><div class="pm">Reference ${esc(doc.id)} · Issued ${esc(doc.issued)}</div></header>
@@ -323,6 +346,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
       if ($('addrow')) $('addrow').onclick = () => { st.values.register.push({ issue: '', src: '', status: '', action: '', owner: '' }); save(); draw(); };
       if ($('nextstep')) $('nextstep').onclick = () => { si++; last = null; draw(); main.focus(); };
       if ($('tomap')) $('tomap').onclick = renderOverview;
+      if ($('torec')) $('torec').onclick = () => renderRecord(comp);
       $('submit').onclick = async () => {
         const btn = $('submit'); btn.disabled = true; $('busy').textContent = 'Checking…';
         try {
@@ -332,7 +356,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
           const res = await call({ action: 'submit', code: comp, step: step.key, mode: X.mode, key: uuid(), values, sources });
           last = { step: step.key, res };
           if (res.passed) { work[step.key] = { passed: true, input: { values, sources } }; try { localStorage.removeItem('apem:draft:' + step.key); } catch (_) {} }
-          try { MAP = await call({ action: 'map' }); if (MAP.locks_off) LABEL.available = 'Open'; renderSide(); } catch (_) {}
+          try { MAP = latestOnly(await call({ action: 'map' })); if (MAP.locks_off) LABEL.available = 'Open'; renderSide(); } catch (_) {}
           draw(); main.focus();
         } catch (e) { btn.disabled = false; $('busy').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
       };
@@ -340,11 +364,52 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
     draw();
   }
 
+  /* ---------- the student's record: built from the answers the server has checked in the guided exercise ---------- */
+  async function renderRecord(comp){
+    stopMedia();
+    const main = $('main'); main.innerHTML = '<p class="note">Loading…</p>';
+    try {
+      const X = (await loadLesson(comp + '.G')).lesson.content;
+      const work = (await call({ action: 'my_work', code: comp })).steps || {};
+      current = 'REC:' + comp; renderSide();
+      const lab = (name, v) => { const o = (X.options[name] || []).find(x => x[0] === v); return o ? o[1] : v; };
+      const show = (def, v) => {
+        if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return '';
+        switch (def.type) {
+          case 'select': return lab(def.opts, v);
+          case 'multi': return v.map(x => lab(def.opts, x)).join(', ');
+          case 'qty': return v.v === undefined || v.v === '' ? '' : v.v + ' ' + (v.u || '');
+          case 'dt': return v.d && v.t ? `${v.d} ${v.t} local (UTC${v.off || ''})` : '';
+          case 'dtutc': return v.d && v.t ? `${v.d} ${v.t} UTC` : '';
+          default: return String(v);
+        }
+      };
+      let rows = '', reg = null, done = 0;
+      for (const st of X.steps) {
+        const w = work[st.key], inp = (w && w.input) || { values: {}, sources: {} }, ok = !!(w && w.passed); if (ok) done++;
+        rows += `<tr class="sec"><th colspan="3">${esc(st.key)} ${esc(st.title)}</th><td>${ok ? '<span class="st passed">Checked correct</span>' : w ? '<span class="st requires_correction">Requires correction</span>' : '<span class="st">Not yet done</span>'}</td></tr>`;
+        for (const f of st.fields) {
+          if (f === 'register') { if (Array.isArray(inp.values.register) && (ok || !reg)) reg = { rows: inp.values.register, ok, step: st.key }; continue; }
+          const def = X.fields[f], val = show(def, inp.values[f]);
+          rows += `<tr><td>${esc(def.label)}</td><td>${val ? esc(val) : '<span class="note">Not recorded</span>'}</td><td>${esc((inp.sources || {})[f] || '')}</td><td></td></tr>`;
+        }
+      }
+      const regHtml = reg && reg.rows.length ? `<table class="rec"><tr class="sec"><th>Issue</th><th>Source</th><th>Status</th><th>Action</th><th>Responsible</th></tr>` + reg.rows.map(r =>
+        `<tr><td>${esc(lab('issues', r.issue))}</td><td>${esc(r.src || '')}</td><td>${esc(lab('issue_status', r.status))}</td><td>${esc(r.action ? lab('actions', r.action) : '')}</td><td>${esc(r.owner ? lab('owners', r.owner) : '')}</td></tr>`).join('') + `</table>` : '<p class="note">No issues recorded yet.</p>';
+      main.innerHTML = `<h1>${esc(RECORDS[comp])}</h1><p class="note">MV ECADEMY, voyage TR-001. Built from your answers in the guided exercise. ${done} of ${X.steps.length} steps checked correct by the server.</p>
+        <div class="card" style="max-width:1000px"><table class="rec"><tr class="sec"><th>Item</th><th>Finding</th><th>Source document</th><th>Status</th></tr>${rows}</table>
+        <h2 style="margin-top:18px">Action register</h2>${regHtml}
+        <p class="note" style="margin-top:14px">This record is the first part of your voyage appraisal report. It is kept with your account and carried forward into the remaining Appraisal modules. Open items stay open until they are verified. It is not a passage plan and not permission to sail.</p></div>
+        <div class="nav"><button class="b" id="recex">${done === X.steps.length ? 'Review the guided exercise' : 'Continue the guided exercise'}</button><button class="b ghost" id="recpr">Print</button><span class="count"></span><button class="b ghost" id="recmap">Back to course map</button></div>`;
+      $('recex').onclick = () => openLesson(comp + '.G'); $('recpr').onclick = () => window.print(); $('recmap').onclick = renderOverview;
+    } catch (e) { main.innerHTML = `<div class="card"><p class="err">${esc(e.message)}</p><button class="b ghost" id="bk">Back to course map</button></div>`; $('bk').onclick = renderOverview; }
+  }
+
   async function init(){
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { $('side').innerHTML = ''; $('main').innerHTML = '<div class="card"><h2>Sign in required</h2><p>Sign in to ECADEMY first, then open APEM again from the Second Officer menu.</p><p><a href="index.html">Go to ECADEMY</a></p></div>'; return; }
     try {
-      MAP = await call({ action: 'map' });
+      MAP = latestOnly(await call({ action: 'map' }));
       if (MAP.admin) { $('ownerBar').hidden = false; $('ownerBar').textContent = 'Owner preview: visible to admin accounts only until each lesson is released.' + (MAP.locks_off ? ' Locks are OFF for your admin account during development. Students remain locked.' : ''); if (MAP.locks_off) LABEL.available = 'Open'; }
       renderOverview();
     } catch (e) { $('side').innerHTML = ''; $('main').innerHTML = `<div class="card"><p class="err">${esc(e.message)}</p><p><a href="index.html">Back to ECADEMY</a></p></div>`; }
