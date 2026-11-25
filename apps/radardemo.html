@@ -183,11 +183,10 @@
         border: 1px solid #345046;
         padding: 10px;
       }
-      .target.compact{padding:5px 8px}
-      .target.compact .data{padding:2px 0;font:10.5px monospace}
-      .target.compact .acq{margin-top:5px;padding:5px}
-      .acqcards{display:grid;gap:5px;margin-top:5px}.acqcards .target{cursor:pointer}
-      .acqbelow{width:100%;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;margin-top:0}.acqbelow[hidden],html.linked .acqbelow{display:none}
+      .target.compact{padding:4px 8px}
+      .target.compact .data{padding:1px 0;font:10.5px monospace}
+      .target.compact .acq{margin-top:4px;padding:4px}
+      .acqcards{display:grid;gap:4px;margin-top:4px}.acqcards .target{cursor:pointer}
       .target.danger {
         border-color: #ff4b4b;
       }
@@ -996,21 +995,19 @@
       // three or more acquired targets: every target keeps its own data card in the same layout, made smaller so that up to five fit
       ["ttc","tstw","ttc2","tstw2"].forEach(i => { $(i).parentElement.style.display = "none"; });
       const acqBox = document.createElement("div"); acqBox.id = "acqlist"; acqBox.className = "acqcards"; acqBox.hidden = true; secondCard.after(acqBox);
-      // the fourth and fifth acquired targets go in the free space under the radar picture, two side by side
-      const acqBelow = document.createElement("div"); acqBelow.id = "acqbelow"; acqBelow.className = "acqcards acqbelow"; acqBelow.hidden = true; document.querySelector(".ppiwrap").append(acqBelow);
-      for (const box of [acqBox, acqBelow]) box.addEventListener("pointerdown", e => { const r = e.target.closest("[data-acq]"); if (r && r.dataset.acq !== selected) { selected = r.dataset.acq; update(); } });
+      // every acquired target is listed here, in TARGET INFO (owner: all in one place; cards under the radar picture were off-screen on large displays)
+      for (const box of [acqBox]) box.addEventListener("pointerdown", e => { const r = e.target.closest("[data-acq]"); if (r && r.dataset.acq !== selected) { selected = r.dataset.acq; update(); } });
       function updateAcqList() {
         const all = targets.filter(t => t.tracked), many = all.length >= 3, list = all.filter(t => t.id !== selected);
         acqBox.hidden = !many; $("target").classList.toggle("compact", many);
-        if (!many) { acqBelow.hidden = true; return false; }
+        if (!many) return false;
         const row = (l, v) => '<div class="data"><span>' + l + '</span><b>' + v + '</b></div>';
         const card = t => {
           const a = A(t), sea = stabilization === "SEA", v = sea ? targetWater(t) : targetGround(t), spd = Math.hypot(v.x, v.y) * 3600, bad = a.tcpa > 0 && a.tcpa < num("tcpalimit") && a.cpa < num("cpalimit");
           return '<div class="target compact' + (bad ? " danger" : "") + '" data-acq="' + t.id + '">' + row("TARGET", t.id + " · " + t.name) + '<div class="grid">' +
             row("BRG", F(a.b) + "°") + row("RNG", F(a.r) + " NM") + row(sea ? "CTW" : "COG", spd > .01 ? bearingText(B(v.x, v.y)) : "---") + row(sea ? "STW" : "SOG", F(spd, 2) + " kn") + row("CPA", F(a.cpa, 2) + " NM") + row("TCPA", F(a.tcpa) + " min") + '</div></div>';
         };
-        acqBox.innerHTML = list.slice(0, 2).map(card).join("");
-        acqBelow.innerHTML = list.slice(2).map(card).join(""); acqBelow.hidden = list.length <= 2;
+        acqBox.innerHTML = list.map(card).join("");
         return true;
       }
       let secondTarget = "T02";
