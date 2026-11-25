@@ -1,0 +1,335 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" preserveAspectRatio="xMidYMid slice">
+<rect width="1600" height="1100" fill="#ffffff"/>
+<path d="M637 128C607 190 579 224 555 281C531 337 541 423 494 466C448 509 350 528 275 540C199 551 116 549 40 536C-35 524 -120 502 -178 464C-236 426 -259 363 -308 307C-356 251 -456 193 -471 128C-486 62 -436 -20 -397 -86C-359 -152 -309 -226 -239 -270C-170 -314 -63 -354 21 -350C105 -347 177 -262 264 -248C352 -233 468 -288 546 -262C623 -237 715 -158 730 -93C746 -28 666 65 637 128Z" fill="#f1f8fc" stroke="#b9d0de" stroke-width="1"/>
+<path d="M2187 252C2173 320 2051 386 1991 440C1931 494 1891 548 1827 577C1763 607 1687 582 1607 617C1528 652 1428 788 1350 788C1273 787 1209 668 1143 614C1076 560 1002 526 950 465C898 405 818 319 828 252C839 185 961 123 1015 64C1069 6 1086 -79 1153 -99C1219 -120 1338 -58 1414 -61C1490 -64 1546 -123 1609 -119C1672 -115 1716 -64 1794 -39C1871 -14 2008 -16 2073 33C2139 81 2200 184 2187 252Z" fill="#f1f8fc" stroke="#b9d0de" stroke-width="1"/>
+<path d="M2169 1076C2152 1162 2064 1253 1993 1314C1922 1376 1829 1423 1743 1446C1658 1469 1562 1447 1482 1451C1402 1456 1332 1482 1262 1472C1193 1461 1172 1405 1065 1387C958 1370 691 1419 621 1367C551 1315 635 1169 646 1076C656 984 628 874 685 811C743 747 902 732 993 693C1084 654 1142 607 1232 576C1323 545 1428 509 1538 506C1647 504 1796 512 1889 561C1981 610 2044 715 2091 800C2138 886 2185 991 2169 1076Z" fill="#f1f8fc" stroke="#b9d0de" stroke-width="1"/>
+<path d="M591 1013C561 1069 506 1101 474 1146C441 1191 438 1243 398 1284C359 1325 301 1366 236 1391C171 1416 87 1437 8 1435C-71 1434 -185 1423 -238 1381C-291 1339 -295 1243 -309 1182C-323 1121 -309 1075 -324 1013C-339 951 -416 870 -400 810C-385 749 -298 693 -231 653C-164 613 -74 564 2 569C78 573 152 656 224 679C296 703 361 687 432 709C504 731 627 760 654 811C680 862 621 958 591 1013Z" fill="#f1f8fc" stroke="#b9d0de" stroke-width="1"/>
+<path d="M956 562C952 585 939 606 923 623C907 639 884 652 859 660C835 667 801 674 777 667C753 661 733 640 716 623C699 605 675 584 673 562C671 541 688 514 705 496C721 477 747 462 775 452C803 442 843 429 872 435C900 441 935 466 949 488C963 509 960 540 956 562Z" fill="#f1f8fc" stroke="#b9d0de" stroke-width="1"/>
+<path d="M552 125C527 176 504 205 484 252C464 298 473 369 434 405C395 441 314 456 252 466C189 476 120 474 58 463C-5 453 -76 435 -124 403C-172 372 -191 319 -231 273C-271 226 -354 179 -366 125C-378 70 -337 2 -305 -52C-273 -107 -232 -168 -174 -205C-116 -241 -28 -275 41 -271C111 -268 170 -198 243 -186C315 -174 412 -220 476 -198C541 -177 617 -112 629 -58C642 -5 576 73 552 125Z" fill="#e6f2f9" stroke="#b9d0de" stroke-width="1"/>
+<path d="M2068 255C2057 312 1955 366 1906 411C1856 456 1823 500 1770 525C1718 549 1654 529 1588 558C1522 587 1440 699 1375 699C1311 699 1258 600 1203 555C1148 511 1087 482 1044 432C1000 382 934 311 943 255C952 200 1053 148 1097 100C1142 51 1156 -19 1211 -36C1266 -53 1365 -2 1428 -4C1491 -7 1537 -55 1590 -52C1642 -49 1679 -7 1743 14C1807 35 1920 33 1974 73C2028 114 2080 199 2068 255Z" fill="#e6f2f9" stroke="#b9d0de" stroke-width="1"/>
+<path d="M2035 1070C2021 1141 1948 1216 1889 1267C1830 1318 1753 1357 1682 1376C1612 1395 1532 1377 1466 1380C1399 1384 1341 1406 1284 1397C1226 1389 1209 1342 1120 1327C1032 1313 810 1353 752 1310C695 1267 764 1147 773 1070C781 993 758 903 806 850C854 797 985 785 1061 752C1136 720 1184 681 1259 655C1334 629 1421 599 1512 597C1603 595 1726 602 1803 643C1879 684 1932 770 1970 841C2009 912 2048 999 2035 1070Z" fill="#e6f2f9" stroke="#b9d0de" stroke-width="1"/>
+<path d="M509 1012C484 1058 438 1085 411 1122C384 1159 381 1202 349 1236C316 1270 268 1304 214 1325C161 1346 91 1363 25 1362C-40 1360 -135 1352 -178 1317C-222 1282 -226 1203 -237 1152C-249 1101 -237 1063 -250 1012C-263 961 -326 893 -313 843C-300 793 -228 747 -173 713C-117 680 -43 640 20 643C83 647 145 716 204 735C264 755 318 741 377 760C436 778 538 802 560 845C582 887 533 966 509 1012Z" fill="#e6f2f9" stroke="#b9d0de" stroke-width="1"/>
+<path d="M933 561C929 580 919 598 906 611C892 625 873 636 853 642C832 648 804 654 784 648C765 643 748 626 734 611C720 597 700 579 699 561C697 544 710 521 724 506C738 491 760 479 783 470C806 462 839 451 863 456C887 460 915 482 927 499C938 517 936 543 933 561Z" fill="#e6f2f9" stroke="#b9d0de" stroke-width="1"/>
+<path d="M481 122C461 165 441 188 425 227C409 266 415 325 383 354C351 384 284 397 233 405C181 413 124 411 72 402C20 394 -38 379 -78 353C-118 326 -133 283 -167 245C-200 206 -268 167 -279 122C-289 77 -255 21 -228 -24C-202 -70 -168 -120 -120 -151C-72 -181 1 -208 58 -206C116 -203 165 -145 225 -135C285 -125 365 -163 418 -145C472 -128 535 -74 545 -29C555 15 501 79 481 122Z" fill="#d8eaf5" stroke="#b9d0de" stroke-width="1"/>
+<path d="M1969 258C1960 304 1876 350 1835 387C1794 424 1767 461 1723 481C1679 501 1627 484 1572 508C1518 532 1449 625 1396 625C1343 625 1299 543 1254 506C1208 469 1157 445 1122 404C1086 363 1031 304 1038 258C1046 212 1129 169 1166 129C1203 89 1215 31 1260 17C1306 2 1387 45 1440 43C1492 41 1530 1 1573 3C1617 6 1647 41 1700 58C1753 75 1847 74 1892 107C1937 141 1979 211 1969 258Z" fill="#d8eaf5" stroke="#b9d0de" stroke-width="1"/>
+<path d="M1923 1064C1912 1123 1851 1185 1802 1228C1754 1270 1690 1302 1631 1318C1573 1333 1507 1318 1452 1321C1397 1324 1349 1343 1301 1336C1254 1328 1239 1290 1166 1278C1093 1266 910 1299 862 1263C814 1228 871 1128 878 1064C886 1001 866 926 906 882C945 838 1054 828 1117 801C1179 775 1219 743 1281 721C1343 700 1415 675 1490 673C1565 672 1668 677 1731 711C1794 745 1838 816 1870 875C1902 934 1934 1006 1923 1064Z" fill="#d8eaf5" stroke="#b9d0de" stroke-width="1"/>
+<path d="M440 1011C419 1049 381 1071 359 1102C337 1133 334 1169 307 1196C280 1224 241 1252 196 1270C152 1287 94 1301 40 1300C-14 1299 -93 1292 -129 1263C-165 1234 -168 1169 -178 1127C-188 1085 -178 1053 -188 1011C-199 968 -251 912 -240 871C-230 830 -170 791 -124 764C-78 736 -17 703 35 706C87 709 138 766 188 782C237 798 281 787 331 802C380 817 464 837 482 872C500 907 460 973 440 1011Z" fill="#d8eaf5" stroke="#b9d0de" stroke-width="1"/>
+<path d="M913 561C911 576 902 591 891 602C880 613 864 622 847 627C830 633 807 637 791 633C774 628 761 614 749 602C737 590 721 575 720 561C718 546 729 527 741 515C753 502 770 492 789 485C808 478 836 469 855 473C875 477 899 495 908 509C918 524 916 545 913 561Z" fill="#d8eaf5" stroke="#b9d0de" stroke-width="1"/>
+<path d="M424 120C407 156 391 175 377 208C364 240 370 289 343 313C316 338 260 349 217 356C174 362 127 361 83 354C40 346 -8 334 -42 312C-75 290 -88 254 -116 222C-143 190 -200 157 -209 120C-217 83 -189 36 -167 -2C-145 -40 -116 -82 -76 -107C-37 -132 24 -155 72 -153C120 -151 161 -103 211 -94C261 -86 328 -117 372 -103C416 -88 469 -43 478 -6C486 31 441 84 424 120Z" fill="#f3ecd2" stroke="#a79f86" stroke-width="1.4"/>
+<path d="M1891 260C1883 299 1813 336 1779 367C1744 398 1722 429 1685 446C1649 463 1605 449 1560 469C1514 489 1457 566 1413 566C1368 566 1332 497 1294 467C1256 436 1214 416 1184 382C1154 347 1108 298 1114 260C1121 222 1190 186 1221 153C1252 119 1262 71 1300 59C1338 47 1405 83 1449 81C1492 79 1524 46 1561 48C1597 50 1622 79 1666 93C1710 108 1788 107 1826 135C1863 162 1898 221 1891 260Z" fill="#f3ecd2" stroke="#a79f86" stroke-width="1.4"/>
+<path d="M1833 1060C1824 1109 1774 1161 1733 1196C1693 1231 1639 1258 1590 1271C1542 1284 1487 1272 1441 1274C1395 1277 1355 1292 1316 1286C1276 1280 1264 1248 1203 1238C1142 1228 989 1256 949 1226C909 1196 957 1113 963 1060C969 1007 953 945 986 908C1019 872 1110 863 1162 841C1214 819 1247 792 1298 774C1350 756 1410 736 1473 734C1535 733 1621 738 1673 766C1726 794 1762 853 1789 902C1816 951 1843 1011 1833 1060Z" fill="#f3ecd2" stroke="#a79f86" stroke-width="1.4"/>
+<path d="M384 1010C367 1042 335 1060 317 1086C299 1112 297 1141 274 1165C252 1188 219 1211 182 1226C144 1240 96 1252 51 1251C6 1250 -59 1244 -89 1220C-120 1196 -122 1141 -130 1106C-138 1071 -130 1045 -139 1010C-147 975 -191 928 -182 894C-173 859 -124 827 -85 804C-47 781 4 753 47 756C91 758 133 806 174 819C215 832 253 823 294 836C334 848 405 865 420 894C435 923 401 978 384 1010Z" fill="#f3ecd2" stroke="#a79f86" stroke-width="1.4"/>
+<path d="M898 560C896 573 888 585 879 594C870 604 857 611 843 616C829 620 809 624 796 620C782 616 771 604 761 594C751 584 737 572 736 560C735 548 745 532 754 522C764 511 779 503 794 497C810 491 833 484 850 487C866 490 886 505 894 517C902 529 900 547 898 560Z" fill="#f3ecd2" stroke="#a79f86" stroke-width="1.4"/>
+<line x1="100" y1="0" x2="100" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="104" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°10'E</text>
+<line x1="300" y1="0" x2="300" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="304" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°15'E</text>
+<line x1="500" y1="0" x2="500" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="504" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°20'E</text>
+<line x1="700" y1="0" x2="700" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="704" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°25'E</text>
+<line x1="900" y1="0" x2="900" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="904" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°30'E</text>
+<line x1="1100" y1="0" x2="1100" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="1104" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°35'E</text>
+<line x1="1300" y1="0" x2="1300" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="1304" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°40'E</text>
+<line x1="1500" y1="0" x2="1500" y2="1100" stroke="#d5dde3" stroke-width="1"/>
+<text x="1504" y="14" font-size="11" fill="#8d9aa4" font-family="Arial">121°45'E</text>
+<line x1="0" y1="100" x2="1600" y2="100" stroke="#d5dde3" stroke-width="1"/>
+<text x="4" y="96" font-size="11" fill="#8d9aa4" font-family="Arial">13°50'N</text>
+<line x1="0" y1="300" x2="1600" y2="300" stroke="#d5dde3" stroke-width="1"/>
+<text x="4" y="296" font-size="11" fill="#8d9aa4" font-family="Arial">13°45'N</text>
+<line x1="0" y1="500" x2="1600" y2="500" stroke="#d5dde3" stroke-width="1"/>
+<text x="4" y="496" font-size="11" fill="#8d9aa4" font-family="Arial">13°40'N</text>
+<line x1="0" y1="700" x2="1600" y2="700" stroke="#d5dde3" stroke-width="1"/>
+<text x="4" y="696" font-size="11" fill="#8d9aa4" font-family="Arial">13°35'N</text>
+<line x1="0" y1="900" x2="1600" y2="900" stroke="#d5dde3" stroke-width="1"/>
+<text x="4" y="896" font-size="11" fill="#8d9aa4" font-family="Arial">13°30'N</text>
+<text x="28" y="359" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">4</tspan></text>
+<text x="29" y="430" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">14<tspan font-size="8" dy="3">8</tspan></text>
+<text x="26" y="492" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">7</tspan></text>
+<text x="24" y="567" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">58<tspan font-size="8" dy="3">7</tspan></text>
+<text x="29" y="612" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">8</tspan></text>
+<text x="52" y="699" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">9</tspan></text>
+<text x="24" y="741" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">2</tspan></text>
+<text x="118" y="443" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">3</tspan></text>
+<text x="121" y="505" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">4</tspan></text>
+<text x="130" y="567" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">62<tspan font-size="8" dy="3">9</tspan></text>
+<text x="125" y="634" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">37<tspan font-size="8" dy="3">2</tspan></text>
+<text x="112" y="688" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">33<tspan font-size="8" dy="3">0</tspan></text>
+<text x="114" y="761" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">9<tspan font-size="8" dy="3">8</tspan></text>
+<text x="183" y="380" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">9</tspan></text>
+<text x="180" y="445" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">0</tspan></text>
+<text x="203" y="498" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">3</tspan></text>
+<text x="203" y="551" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">73<tspan font-size="8" dy="3">3</tspan></text>
+<text x="182" y="616" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">98<tspan font-size="8" dy="3">4</tspan></text>
+<text x="192" y="701" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">24<tspan font-size="8" dy="3">6</tspan></text>
+<text x="207" y="754" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">6</tspan></text>
+<text x="278" y="357" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">9</tspan></text>
+<text x="279" y="421" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">6</tspan></text>
+<text x="282" y="494" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">37<tspan font-size="8" dy="3">1</tspan></text>
+<text x="269" y="560" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">81<tspan font-size="8" dy="3">5</tspan></text>
+<text x="278" y="635" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">94<tspan font-size="8" dy="3">2</tspan></text>
+<text x="289" y="678" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">45<tspan font-size="8" dy="3">2</tspan></text>
+<text x="267" y="759" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">2</tspan></text>
+<text x="278" y="810" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">3</tspan></text>
+<text x="362" y="307" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">2</tspan></text>
+<text x="355" y="360" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">5</tspan></text>
+<text x="354" y="445" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">33<tspan font-size="8" dy="3">6</tspan></text>
+<text x="363" y="512" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">82<tspan font-size="8" dy="3">1</tspan></text>
+<text x="367" y="549" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">98<tspan font-size="8" dy="3">3</tspan></text>
+<text x="346" y="617" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">50<tspan font-size="8" dy="3">5</tspan></text>
+<text x="340" y="696" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">27<tspan font-size="8" dy="3">7</tspan></text>
+<text x="365" y="744" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">24<tspan font-size="8" dy="3">0</tspan></text>
+<text x="366" y="804" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">1</tspan></text>
+<text x="433" y="171" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">1</tspan></text>
+<text x="444" y="230" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">0</tspan></text>
+<text x="447" y="314" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">1</tspan></text>
+<text x="445" y="359" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">8</tspan></text>
+<text x="433" y="438" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">5</tspan></text>
+<text x="420" y="495" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">75<tspan font-size="8" dy="3">5</tspan></text>
+<text x="418" y="567" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">54<tspan font-size="8" dy="3">0</tspan></text>
+<text x="447" y="632" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">58<tspan font-size="8" dy="3">4</tspan></text>
+<text x="420" y="689" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">51<tspan font-size="8" dy="3">4</tspan></text>
+<text x="446" y="745" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">34<tspan font-size="8" dy="3">8</tspan></text>
+<text x="422" y="811" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">1</tspan></text>
+<text x="434" y="873" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">8</tspan></text>
+<text x="419" y="1017" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">12<tspan font-size="8" dy="3">3</tspan></text>
+<text x="443" y="1065" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">9</tspan></text>
+<text x="507" y="37" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">2</tspan></text>
+<text x="516" y="125" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">6</tspan></text>
+<text x="520" y="173" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">6</tspan></text>
+<text x="514" y="239" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">0</tspan></text>
+<text x="490" y="319" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">3</tspan></text>
+<text x="504" y="381" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">33<tspan font-size="8" dy="3">0</tspan></text>
+<text x="495" y="440" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">30<tspan font-size="8" dy="3">7</tspan></text>
+<text x="516" y="490" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">89<tspan font-size="8" dy="3">2</tspan></text>
+<text x="490" y="551" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">78<tspan font-size="8" dy="3">5</tspan></text>
+<text x="507" y="619" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">73<tspan font-size="8" dy="3">5</tspan></text>
+<text x="506" y="679" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">70<tspan font-size="8" dy="3">4</tspan></text>
+<text x="515" y="766" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">32<tspan font-size="8" dy="3">3</tspan></text>
+<text x="514" y="806" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">27<tspan font-size="8" dy="3">3</tspan></text>
+<text x="490" y="877" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">5</tspan></text>
+<text x="493" y="960" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">8</tspan></text>
+<text x="523" y="1004" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">1</tspan></text>
+<text x="513" y="1072" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">33<tspan font-size="8" dy="3">9</tspan></text>
+<text x="591" y="60" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">27<tspan font-size="8" dy="3">8</tspan></text>
+<text x="595" y="110" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">9</tspan></text>
+<text x="571" y="172" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">26<tspan font-size="8" dy="3">7</tspan></text>
+<text x="596" y="231" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">100<tspan font-size="8" dy="3">8</tspan></text>
+<text x="584" y="304" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">91<tspan font-size="8" dy="3">3</tspan></text>
+<text x="572" y="364" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">59<tspan font-size="8" dy="3">2</tspan></text>
+<text x="593" y="441" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">64<tspan font-size="8" dy="3">3</tspan></text>
+<text x="588" y="506" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">67<tspan font-size="8" dy="3">1</tspan></text>
+<text x="588" y="548" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">57<tspan font-size="8" dy="3">5</tspan></text>
+<text x="597" y="617" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">94<tspan font-size="8" dy="3">9</tspan></text>
+<text x="575" y="685" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">79<tspan font-size="8" dy="3">1</tspan></text>
+<text x="585" y="744" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">79<tspan font-size="8" dy="3">0</tspan></text>
+<text x="570" y="823" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">27<tspan font-size="8" dy="3">5</tspan></text>
+<text x="600" y="874" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">25<tspan font-size="8" dy="3">3</tspan></text>
+<text x="574" y="956" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">6</tspan></text>
+<text x="594" y="1019" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">64<tspan font-size="8" dy="3">8</tspan></text>
+<text x="587" y="1069" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">101<tspan font-size="8" dy="3">2</tspan></text>
+<text x="649" y="51" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">32<tspan font-size="8" dy="3">2</tspan></text>
+<text x="673" y="119" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">82<tspan font-size="8" dy="3">9</tspan></text>
+<text x="679" y="182" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">49<tspan font-size="8" dy="3">1</tspan></text>
+<text x="669" y="239" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">45<tspan font-size="8" dy="3">4</tspan></text>
+<text x="650" y="293" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">50<tspan font-size="8" dy="3">2</tspan></text>
+<text x="668" y="356" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">101<tspan font-size="8" dy="3">9</tspan></text>
+<text x="650" y="425" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">70<tspan font-size="8" dy="3">7</tspan></text>
+<text x="666" y="486" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">48<tspan font-size="8" dy="3">8</tspan></text>
+<text x="647" y="556" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">59<tspan font-size="8" dy="3">2</tspan></text>
+<text x="664" y="616" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">101<tspan font-size="8" dy="3">1</tspan></text>
+<text x="656" y="692" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">70<tspan font-size="8" dy="3">7</tspan></text>
+<text x="654" y="751" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">73<tspan font-size="8" dy="3">2</tspan></text>
+<text x="672" y="813" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">80<tspan font-size="8" dy="3">8</tspan></text>
+<text x="670" y="874" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">95<tspan font-size="8" dy="3">6</tspan></text>
+<text x="660" y="960" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">83<tspan font-size="8" dy="3">7</tspan></text>
+<text x="664" y="1000" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">35<tspan font-size="8" dy="3">8</tspan></text>
+<text x="674" y="1067" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">34<tspan font-size="8" dy="3">7</tspan></text>
+<text x="739" y="44" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">90<tspan font-size="8" dy="3">4</tspan></text>
+<text x="741" y="107" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">45<tspan font-size="8" dy="3">7</tspan></text>
+<text x="756" y="167" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">58<tspan font-size="8" dy="3">4</tspan></text>
+<text x="743" y="230" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">63<tspan font-size="8" dy="3">5</tspan></text>
+<text x="756" y="307" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">84<tspan font-size="8" dy="3">3</tspan></text>
+<text x="734" y="382" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">66<tspan font-size="8" dy="3">7</tspan></text>
+<text x="752" y="425" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">75<tspan font-size="8" dy="3">4</tspan></text>
+<text x="729" y="502" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">9</tspan></text>
+<text x="740" y="573" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">4</tspan></text>
+<text x="744" y="616" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">6</tspan></text>
+<text x="740" y="687" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">66<tspan font-size="8" dy="3">4</tspan></text>
+<text x="753" y="760" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">47<tspan font-size="8" dy="3">5</tspan></text>
+<text x="745" y="811" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">9</tspan></text>
+<text x="744" y="882" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">36<tspan font-size="8" dy="3">0</tspan></text>
+<text x="747" y="934" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">2</tspan></text>
+<text x="729" y="1017" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">8</tspan></text>
+<text x="737" y="1084" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">24<tspan font-size="8" dy="3">8</tspan></text>
+<text x="823" y="53" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">50<tspan font-size="8" dy="3">4</tspan></text>
+<text x="810" y="109" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">89<tspan font-size="8" dy="3">3</tspan></text>
+<text x="828" y="183" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">67<tspan font-size="8" dy="3">2</tspan></text>
+<text x="830" y="250" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">86<tspan font-size="8" dy="3">0</tspan></text>
+<text x="816" y="319" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">57<tspan font-size="8" dy="3">5</tspan></text>
+<text x="836" y="374" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">76<tspan font-size="8" dy="3">9</tspan></text>
+<text x="810" y="431" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">52<tspan font-size="8" dy="3">9</tspan></text>
+<text x="820" y="701" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">96<tspan font-size="8" dy="3">6</tspan></text>
+<text x="816" y="766" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">24<tspan font-size="8" dy="3">2</tspan></text>
+<text x="820" y="816" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">37<tspan font-size="8" dy="3">3</tspan></text>
+<text x="816" y="868" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">6</tspan></text>
+<text x="828" y="943" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">4</tspan></text>
+<text x="812" y="1006" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">15<tspan font-size="8" dy="3">7</tspan></text>
+<text x="803" y="1080" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">0</tspan></text>
+<text x="895" y="52" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">62<tspan font-size="8" dy="3">0</tspan></text>
+<text x="908" y="118" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">85<tspan font-size="8" dy="3">1</tspan></text>
+<text x="895" y="182" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">100<tspan font-size="8" dy="3">5</tspan></text>
+<text x="884" y="235" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">8</tspan></text>
+<text x="905" y="302" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">37<tspan font-size="8" dy="3">3</tspan></text>
+<text x="882" y="382" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">92<tspan font-size="8" dy="3">7</tspan></text>
+<text x="893" y="431" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">96<tspan font-size="8" dy="3">7</tspan></text>
+<text x="912" y="497" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">7</tspan></text>
+<text x="910" y="548" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">4</tspan></text>
+<text x="914" y="636" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">50<tspan font-size="8" dy="3">1</tspan></text>
+<text x="900" y="697" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">88<tspan font-size="8" dy="3">9</tspan></text>
+<text x="905" y="762" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">4</tspan></text>
+<text x="916" y="810" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">3</tspan></text>
+<text x="901" y="872" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">4</tspan></text>
+<text x="892" y="956" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">0</tspan></text>
+<text x="910" y="1013" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">6</tspan></text>
+<text x="892" y="1076" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">5</tspan></text>
+<text x="975" y="49" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">43<tspan font-size="8" dy="3">9</tspan></text>
+<text x="976" y="101" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">75<tspan font-size="8" dy="3">2</tspan></text>
+<text x="964" y="166" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">27<tspan font-size="8" dy="3">8</tspan></text>
+<text x="977" y="229" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">21<tspan font-size="8" dy="3">0</tspan></text>
+<text x="960" y="304" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">28<tspan font-size="8" dy="3">0</tspan></text>
+<text x="985" y="371" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">0</tspan></text>
+<text x="961" y="427" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">32<tspan font-size="8" dy="3">7</tspan></text>
+<text x="968" y="505" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">67<tspan font-size="8" dy="3">6</tspan></text>
+<text x="989" y="558" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">86<tspan font-size="8" dy="3">3</tspan></text>
+<text x="961" y="632" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">98<tspan font-size="8" dy="3">5</tspan></text>
+<text x="975" y="677" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">91<tspan font-size="8" dy="3">6</tspan></text>
+<text x="963" y="751" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">7</tspan></text>
+<text x="977" y="812" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">0</tspan></text>
+<text x="973" y="888" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">8<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1052" y="50" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">34<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1045" y="106" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">30<tspan font-size="8" dy="3">2</tspan></text>
+<text x="1038" y="169" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1059" y="249" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1042" y="314" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1048" y="383" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">14<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1059" y="431" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">5</tspan></text>
+<text x="1071" y="501" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">29<tspan font-size="8" dy="3">7</tspan></text>
+<text x="1037" y="562" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">79<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1070" y="626" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">59<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1068" y="690" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">31<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1064" y="744" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">36<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1071" y="808" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1042" y="868" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">4</tspan></text>
+<text x="1119" y="37" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">31<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1115" y="105" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">0</tspan></text>
+<text x="1132" y="166" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">7</tspan></text>
+<text x="1140" y="378" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1121" y="421" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">18<tspan font-size="8" dy="3">4</tspan></text>
+<text x="1142" y="494" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">15<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1129" y="559" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">34<tspan font-size="8" dy="3">7</tspan></text>
+<text x="1145" y="616" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">36<tspan font-size="8" dy="3">2</tspan></text>
+<text x="1120" y="696" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">37<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1126" y="754" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">21<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1142" y="823" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">12<tspan font-size="8" dy="3">0</tspan></text>
+<text x="1200" y="56" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">8</tspan></text>
+<text x="1203" y="107" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">8</tspan></text>
+<text x="1227" y="437" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1222" y="512" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">15<tspan font-size="8" dy="3">8</tspan></text>
+<text x="1205" y="548" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">14<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1206" y="621" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">32<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1193" y="679" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">24<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1212" y="746" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">7</tspan></text>
+<text x="1305" y="39" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">9<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1303" y="502" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">2</tspan></text>
+<text x="1302" y="555" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">19<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1300" y="633" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">20<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1304" y="693" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">1</tspan></text>
+<text x="1292" y="756" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">9<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1374" y="38" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">11<tspan font-size="8" dy="3">8</tspan></text>
+<text x="1370" y="623" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1377" y="698" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">15<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1456" y="39" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">10<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1457" y="573" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">6</tspan></text>
+<text x="1461" y="619" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">14<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1440" y="695" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">12<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1512" y="42" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">13<tspan font-size="8" dy="3">3</tspan></text>
+<text x="1518" y="561" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">16<tspan font-size="8" dy="3">9</tspan></text>
+<text x="1534" y="632" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">17<tspan font-size="8" dy="3">4</tspan></text>
+<text x="1524" y="698" font-size="12" font-style="italic" fill="#93a0aa" font-family="Arial">8<tspan font-size="8" dy="3">1</tspan></text>
+<g fill="none" stroke="#cfa3bf" stroke-width="1"><circle cx="930" cy="850" r="100"/><circle cx="930" cy="850" r="84"/>
+<line x1="930.0" y1="766.0" x2="930.0" y2="750.0"/>
+<line x1="946.0" y1="759.4" x2="947.4" y2="751.5"/>
+<line x1="961.5" y1="763.5" x2="964.2" y2="756.0"/>
+<line x1="972.0" y1="777.3" x2="980.0" y2="763.4"/>
+<line x1="989.1" y1="779.5" x2="994.3" y2="773.4"/>
+<line x1="1000.5" y1="790.9" x2="1006.6" y2="785.7"/>
+<line x1="1002.7" y1="808.0" x2="1016.6" y2="800.0"/>
+<line x1="1016.5" y1="818.5" x2="1024.0" y2="815.8"/>
+<line x1="1020.6" y1="834.0" x2="1028.5" y2="832.6"/>
+<line x1="1014.0" y1="850.0" x2="1030.0" y2="850.0"/>
+<line x1="1020.6" y1="866.0" x2="1028.5" y2="867.4"/>
+<line x1="1016.5" y1="881.5" x2="1024.0" y2="884.2"/>
+<line x1="1002.7" y1="892.0" x2="1016.6" y2="900.0"/>
+<line x1="1000.5" y1="909.1" x2="1006.6" y2="914.3"/>
+<line x1="989.1" y1="920.5" x2="994.3" y2="926.6"/>
+<line x1="972.0" y1="922.7" x2="980.0" y2="936.6"/>
+<line x1="961.5" y1="936.5" x2="964.2" y2="944.0"/>
+<line x1="946.0" y1="940.6" x2="947.4" y2="948.5"/>
+<line x1="930.0" y1="934.0" x2="930.0" y2="950.0"/>
+<line x1="914.0" y1="940.6" x2="912.6" y2="948.5"/>
+<line x1="898.5" y1="936.5" x2="895.8" y2="944.0"/>
+<line x1="888.0" y1="922.7" x2="880.0" y2="936.6"/>
+<line x1="870.9" y1="920.5" x2="865.7" y2="926.6"/>
+<line x1="859.5" y1="909.1" x2="853.4" y2="914.3"/>
+<line x1="857.3" y1="892.0" x2="843.4" y2="900.0"/>
+<line x1="843.5" y1="881.5" x2="836.0" y2="884.2"/>
+<line x1="839.4" y1="866.0" x2="831.5" y2="867.4"/>
+<line x1="846.0" y1="850.0" x2="830.0" y2="850.0"/>
+<line x1="839.4" y1="834.0" x2="831.5" y2="832.6"/>
+<line x1="843.5" y1="818.5" x2="836.0" y2="815.8"/>
+<line x1="857.3" y1="808.0" x2="843.4" y2="800.0"/>
+<line x1="859.5" y1="790.9" x2="853.4" y2="785.7"/>
+<line x1="870.9" y1="779.5" x2="865.7" y2="773.4"/>
+<line x1="888.0" y1="777.3" x2="880.0" y2="763.4"/>
+<line x1="898.5" y1="763.5" x2="895.8" y2="756.0"/>
+<line x1="914.0" y1="759.4" x2="912.6" y2="751.5"/>
+<line x1="930" y1="766" x2="930" y2="934"/><line x1="846" y1="850" x2="1014" y2="850"/></g>
+<text x="930" y="741" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">000</text>
+<text x="986" y="756" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">030</text>
+<text x="1027" y="797" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">060</text>
+<text x="1042" y="853" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">090</text>
+<text x="1027" y="909" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">120</text>
+<text x="986" y="950" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">150</text>
+<text x="930" y="965" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">180</text>
+<text x="874" y="950" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">210</text>
+<text x="833" y="909" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">240</text>
+<text x="818" y="853" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">270</text>
+<text x="833" y="797" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">300</text>
+<text x="874" y="756" font-size="10" fill="#c08fae" text-anchor="middle" font-family="Arial">330</text>
+<polyline points="640,1060 560,800 470,580 640,340 760,130 800,20" fill="none" stroke="#3c3c3c" stroke-width="1.6" stroke-dasharray="none" opacity=".55"/>
+<text x="608" y="924" font-size="11" fill="#555" font-family="Arial" opacity=".8">343° · 6.8 NM</text>
+<text x="523" y="684" font-size="11" fill="#555" font-family="Arial" opacity=".8">338° · 5.9 NM</text>
+<text x="563" y="454" font-size="11" fill="#555" font-family="Arial" opacity=".8">035° · 7.4 NM</text>
+<text x="708" y="229" font-size="11" fill="#555" font-family="Arial" opacity=".8">030° · 6.0 NM</text>
+<text x="788" y="69" font-size="11" fill="#555" font-family="Arial" opacity=".8">020° · 2.9 NM</text>
+<circle cx="640" cy="1060" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="651" y="1075" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP1</text>
+<circle cx="560" cy="800" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="571" y="815" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP2</text>
+<circle cx="470" cy="580" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="481" y="595" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP3</text>
+<circle cx="640" cy="340" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="651" y="355" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP4</text>
+<circle cx="760" cy="130" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="771" y="145" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP5</text>
+<circle cx="800" cy="20" r="7" fill="#fff" stroke="#3c3c3c" stroke-width="1.5" opacity=".7"/><text x="811" y="35" font-size="11" fill="#444" font-family="Arial" opacity=".85">WP6</text>
+<line x1="520" y1="610" x2="700" y2="356" stroke="#7a7a7a" stroke-width="1" stroke-dasharray="7 5"/><text x="600" y="520" font-size="10" fill="#777" font-family="Arial" transform="rotate(-55 600 520)">PI 0.8 NM</text>
+<path d="M979 563C974 590 960 615 941 634C922 653 894 669 866 678C837 686 798 694 770 686C742 679 718 654 698 634C678 613 650 588 648 563C646 539 665 507 685 485C704 464 734 446 767 434C800 422 846 407 880 414C914 421 954 451 971 476C987 501 984 537 979 563Z" fill="none" stroke="#c79a9a" stroke-width="1.2" stroke-dasharray="4 4"/><text x="905" y="455" font-size="10" fill="#b98585" font-family="Arial">NO-GO AREA</text>
+<circle cx="722" cy="196" r="10" fill="none" stroke="#c79a9a" stroke-width="1.2"/><text x="620" y="200" font-size="10" fill="#b98585" font-family="Arial">ABORT POINT</text>
+<line x1="475" y1="608" x2="495" y2="628" stroke="#777" stroke-width="1.2"/><text x="499" y="622" font-size="10" fill="#777" font-family="Arial">W/O</text>
+<line x1="602" y1="370" x2="622" y2="390" stroke="#777" stroke-width="1.2"/><text x="626" y="384" font-size="10" fill="#777" font-family="Arial">W/O</text>
+<path d="M415 540 l5 -14 l5 14z" fill="none" stroke="#8a8a8a" stroke-width="1.1"/><circle cx="420" cy="543" r="1.8" fill="#8a8a8a"/>
+<path d="M755 250 l5 -14 l5 14z" fill="none" stroke="#8a8a8a" stroke-width="1.1"/><circle cx="760" cy="253" r="1.8" fill="#8a8a8a"/>
+<path d="M1315 620 l5 -14 l5 14z" fill="none" stroke="#8a8a8a" stroke-width="1.1"/><circle cx="1320" cy="623" r="1.8" fill="#8a8a8a"/>
+<path d="M975 860 l5 -14 l5 14z" fill="none" stroke="#8a8a8a" stroke-width="1.1"/><circle cx="980" cy="863" r="1.8" fill="#8a8a8a"/>
+<g stroke="#d6b3cb" stroke-width="1.2" fill="none" stroke-dasharray="10 6"><line x1="300" y1="320" x2="620" y2="170"/><line x1="330" y1="390" x2="650" y2="240"/></g><path d="M420 300 l40 -19 m-12 -3 l12 3 l-6 11" stroke="#d6b3cb" stroke-width="1.4" fill="none"/>
+<text x="1590" y="1092" font-size="10" fill="#9aa6ae" font-family="Arial" text-anchor="end">SYNTHETIC TRAINING CHART · NOT FOR NAVIGATION</text></svg>
