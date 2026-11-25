@@ -146,7 +146,7 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
       if (!parents.length) continue;
       const done = parents.filter(p => p.status === 'passed').length;
       h += `<details class="stg" data-k="S:${st}"${OPEN.has('S:' + st) ? ' open' : ''}><summary><span class="ttl sname">${esc(name)}</span><span class="st">${done} / ${parents.length}</span></summary><div class="stgbody">`;
-      const sIntro = MAP.lessons.find(l => l.code === st + '-INTRO');
+      const sIntro = MAP.lessons.find(l => l.code === st + '.INTRO');
       if (sIntro) h += `<button class="item${current === sIntro.code ? ' on' : ''}" data-open="${esc(sIntro.code)}">${esc(name)}: introduction video</button>`;
       for (const p of parents) {
         const subs = nodes.filter(n => n.parent_id === p.id).sort((a, b) => a.display_order - b.display_order);
