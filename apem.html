@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>ECADEMY · APEM Voyage Planning and Navigation Simulator</title>
 <style>
-:root{--bg:#ffffff;--panel:#ffffff;--panel2:#f2f2f0;--rule:#d6d6d2;--ink:#111111;--mute:#5c5c5c;--accent:#111111;--ok:#1a7f4b;--warn:#8a5a00;--lock:#8c8c8c}
+:root{--bg:#ffffff;--panel:#ffffff;--panel2:#f2f2f0;--rule:#d6d6d2;--ink:#111111;--mute:#3a3a3a;--accent:#111111;--ok:#1a7f4b;--warn:#8a5a00;--lock:#8c8c8c}
 *{box-sizing:border-box}
 html{background:#ffffff}
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:#ffffff url(media/apem/apem-bg.jpg) center/cover no-repeat}   /* owner-supplied voyage planning picture behind the page; a white veil keeps the text dominant */
@@ -73,6 +73,12 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
 .sum span{color:var(--mute);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
 table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,table.rec th{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}table.rec tr.sec th{background:var(--panel2);font-size:.82rem}table.rec tr.sec td{background:var(--panel2)}
 @media (max-width:700px){table.rec{font-size:.84rem}table.rec td,table.rec th{padding:5px 4px}}
+/* heavier text so it stands out over the picture background (owner, 26 Nov 2026) */
+body{font-weight:500}h1,h2,h3{font-weight:800}b,strong,th{font-weight:800}
+.note,.count,.help,.cap,.vis figcaption{font-weight:600}main>.note,main>p{color:#1c1c1c}
+.item,.ttl,button.lk,.chip,.tab,.st,.fl,details>summary{font-weight:700}ul.sub li{font-weight:600}
+.nv-nb span,.nv-line,.nv-chip,.nv-role span,.nv-node span,.nv-tn small,.nv-wi,.nv-o,.nv-rows td{font-weight:600}.nv-tag,.nv-h{font-weight:800}
+button.b{font-weight:800}
 @media print{body::before{display:none}body{background:#fff;color:#000}header,.disc,.owner,aside,.nav{display:none!important}.shell{display:block}.card{border:0;background:#fff;color:#000}table.rec tr.sec th,table.rec tr.sec td{background:#eee;color:#000}}
 </style>
 </head>
