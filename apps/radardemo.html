@@ -183,6 +183,11 @@
         border: 1px solid #345046;
         padding: 10px;
       }
+      .acqlist{background:#07140e;border:1px solid #345046;padding:6px 6px 4px;margin-top:8px}
+      .acqrow{display:grid;grid-template-columns:3ch 4ch 4ch 4ch 4ch 5ch 1fr;column-gap:4px;font:10px/1.6 monospace;color:#66ffad;padding:2px;border-bottom:1px dotted #263a32;cursor:pointer;text-align:right;white-space:nowrap}
+      .acqrow b{text-align:left;color:#d0ddd8}.acqrow.acqhead{cursor:default}.acqrow.acqhead b,.acqrow.acqhead span{color:#80948c;font-weight:normal}
+      .acqrow.sel{background:#12281e;outline:1px solid #5dffad}.acqrow.danger,.acqrow.danger b{color:#ff6b6b}
+      .acqnote{font:9.5px monospace;color:#80948c;padding-top:3px}
       .target.danger {
         border-color: #ff4b4b;
       }
@@ -679,7 +684,7 @@
 <button id="audioenable" title="Enable browser sound, or test the alarm tone">ENABLE AUDIO</button>
 <button disabled="" id="alarmack">ALARM ACK</button>
 </div>
-<div class="title">TARGET INFO · MAX 2</div>
+<div class="title">TARGET INFO</div>
 <div class="target" id="target">
 <div class="data"><span>TARGET</span><b id="tid">T01</b></div>
 <div class="data"><span>NAME</span><b id="tn">NORTH STAR</b></div>
@@ -983,6 +988,21 @@
       secondPicker.setAttribute("aria-label","Second target information");
       secondCard.prepend(secondPicker);
       $("target").after(secondCard);
+      // three or more acquired targets: one compact line each, in place of the second full card
+      const acqBox = document.createElement("div"); acqBox.id = "acqlist"; acqBox.className = "acqlist"; acqBox.hidden = true; secondCard.after(acqBox);
+      acqBox.addEventListener("pointerdown", e => { const r = e.target.closest("[data-acq]"); if (r && r.dataset.acq !== selected) { selected = r.dataset.acq; update(); } });
+      function updateAcqList() {
+        const list = targets.filter(t => t.tracked), many = list.length >= 3;
+        acqBox.hidden = !many;
+        if (!many) return false;
+        const p3 = v => String(((Math.round(v) % 360) + 360) % 360).padStart(3, "0");
+        acqBox.innerHTML = '<div class="acqrow acqhead"><b>TGT</b><span>BRG</span><span>RNG</span><span>COG</span><span>SOG</span><span>CPA</span><span>TCPA</span></div>' + list.map(t => {
+          const a = A(t), g = targetGround(t), sog = Math.hypot(g.x, g.y) * 3600, bad = a.tcpa > 0 && a.tcpa < num("tcpalimit") && a.cpa < num("cpalimit");
+          return '<div class="acqrow' + (bad ? " danger" : "") + (t.id === selected ? " sel" : "") + '" data-acq="' + t.id + '" title="' + t.name + '"><b>' + t.id + '</b><span>' + p3(a.b) + '°</span><span>' + F(a.r) + '</span><span>' +
+            (sog > .01 ? p3(B(g.x, g.y)) + "°" : "---") + '</span><span>' + F(sog) + '</span><span>' + F(a.cpa, 2) + '</span><span>' + F(a.tcpa) + '</span></div>';
+        }).join("") + '<div class="acqnote">' + list.length + ' ACQUIRED · RNG, CPA NM · SOG kn · TCPA min</div>';
+        return true;
+      }
       let secondTarget = "T02";
       secondPicker.onchange = () => {secondTarget = secondPicker.value; update();};
       $("acq2").onclick = () => {
@@ -990,6 +1010,7 @@
         if (t) { t.tracked = !t.tracked; update(); }
       };
       function updateSecondTarget() {
+        const many = updateAcqList();
         const choices = targets.filter(t => t.id !== selected);
         if (!choices.some(t => t.id === secondTarget)) secondTarget = choices[0]?.id;
         if ([...secondPicker.options].map(o=>o.value).join() !== choices.map(t=>t.id).join()) {
@@ -1000,7 +1021,7 @@
         }
         secondPicker.value = secondTarget || "";
         const t = choices.find(t => t.id === secondTarget);
-        secondCard.hidden = !t;
+        secondCard.hidden = !t || many;
         if (!t) return;
         const a = A(t);
         $("tid2").textContent=t.id; $("tn2").textContent=t.name;
