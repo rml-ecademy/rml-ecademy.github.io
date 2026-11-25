@@ -146,6 +146,8 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
       if (!parents.length) continue;
       const done = parents.filter(p => p.status === 'passed').length;
       h += `<details class="stg" data-k="S:${st}"${OPEN.has('S:' + st) ? ' open' : ''}><summary><span class="ttl sname">${esc(name)}</span><span class="st">${done} / ${parents.length}</span></summary><div class="stgbody">`;
+      const sIntro = MAP.lessons.find(l => l.code === st + '-INTRO');
+      if (sIntro) h += `<button class="item${current === sIntro.code ? ' on' : ''}" data-open="${esc(sIntro.code)}">${esc(name)}: introduction video</button>`;
       for (const p of parents) {
         const subs = nodes.filter(n => n.parent_id === p.id).sort((a, b) => a.display_order - b.display_order);
         const PLs = MAP.lessons.filter(l => l.competency_id === p.id || (l.kind === 'exercise' && (l.competency_id || '').startsWith(p.id + '.')))
@@ -199,8 +201,8 @@ button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var
         if (s.visual && s.visual.diagram && DIAGRAM[s.visual.diagram]) { const g = DIAGRAM[s.visual.diagram](); vis = `<figure class="vis" style="margin-left:0;margin-right:0">${g.svg}<figcaption>${esc(g.alt)}</figcaption></figure>`; }
         else if (s.visual && s.visual.video) vis = `<figure class="vis" style="margin-left:0;margin-right:0"><video controls preload="metadata" playsinline style="width:100%;border-radius:8px;background:#000" src="${esc(s.visual.src)}"></video>${s.visual.plain ? '' : `<figcaption>${esc(s.visual.label || '')} (${esc(s.visual.video)}). ${esc(s.visual.note || 'Captions are shown in the picture. Silent draft animation: narration and realistic footage will replace it.')}</figcaption>`}</figure>`;
         else if (s.visual && s.visual.pending) { const m = media[s.visual.pending]; vis = `<div class="pending" role="note">${esc(s.visual.label || 'Media')}<br>Pending production (${esc(s.visual.pending)}${m ? ', status: ' + esc(m.status.replace('_', ' ')) : ''}). Not yet available.</div>`; }
-        main.innerHTML = `<h1>${esc(L.content.title)}</h1><p class="note">Screen ${i + 1} of ${S.length}. ${L.content.kind === 'knowledge' ? 'Knowledge section. The guided exercise and the proficiency check for this topic are not built yet.' : 'This introduction has no assessment.'}</p>
-          <div class="card"><h2>${esc(s.h)}</h2>${(s.p || []).map(p => `<p>${esc(p)}</p>`).join('')}${vis}${(s.points || []).length ? `<ul class="pts">${s.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}</div>
+        main.innerHTML = `<h1>${esc(L.content.title)}</h1>${S.length > 1 ? `<p class="note">Screen ${i + 1} of ${S.length}. ${L.content.kind === 'knowledge' ? 'Knowledge section. The guided exercise and the proficiency check for this topic are not built yet.' : 'This introduction has no assessment.'}</p>` : ''}
+          <div class="card">${s.h ? `<h2>${esc(s.h)}</h2>` : ''}${(s.p || []).map(p => `<p>${esc(p)}</p>`).join('')}${vis}${(s.points || []).length ? `<ul class="pts">${s.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}</div>
           <div class="nav"><button class="b ghost" id="prev" ${i === 0 ? 'disabled' : ''}>Previous</button><span class="count">${i + 1} / ${S.length}</span>${i < S.length - 1 ? '<button class="b" id="next">Next</button>' : '<button class="b" id="done">Back to course map</button>'}</div>
           ${d.admin ? `<p class="note" style="margin-top:16px">Owner preview. Content status: ${esc(L.review_status.replace('_', ' '))}. ${esc(L.content.notice || '')}</p>` : ''}`;
         if ($('prev')) $('prev').onclick = () => { i--; draw(); main.focus(); };
