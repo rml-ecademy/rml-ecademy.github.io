@@ -12,7 +12,7 @@
 :root{--bg:#ffffff;--panel:#ffffff;--panel2:#f2f2f0;--rule:#d6d6d2;--ink:#111111;--mute:#5c5c5c;--accent:#111111;--ok:#1a7f4b;--warn:#8a5a00;--lock:#8c8c8c}
 *{box-sizing:border-box}
 html{background:#ffffff}
-body::before{content:"";position:fixed;inset:0;z-index:-1;background:#ffffff url(media/apem/chart-bg.svg) center/cover no-repeat;opacity:.85}   /* light synthetic ENC-style chart behind the page; text stays dominant */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:#ffffff url(media/apem/apem-bg.jpg) center/cover no-repeat}   /* owner-supplied voyage planning picture behind the page; a white veil keeps the text dominant */
 html,body{margin:0;color:var(--ink);font:16px/1.55 "Albert Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 a{color:var(--accent)}
 header{display:flex;align-items:center;gap:14px;padding:12px 18px;background:#111111;color:#ffffff;border-bottom:1px solid #111111}
@@ -22,7 +22,8 @@ header a.back{color:#ffffff;text-decoration:none;border:1px solid #6a6a6a;border
 .owner{background:#f2f2f0;color:#111111;border-bottom:1px solid var(--rule);padding:6px 18px;font-size:.8rem;text-align:center}
 .shell{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:calc(100vh - 120px)}
 aside{border-right:1px solid var(--rule);background:var(--panel);padding:14px 12px;overflow:auto}
-main{padding:22px 26px 60px;min-width:0;background:rgba(255,255,255,.66)}
+main{padding:22px 26px 60px;min-width:0;background:rgba(255,255,255,.80)}
+.hero{display:block;width:100%;max-width:920px;aspect-ratio:16/6;object-fit:cover;object-position:center 66%;border-radius:12px;border:1px solid var(--rule);margin:0 0 16px}
 @media (max-width:860px){.shell{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--rule);max-height:46vh}main{padding:16px 14px 50px}}
 h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.25rem;margin:0 0 12px}
 .stage{margin:14px 0 6px;font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--mute);display:flex;justify-content:space-between}
@@ -176,7 +177,7 @@ table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,tabl
     stopMedia(); current = null;
     const n = MAP.nodes, par = n.filter(x => x.kind === 'parent'), sub = n.filter(x => x.kind === 'subskill');
     const built = MAP.lessons.filter(l => l.competency_id && l.kind !== 'exercise').length, exb = MAP.lessons.filter(l => l.kind === 'exercise').length;
-    $('main').innerHTML = `<h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
+    $('main').innerHTML = `<img class="hero" src="media/apem/apem-bg.jpg" alt="Voyage planning on the bridge: chart with the planned route, and the appraisal checklist"><h1>APEM course map</h1><p class="note">Appraisal, Planning, Execution and Monitoring on one voyage: MV ECADEMY, TR-001.</p>
       <div class="sum"><div><b>${par.length}</b><span>Competencies</span></div><div><b>${sub.length}</b><span>Subskills</span></div><div><b>${built}</b><span>Explanations built</span></div><div><b>${exb}</b><span>Exercises built</span></div><div><b>${par.filter(x => x.status === 'passed').length}</b><span>Passed</span></div></div>
       <div class="card"><p>The map on the left shows every competency and its status for your account. The status comes from the server, from the prerequisite rules and your recorded results.</p>
       <p>${MAP.lessons.some(l => l.code === 'INTRO') ? 'Start with the Introduction.' : ''} Lessons for the competencies are built and released one at a time. A competency with no lesson built yet cannot be opened, whatever its status.</p><p class="note">Lessons built so far: ${MAP.lessons.map(l => esc(l.code)).join(', ') || 'none'}.</p></div>`;
