@@ -5,19 +5,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#1b2733">
+<meta name="theme-color" content="#111111">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>ECADEMY · APEM Voyage Planning and Navigation Simulator</title>
 <style>
-:root{--bg:#1b2733;--panel:#223242;--panel2:#283b4e;--rule:#34495d;--ink:#e6edf3;--mute:#9db1c3;--accent:#7fbfe6;--ok:#6fd0a8;--warn:#e6b85c;--lock:#7f93a6}
+:root{--bg:#ffffff;--panel:#ffffff;--panel2:#f2f2f0;--rule:#d6d6d2;--ink:#111111;--mute:#5c5c5c;--accent:#111111;--ok:#1a7f4b;--warn:#8a5a00;--lock:#8c8c8c}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Albert Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 a{color:var(--accent)}
-header{display:flex;align-items:center;gap:14px;padding:12px 18px;background:#16212c;border-bottom:1px solid var(--rule)}
-header b{letter-spacing:.06em}header .t{flex:1;min-width:0}header .t small{display:block;color:var(--mute);font-size:.8rem}
-header a.back{color:var(--ink);text-decoration:none;border:1px solid var(--rule);border-radius:8px;padding:7px 12px;font-size:.88rem}
-.disc{background:#3a2f16;color:#f3dfae;border-bottom:1px solid #5a4a22;padding:6px 18px;font-size:.78rem;font-weight:600;letter-spacing:.03em;text-align:center}
-.owner{background:#1f3a4d;color:#cfe7f7;border-bottom:1px solid var(--rule);padding:6px 18px;font-size:.8rem;text-align:center}
+header{display:flex;align-items:center;gap:14px;padding:12px 18px;background:#111111;color:#ffffff;border-bottom:1px solid #111111}
+header b{letter-spacing:.06em}header .t{flex:1;min-width:0}header .t small{display:block;color:#c8c8c8;font-size:.8rem}
+header a.back{color:#ffffff;text-decoration:none;border:1px solid #6a6a6a;border-radius:8px;padding:7px 12px;font-size:.88rem}
+.disc{background:#f2f2f0;color:#5a3b00;border-bottom:1px solid #d6d6d2;padding:6px 18px;font-size:.78rem;font-weight:600;letter-spacing:.03em;text-align:center}
+.owner{background:#f2f2f0;color:#111111;border-bottom:1px solid var(--rule);padding:6px 18px;font-size:.8rem;text-align:center}
 .shell{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:calc(100vh - 120px)}
 aside{border-right:1px solid var(--rule);background:var(--panel);padding:14px 12px;overflow:auto}
 main{padding:22px 26px 60px;min-width:0}
@@ -29,43 +29,43 @@ h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.25rem;margin:0 0 12px}
 .item.on{background:var(--panel2);border-color:var(--accent)}
 details{border-radius:8px}details>summary{list-style:none;cursor:pointer;padding:7px 9px;border-radius:8px;display:flex;gap:8px;align-items:baseline}
 details>summary::-webkit-details-marker{display:none}details>summary:hover,details>summary:focus-visible{background:var(--panel2);outline:0}
-details.stg{margin-top:8px;border:1px solid var(--rule);border-radius:10px;background:#1f2d3c}details.stg>summary{padding:10px 12px;font-weight:700;letter-spacing:.04em}details.stg>summary .sname::before{content:'\25B8';display:inline-block;width:1.1em;color:var(--accent)}details.stg[open]>summary .sname::before{content:'\25BE'}.stgbody{padding:2px 6px 8px}
+details.stg{margin-top:8px;border:1px solid var(--rule);border-radius:10px;background:#fafaf9}details.stg>summary{padding:10px 12px;font-weight:700;letter-spacing:.04em}details.stg>summary .sname::before{content:'\25B8';display:inline-block;width:1.1em;color:var(--accent)}details.stg[open]>summary .sname::before{content:'\25BE'}.stgbody{padding:2px 6px 8px}
 .cid{font:600 .8rem ui-monospace,Consolas,monospace;color:var(--accent);min-width:44px}
 .ttl{flex:1;min-width:0}.st{font-size:.72rem;white-space:nowrap;border:1px solid var(--rule);border-radius:999px;padding:1px 8px;color:var(--lock)}
 .st.available{color:var(--accent);border-color:var(--accent)}.st.passed{color:var(--ok);border-color:var(--ok)}.st.in_progress,.st.requires_correction{color:var(--warn);border-color:var(--warn)}
 ul.sub{list-style:none;margin:2px 0 8px;padding:0 0 0 12px;border-left:1px solid var(--rule)}
-.plk{padding:2px 9px 6px 61px}button.lk{display:block;margin-top:3px;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:7px;padding:3px 9px;font:600 .78rem inherit;cursor:pointer}button.lk:hover,button.lk:focus-visible{background:var(--accent);color:#0f1a24;outline:0}ul.sub li.on .ttl{color:var(--ink)}
+.plk{padding:2px 9px 6px 61px}button.lk{display:block;margin-top:3px;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:7px;padding:3px 9px;font:600 .78rem inherit;cursor:pointer}button.lk:hover,button.lk:focus-visible{background:var(--accent);color:#ffffff;outline:0}ul.sub li.on .ttl{color:var(--ink)}
 ul.sub li{display:flex;gap:8px;align-items:baseline;padding:3px 8px;font-size:.88rem;color:var(--mute)}
 .card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;max-width:920px}
 .card p{margin:0 0 12px}.pts{margin:14px 0 4px;padding:12px 16px 12px 34px;background:var(--panel2);border-radius:10px}.pts li{margin:3px 0}
-.vis{margin:16px 0 4px;border:1px solid var(--rule);border-radius:10px;padding:14px;background:#1d2b39;overflow:auto}
+.vis{margin:16px 0 4px;border:1px solid var(--rule);border-radius:10px;padding:14px;background:#fafaf9;overflow:auto}
 .vis svg{display:block;max-width:100%;height:auto}.vis figcaption,.cap{color:var(--mute);font-size:.8rem;margin-top:8px}
 .pending{border:1px dashed var(--warn);color:var(--warn);border-radius:10px;padding:18px;text-align:center;font-size:.92rem}
 .nav{display:flex;align-items:center;gap:12px;margin-top:18px;max-width:920px}
-button.b{background:var(--accent);color:#0f1a24;border:0;border-radius:9px;padding:10px 18px;font:600 .95rem inherit;cursor:pointer}
+button.b{background:var(--accent);color:#ffffff;border:0;border-radius:9px;padding:10px 18px;font:600 .95rem inherit;cursor:pointer}
 button.b.ghost{background:none;color:var(--ink);border:1px solid var(--rule)}button.b:disabled{opacity:.4;cursor:default}
 .count{color:var(--mute);font-size:.88rem;flex:1;text-align:center}
 table.v{border-collapse:collapse;width:100%;max-width:520px}table.v td{padding:5px 10px;border-bottom:1px solid var(--rule)}table.v td:first-child{color:var(--mute)}
-button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var(--mute)}button.lk:disabled:hover{background:none;color:var(--mute)}button.lk.cur{background:var(--accent);color:#0f1a24}.plk button.lk{margin-bottom:4px;width:100%;text-align:left}
+button.lk:disabled{opacity:.45;cursor:default;border-color:var(--rule);color:var(--mute)}button.lk:disabled:hover{background:none;color:var(--mute)}button.lk.cur{background:var(--accent);color:#ffffff}.plk button.lk{margin-bottom:4px;width:100%;text-align:left}
 .steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}.chip{background:var(--panel);border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px;font:600 .82rem inherit;cursor:pointer}.chip.on{border-color:var(--accent);color:var(--accent)}.chip.done{border-color:var(--ok);color:var(--ok)}.chip:disabled{opacity:.4;cursor:default}
 .ex{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}@media (max-width:1100px){.ex{grid-template-columns:1fr}}
 .docs{position:sticky;top:8px}@media (max-width:1100px){.docs{position:static}}
 .tabs{display:flex;flex-wrap:wrap;gap:4px}.tab{background:var(--panel);border:1px solid var(--rule);border-bottom:0;color:var(--mute);border-radius:8px 8px 0 0;padding:7px 12px;font:600 .82rem ui-monospace,Consolas,monospace;cursor:pointer}.tab.on{background:#f4f1e8;color:#1c2630}
-.paper{background:#f4f1e8;color:#1c2630;border-radius:0 8px 8px 8px;padding:18px 20px;font-family:Georgia,"Times New Roman",serif;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.paper{background:#f4f1e8;color:#1c2630;border:1px solid #d9d3c1;border-radius:0 8px 8px 8px;padding:18px 20px;font-family:Georgia,"Times New Roman",serif;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .paper header{display:block;background:none;border:0;border-bottom:2px solid #1c2630;padding:0 0 8px;margin-bottom:10px}.paper .pt{font-weight:700;font-size:1.05rem}.paper .pm{font:.78rem ui-monospace,Consolas,monospace;color:#4b5763}
 .paper ol{margin:0;padding-left:26px}.paper li{margin:6px 0;line-height:1.5}.paper li::marker{font:.75rem ui-monospace,Consolas,monospace;color:#6b7783}
 .paper footer{margin-top:14px;padding-top:8px;border-top:1px solid #b9b3a1;font-size:.86rem;display:flex;flex-direction:column;gap:4px}.paper footer span{font:.68rem ui-monospace,Consolas,monospace;color:#8a2f22;letter-spacing:.04em}
 .form{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:16px 18px}.form h2{font-size:1.1rem;margin-bottom:6px}.form>p{color:var(--mute);margin:0 0 12px;font-size:.92rem}
-.fld{padding:10px 0;border-top:1px solid var(--rule)}.fld.good{border-left:3px solid var(--ok);padding-left:10px}.fld.bad{border-left:3px solid #ff9d8a;padding-left:10px}
+.fld{padding:10px 0;border-top:1px solid var(--rule)}.fld.good{border-left:3px solid var(--ok);padding-left:10px}.fld.bad{border-left:3px solid #b42318;padding-left:10px}
 .fl{display:block;font-weight:600;font-size:.92rem;margin-bottom:4px}.help{color:var(--mute);font-size:.8rem;margin-bottom:4px}
-.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ctl select,.ctl input,.reg select{background:#16212c;color:var(--ink);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;font:inherit;font-size:.92rem;max-width:100%}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ctl select,.ctl input,.reg select{background:#ffffff;color:var(--ink);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;font:inherit;font-size:.92rem;max-width:100%}
 .ctl input[type=text]{min-width:180px}.ctl input.hm{min-width:0;width:84px;font-family:ui-monospace,Consolas,monospace}.ctl input[type=number]{width:120px}.row2,.row3{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}.utc{color:var(--mute);font-size:.82rem}
 .chk{display:flex;flex-wrap:wrap;gap:4px 14px}.chk label{font-size:.9rem}.src{font-size:.78rem;color:var(--mute);display:inline-flex;gap:5px;align-items:center;margin-left:auto}
-.fb{font-size:.84rem;margin-top:5px}.fb.good{color:var(--ok)}.fb.bad{color:#ffb4a8}
-.reg{border-top:1px solid var(--rule);padding-top:10px}.regh{font-weight:600;font-size:.92rem;margin-bottom:6px}.regrow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--panel2);border-radius:8px;padding:8px;margin-bottom:6px}.regrow.good{outline:1px solid var(--ok)}.regrow.bad{outline:1px solid #ff9d8a}
+.fb{font-size:.84rem;margin-top:5px}.fb.good{color:var(--ok)}.fb.bad{color:#b42318}
+.reg{border-top:1px solid var(--rule);padding-top:10px}.regh{font-weight:600;font-size:.92rem;margin-bottom:6px}.regrow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;background:var(--panel2);border-radius:8px;padding:8px;margin-bottom:6px}.regrow.good{outline:1px solid var(--ok)}.regrow.bad{outline:1px solid #b42318}
 .regrow label{display:flex;flex-direction:column;font-size:.72rem;color:var(--mute);gap:2px;min-width:0}.regrow label.wide{flex:1 1 220px}.regrow select{max-width:260px}.regrow .fb{flex-basis:100%}button.b.sm{padding:6px 10px;font-size:.8rem}
-.out{margin-top:14px;border-radius:10px;padding:12px 14px;font-size:.92rem}.out.good{background:#1f3a34;border:1px solid var(--ok)}.out.bad{background:#3d2622;border:1px solid #ff9d8a}.out .b{margin-left:8px}
-.note{color:var(--mute);font-size:.88rem}.err{color:#ffb4a8}
+.out{margin-top:14px;border-radius:10px;padding:12px 14px;font-size:.92rem}.out.good{background:#e9f5ee;border:1px solid var(--ok)}.out.bad{background:#fdeceb;border:1px solid #b42318}.out .b{margin-left:8px}
+.note{color:var(--mute);font-size:.88rem}.err{color:#b42318}
 .sum{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.sum div{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px 14px;min-width:120px}.sum b{display:block;font-size:1.4rem}
 .sum span{color:var(--mute);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
 table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,table.rec th{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}table.rec tr.sec th{background:var(--panel2);font-size:.82rem}table.rec tr.sec td{background:var(--panel2)}
@@ -85,7 +85,7 @@ table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,tabl
   <main id="main" tabindex="-1"><p class="note">Loading…</p></main>
 </div>
 <script src="assets/supabase-2.117.2.js"></script>
-<script src="apem-narrated.js?v=3"></script>
+<script src="apem-narrated.js?v=4"></script>
 <script>
 (() => {
   const SB_URL = 'https://eazrfhrbhftskcrffjun.supabase.co';
@@ -107,35 +107,35 @@ table.rec{border-collapse:collapse;width:100%;font-size:.92rem}table.rec td,tabl
   }
 
   /* ---------- diagrams: drawn from fixed, verified values (no generated text) ---------- */
-  const box = (x, y, w, h, t1, t2) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#283b4e" stroke="#7fbfe6"/><text x="${x + w / 2}" y="${y + (t2 ? h / 2 - 3 : h / 2 + 5)}" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">${t1}</text>${t2 ? `<text x="${x + w / 2}" y="${y + h / 2 + 15}" text-anchor="middle" fill="#9db1c3" font-size="11">${t2}</text>` : ''}`;
-  const arrow = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9db1c3" stroke-width="2" marker-end="url(#ah)"/>`;
-  const defs = '<defs><marker id="ah" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#9db1c3"/></marker></defs>';
+  const box = (x, y, w, h, t1, t2) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="#f2f2f0" stroke="#111111"/><text x="${x + w / 2}" y="${y + (t2 ? h / 2 - 3 : h / 2 + 5)}" text-anchor="middle" fill="#111111" font-size="14" font-weight="600">${t1}</text>${t2 ? `<text x="${x + w / 2}" y="${y + h / 2 + 15}" text-anchor="middle" fill="#5c5c5c" font-size="11">${t2}</text>` : ''}`;
+  const arrow = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#5c5c5c" stroke-width="2" marker-end="url(#ah)"/>`;
+  const defs = '<defs><marker id="ah" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#5c5c5c"/></marker></defs>';
   const DIAGRAM = {
     berth_to_berth: () => ({ alt: 'Berth-to-berth schematic: Alpha Port berth A2, pilot disembarks, sea passage, pilot boards, Bravo Port berth to be confirmed.',
-      svg: `<svg viewBox="0 0 860 150" role="img" aria-label="Berth-to-berth schematic">${defs}<line x1="60" y1="60" x2="800" y2="60" stroke="#7fbfe6" stroke-width="3"/>` +
+      svg: `<svg viewBox="0 0 860 150" role="img" aria-label="Berth-to-berth schematic">${defs}<line x1="60" y1="60" x2="800" y2="60" stroke="#111111" stroke-width="3"/>` +
         [[60,'Alpha Port','Berth A2'],[245,'Pilot','disembarks'],[430,'Sea passage',''],[615,'Pilot','boards'],[800,'Bravo Port','berth to be confirmed']].map(([x, a, b]) =>
-          `<circle cx="${x}" cy="60" r="9" fill="#1b2733" stroke="#7fbfe6" stroke-width="3"/><text x="${x}" y="98" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">${a}</text><text x="${x}" y="116" text-anchor="middle" fill="#9db1c3" font-size="12">${b}</text>`).join('') +
-        `<text x="430" y="30" text-anchor="middle" fill="#9db1c3" font-size="12">One plan covers the whole voyage. Schematic only, not a chart.</text></svg>` }),
+          `<circle cx="${x}" cy="60" r="9" fill="#ffffff" stroke="#111111" stroke-width="3"/><text x="${x}" y="98" text-anchor="middle" fill="#111111" font-size="14" font-weight="600">${a}</text><text x="${x}" y="116" text-anchor="middle" fill="#5c5c5c" font-size="12">${b}</text>`).join('') +
+        `<text x="430" y="30" text-anchor="middle" fill="#5c5c5c" font-size="12">One plan covers the whole voyage. Schematic only, not a chart.</text></svg>` }),
     apem_cycle: () => ({ alt: 'The four stages: Appraisal leads to Planning, which leads to Execution and Monitoring running together.',
       svg: `<svg viewBox="0 0 860 190" role="img" aria-label="The four APEM stages">${defs}${box(20,60,180,64,'Appraisal','gather and assess')}${arrow(200,92,238,92)}${box(240,60,180,64,'Planning','construct and check')}${arrow(420,92,468,92)}` +
-        `<rect x="470" y="20" width="370" height="150" rx="10" fill="none" stroke="#e6b85c" stroke-dasharray="6 5"/><text x="655" y="42" text-anchor="middle" fill="#e6b85c" font-size="12">run at the same time</text>${box(490,56,160,64,'Execution','carry out the plan')}${box(662,56,160,64,'Monitoring','check progress')}<text x="655" y="150" text-anchor="middle" fill="#9db1c3" font-size="12">Amendments update both</text></svg>` }),
+        `<rect x="470" y="20" width="370" height="150" rx="10" fill="none" stroke="#8a5a00" stroke-dasharray="6 5"/><text x="655" y="42" text-anchor="middle" fill="#8a5a00" font-size="12">run at the same time</text>${box(490,56,160,64,'Execution','carry out the plan')}${box(662,56,160,64,'Monitoring','check progress')}<text x="655" y="150" text-anchor="middle" fill="#5c5c5c" font-size="12">Amendments update both</text></svg>` }),
     kup: () => ({ alt: 'Each topic: Knowledge, then Understanding, then Proficiency. The next topic unlocks only on a correct result.',
-      svg: `<svg viewBox="0 0 860 120" role="img" aria-label="How each topic works">${defs}${box(20,26,180,64,'Knowledge','explained step by step')}${arrow(200,58,228,58)}${box(230,26,180,64,'Understanding','video, slides, guided')}${arrow(410,58,438,58)}${box(440,26,180,64,'Proficiency','you do it yourself')}${arrow(620,58,648,58)}<rect x="650" y="26" width="190" height="64" rx="8" fill="#1f3a34" stroke="#6fd0a8"/><text x="745" y="54" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">Next topic opens</text><text x="745" y="72" text-anchor="middle" fill="#9db1c3" font-size="11">only if done correctly</text></svg>` }),
+      svg: `<svg viewBox="0 0 860 120" role="img" aria-label="How each topic works">${defs}${box(20,26,180,64,'Knowledge','explained step by step')}${arrow(200,58,228,58)}${box(230,26,180,64,'Understanding','video, slides, guided')}${arrow(410,58,438,58)}${box(440,26,180,64,'Proficiency','you do it yourself')}${arrow(620,58,648,58)}<rect x="650" y="26" width="190" height="64" rx="8" fill="#e9f5ee" stroke="#1a7f4b"/><text x="745" y="54" text-anchor="middle" fill="#111111" font-size="14" font-weight="600">Next topic opens</text><text x="745" y="72" text-anchor="middle" fill="#5c5c5c" font-size="11">only if done correctly</text></svg>` }),
     abort_pnr: () => ({ alt: 'Schematic approach, not to scale: the abort point lies in open water where the ship can still turn; the point of no return is where the channel becomes too narrow to turn back.',
-      svg: `<svg viewBox="0 0 860 280" role="img" aria-label="Abort point and point of no return on an approach">${defs}<rect x="0" y="0" width="860" height="280" fill="#1d2b39"/>` +
+      svg: `<svg viewBox="0 0 860 280" role="img" aria-label="Abort point and point of no return on an approach">${defs}<rect x="0" y="0" width="860" height="280" fill="#fafaf9"/>` +
         `<path d="M0,0 L860,0 L860,96 L560,96 C470,96 430,40 330,28 L0,20 Z" fill="#3a3f37" stroke="#8a8f7c"/><path d="M0,280 L860,280 L860,176 L560,176 C470,176 430,236 330,250 L0,262 Z" fill="#3a3f37" stroke="#8a8f7c"/>` +
         `<text x="640" y="60" text-anchor="middle" fill="#c9cdb9" font-size="12">Shoal water / land</text><text x="640" y="232" text-anchor="middle" fill="#c9cdb9" font-size="12">Shoal water / land</text>` +
-        `<line x1="20" y1="136" x2="800" y2="136" stroke="#7fbfe6" stroke-width="2.5" marker-end="url(#ah)"/><rect x="808" y="112" width="40" height="48" fill="#283b4e" stroke="#7fbfe6"/><text x="828" y="141" text-anchor="middle" fill="#e6edf3" font-size="11">Berth</text>` +
-        `<circle cx="300" cy="136" r="62" fill="none" stroke="#e6b85c" stroke-dasharray="5 5"/><text x="300" y="68" text-anchor="middle" fill="#e6b85c" font-size="11">room to turn, stop or anchor</text>` +
-        `<circle cx="300" cy="136" r="8" fill="#e6b85c"/><text x="300" y="218" text-anchor="middle" fill="#e6b85c" font-size="14" font-weight="700">Abort point</text><text x="300" y="234" text-anchor="middle" fill="#9db1c3" font-size="11">last safe decision</text>` +
-        `<path d="M292,128 C250,90 170,92 120,112" fill="none" stroke="#6fd0a8" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ah)"/><text x="150" y="88" text-anchor="middle" fill="#6fd0a8" font-size="11">escape route to safe water</text>` +
-        `<circle cx="150" cy="196" r="20" fill="none" stroke="#6fd0a8"/><text x="150" y="200" text-anchor="middle" fill="#6fd0a8" font-size="10">anchor</text><text x="150" y="232" text-anchor="middle" fill="#6fd0a8" font-size="11">emergency anchorage</text>` +
-        `<line x1="540" y1="100" x2="540" y2="172" stroke="#ff9d8a" stroke-width="3"/><text x="540" y="92" text-anchor="middle" fill="#ff9d8a" font-size="14" font-weight="700">Point of no return</text><text x="660" y="128" text-anchor="middle" fill="#9db1c3" font-size="11">committed: too narrow to turn back</text>` +
-        `<text x="40" y="128" fill="#9db1c3" font-size="11">Open water</text><text x="430" y="272" text-anchor="middle" fill="#9db1c3" font-size="11">Schematic only. Not to scale. Not a chart.</text></svg>` }),
+        `<line x1="20" y1="136" x2="800" y2="136" stroke="#111111" stroke-width="2.5" marker-end="url(#ah)"/><rect x="808" y="112" width="40" height="48" fill="#f2f2f0" stroke="#111111"/><text x="828" y="141" text-anchor="middle" fill="#111111" font-size="11">Berth</text>` +
+        `<circle cx="300" cy="136" r="62" fill="none" stroke="#8a5a00" stroke-dasharray="5 5"/><text x="300" y="68" text-anchor="middle" fill="#8a5a00" font-size="11">room to turn, stop or anchor</text>` +
+        `<circle cx="300" cy="136" r="8" fill="#8a5a00"/><text x="300" y="218" text-anchor="middle" fill="#8a5a00" font-size="14" font-weight="700">Abort point</text><text x="300" y="234" text-anchor="middle" fill="#5c5c5c" font-size="11">last safe decision</text>` +
+        `<path d="M292,128 C250,90 170,92 120,112" fill="none" stroke="#1a7f4b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ah)"/><text x="150" y="88" text-anchor="middle" fill="#1a7f4b" font-size="11">escape route to safe water</text>` +
+        `<circle cx="150" cy="196" r="20" fill="none" stroke="#1a7f4b"/><text x="150" y="200" text-anchor="middle" fill="#1a7f4b" font-size="10">anchor</text><text x="150" y="232" text-anchor="middle" fill="#1a7f4b" font-size="11">emergency anchorage</text>` +
+        `<line x1="540" y1="100" x2="540" y2="172" stroke="#b42318" stroke-width="3"/><text x="540" y="92" text-anchor="middle" fill="#b42318" font-size="14" font-weight="700">Point of no return</text><text x="660" y="128" text-anchor="middle" fill="#5c5c5c" font-size="11">committed: too narrow to turn back</text>` +
+        `<text x="40" y="128" fill="#5c5c5c" font-size="11">Open water</text><text x="430" y="272" text-anchor="middle" fill="#5c5c5c" font-size="11">Schematic only. Not to scale. Not a chart.</text></svg>` }),
     abort_checks: () => ({ alt: 'Decision at the abort point: if all conditions are satisfied, proceed and log it; if any is not satisfied or in doubt, abort to the escape route, hold or anchor, and inform the Master, pilot and VTS.',
-      svg: `<svg viewBox="0 0 860 210" role="img" aria-label="Decision at the abort point">${defs}${box(20,74,180,62,'At the abort point','check every condition')}${arrow(200,105,248,105)}<path d="M250,105 L360,50 L470,105 L360,160 Z" fill="#283b4e" stroke="#e6b85c"/><text x="360" y="101" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">All conditions</text><text x="360" y="118" text-anchor="middle" fill="#e6edf3" font-size="13" font-weight="600">satisfied?</text>` +
-        `${arrow(440,82,548,48)}<text x="494" y="52" text-anchor="middle" fill="#6fd0a8" font-size="12">Yes</text><rect x="550" y="14" width="290" height="62" rx="8" fill="#1f3a34" stroke="#6fd0a8"/><text x="695" y="41" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">Proceed</text><text x="695" y="60" text-anchor="middle" fill="#9db1c3" font-size="11">log time and position</text>` +
-        `${arrow(440,128,548,162)}<text x="452" y="178" text-anchor="middle" fill="#ff9d8a" font-size="12">No, or in doubt</text><rect x="550" y="134" width="290" height="62" rx="8" fill="#3d2622" stroke="#ff9d8a"/><text x="695" y="161" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">Abort</text><text x="695" y="178" text-anchor="middle" fill="#9db1c3" font-size="10">escape route, hold or anchor; inform Master, pilot and VTS</text></svg>` }),
+      svg: `<svg viewBox="0 0 860 210" role="img" aria-label="Decision at the abort point">${defs}${box(20,74,180,62,'At the abort point','check every condition')}${arrow(200,105,248,105)}<path d="M250,105 L360,50 L470,105 L360,160 Z" fill="#f2f2f0" stroke="#8a5a00"/><text x="360" y="101" text-anchor="middle" fill="#111111" font-size="13" font-weight="600">All conditions</text><text x="360" y="118" text-anchor="middle" fill="#111111" font-size="13" font-weight="600">satisfied?</text>` +
+        `${arrow(440,82,548,48)}<text x="494" y="52" text-anchor="middle" fill="#1a7f4b" font-size="12">Yes</text><rect x="550" y="14" width="290" height="62" rx="8" fill="#e9f5ee" stroke="#1a7f4b"/><text x="695" y="41" text-anchor="middle" fill="#111111" font-size="14" font-weight="600">Proceed</text><text x="695" y="60" text-anchor="middle" fill="#5c5c5c" font-size="11">log time and position</text>` +
+        `${arrow(440,128,548,162)}<text x="452" y="178" text-anchor="middle" fill="#b42318" font-size="12">No, or in doubt</text><rect x="550" y="134" width="290" height="62" rx="8" fill="#fdeceb" stroke="#b42318"/><text x="695" y="161" text-anchor="middle" fill="#111111" font-size="14" font-weight="600">Abort</text><text x="695" y="178" text-anchor="middle" fill="#5c5c5c" font-size="10">escape route, hold or anchor; inform Master, pilot and VTS</text></svg>` }),
     vessel_card: () => ({ alt: 'MV ECADEMY particulars.', svg: `<table class="v"><tr><td>Vessel</td><td>MV ECADEMY</td></tr><tr><td>Type</td><td>Handymax bulk carrier</td></tr><tr><td>Deadweight</td><td>37,163 MT</td></tr><tr><td>Length overall</td><td>189.99 m</td></tr><tr><td>Beam</td><td>28.50 m</td></tr><tr><td>Summer draft</td><td>10.40 m</td></tr><tr><td>Service speed</td><td>12 kn</td></tr><tr><td>Holds / cranes</td><td>5 / 4</td></tr><tr><td>Voyage</td><td>TR-001, Alpha Port berth A2 to Bravo Port</td></tr></table><div class="cap">Synthetic training data. Not a real vessel, port or chart.</div>` })
   };
 
