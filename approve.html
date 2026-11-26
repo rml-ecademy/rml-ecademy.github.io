@@ -147,7 +147,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     <div class="panel" id="p-accounts">
       <section class="card">
         <h2>Students <span class="badge zero" id="tn2">0</span></h2>
-        <p class="sub">Everyone with an account. Nobody gets a referral link by default: press <b>Give link</b> for the person you choose (for example an instructor), <b>Remove link</b> to take it back. <b>Not yet paid</b> = follow up on Messenger.</p>
+        <p class="sub">Everyone with an account. Nobody gets a referral link by default: press <b>Give link</b> for the person you choose (for example an instructor) and set their commission %, <b>Change %</b> to adjust it for that person only, <b>Remove link</b> to take it back. <b>Not yet paid</b> = follow up on Messenger.</p>
         <div class="chips" id="chips"><button data-f="" class="on">All</button><button data-f="review">Under review</button><button data-f="approved">Approved</button><button data-f="unpaid">Not yet paid</button><button data-f="declined">Declined</button><button data-f="expired">Expired / paused</button><button data-f="soon">Renewal due (30 d)</button></div>
         <div style="display:flex;gap:8px;margin:10px 0"><input id="sq" placeholder="Search name, email, phone, ref no., code" style="flex:1"><button class="btn ghost" id="csv" type="button" style="min-height:46px">CSV</button></div>
         <div class="twrap"><table class="tbl"><thead><tr><th>Student</th><th>Status</th><th>Package</th><th>Their link</th><th>Referred by</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
@@ -381,7 +381,8 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       const fb = a.fb ? '<a href="https://m.me/' + encodeURIComponent(a.fb.replace(/\s+/g, '')) + '" target="_blank" rel="noopener">' + esc(a.fb) + '</a>' : '<span style="color:var(--mute)">—</span>';
       const until = m ? (m.expires_at ? day(m.expires_at) : 'Lifetime') : '—';
       const dev = m ? (m.devices || 0) + ' / 5' + (m.active ? '<small>on: ' + esc(m.active.kind === 'computer' ? 'laptop/PC' : m.active.kind) + ' · ' + ago(m.active.at) + '</small>' : '<small>not logged in</small>') : '—';
-      const own = a.ref_code && a.ref_active ? '<span class="ref"><b>' + esc(a.ref_code) + '</b></span><small><button class="btn ghost mini" data-s="copyref">Copy link</button> <button class="btn ghost mini" data-s="refoff">Remove link</button>' + (a.ref_enrollees ? ' · ' + a.ref_enrollees + ' enrolled' : '') + '</small>'
+      const af = a.ref_code && affs.find(x => x.code === a.ref_code);
+      const own = a.ref_code && a.ref_active ? '<span class="ref"><b>' + esc(a.ref_code) + '</b></span>' + (af ? '<small>Commission <b>' + Number(af.rate_pct) + '%</b> <button class="btn ghost mini" data-s="rate">Change %</button></small>' : '') + '<small><button class="btn ghost mini" data-s="copyref">Copy link</button> <button class="btn ghost mini" data-s="refoff">Remove link</button>' + (a.ref_enrollees ? ' · ' + a.ref_enrollees + ' enrolled' : '') + '</small>'
         : (a.ref_code ? '<span style="color:var(--mute)">' + esc(a.ref_code) + ' · off</span>' + (a.ref_enrollees ? '<small>' + a.ref_enrollees + ' enrolled before</small>' : '') : '') + '<small><button class="btn ghost mini" data-s="refon">Give link</button></small>';
       const by = a.referred_by ? esc(a.referred_by) + (m && m.aff_code && m.commission != null ? '<small>' + peso(m.commission) + ' · ' + (m.commission_paid_at ? '<span class="ok-t">paid</span>' : '<span class="soon-t">unpaid</span>') + '</small>' : '') : '—';
       const acts = a.is_admin ? '' : '<div class="rowacts">' +
@@ -414,11 +415,20 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       return;
     }
     if(b.dataset.s === 'copyref') return copyBtn(b, 'https://ecademymaritime.com/?ref=' + a.ref_code, 'Link');
+    if(b.dataset.s === 'rate'){ const af = affs.find(x => x.code === a.ref_code); if(!af) return;
+      const rate = askRate(who, Number(af.rate_pct)); if(rate === null || rate === Number(af.rate_pct)) return;
+      b.disabled = true;
+      try { await saveRate(af, rate); await load(); toast(who + ' now earns ' + rate + '%.'); } catch(err){ alert(err.message); b.disabled = false; }
+      return; }
     if(b.dataset.s === 'refon' || b.dataset.s === 'refoff'){ const on = b.dataset.s === 'refon';
-      if(!confirm(on ? 'Give ' + who + ' a referral link?\n\nThey will see "Share my link" when they log in, with who enrolled through it and their commission.' : 'Remove the referral link of ' + who + '?\n\nThe link stops working and "Share my link" disappears from their account. Commissions already recorded stay.')) return;
+      const old = on && a.ref_code && affs.find(x => x.code === a.ref_code);
+      const rate = on ? askRate(who, old ? Number(old.rate_pct) : 25) : null; if(on && rate === null) return;
+      if(!on && !confirm('Remove the referral link of ' + who + '?\n\nThe link stops working and "Share my link" disappears from their account. Commissions already recorded stay.')) return;
       b.disabled = true;
       try { const { data, error } = await sb.rpc('admin_set_referral', { p_user: uid, p_on: on }); if(error || !data || !data.ok) throw new Error((error && error.message) || (data && data.message) || 'Could not save.');
-        await load(); if(on) showMsg('Referral link for ' + who, 'Hi ' + first(a.name) + ', here is your own ECADEMY link to share:\n\nhttps://ecademymaritime.com/?ref=' + data.code + '\n\nLog in at https://ecademymaritime.com and open "Share my link" to see who enrolled through it and your commission.\n\nECADEMY Maritime'); else toast('Link removed.'); }
+        await load();
+        if(on){ const af = affs.find(x => x.code === data.code); if(af && Number(af.rate_pct) !== rate){ await saveRate(af, rate); await load(); } toast(who + ' earns ' + rate + '% per enrollment.'); }
+        if(on) showMsg('Referral link for ' + who, 'Hi ' + first(a.name) + ', here is your own ECADEMY link to share:\n\nhttps://ecademymaritime.com/?ref=' + data.code + '\n\nLog in at https://ecademymaritime.com and open "Share my link" to see who enrolled through it and your commission.\n\nECADEMY Maritime'); else toast('Link removed.'); }
       catch(err){ alert(err.message); b.disabled = false; }
       return; }
     if(b.dataset.s === 'msg' && m) return showMsg('Message for ' + who, approvedMsg(a.name, m.package, m.expires_at));
@@ -438,6 +448,16 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     const el = document.createElement('a'); el.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv' })); el.download = 'ECADEMY_accounts_' + new Date().toISOString().slice(0,10) + '.csv'; el.click();
   };
 
+  /* ---------- COMMISSION % PER PERSON ---------- */
+  function askRate(who, cur){
+    const v = prompt('Commission % for ' + who + '\n\nThis is the share of each enrollment paid through their link. It applies to enrollments you approve from now on; commissions already recorded stay as they are.', String(cur));
+    if(v === null) return null;
+    const n = parseFloat(String(v).replace('%', '').replace(',', '.'));
+    if(!isFinite(n) || n < 0 || n > 100){ alert('Enter a number from 0 to 100.'); return null; }
+    return Math.round(n * 100) / 100;
+  }
+  async function saveRate(a, rate){ await call({ action:'aff_save', code:a.code, name:a.name, rate_pct:rate, contact:a.contact, active:a.active }); }
+
   /* ---------- AFFILIATES ---------- */
   const affLink = a => 'https://ecademymaritime.com/?ref=' + a.code;
   const dashLink = a => 'https://ecademymaritime.com/aff.html?k=' + a.secret;
@@ -454,7 +474,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     $('arows').innerHTML = affs.map(a => `<tr>
       <td class="wrap"><b>${esc(a.name)}</b><small>Code <b>${esc(a.code)}</b> · ${a.rate_pct}%${a.contact ? ' · GCash ' + esc(a.contact) : ''}${a.active ? '' : ' · <span class="no-t">paused</span>'}</small></td>
       <td>${a.clicks}</td><td>${a.enrollees}</td><td>${peso(a.earned)}</td><td>${a.unpaid > 0 ? '<span class="soon-t">' + peso(a.unpaid) + '</span>' : '—'}</td>
-      <td><div class="rowacts"><button class="btn mini" data-c="kit" data-code="${esc(a.code)}">Copy kit</button><button class="btn ghost mini" data-c="link" data-code="${esc(a.code)}">Copy link</button><button class="btn ghost mini" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="btn ghost mini" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="btn ghost mini" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">No links yet — the first approved student appears here.</td></tr>';
+      <td><div class="rowacts"><button class="btn mini" data-c="kit" data-code="${esc(a.code)}">Copy kit</button><button class="btn ghost mini" data-c="link" data-code="${esc(a.code)}">Copy link</button><button class="btn ghost mini" data-c="rate" data-code="${esc(a.code)}">Change %</button><button class="btn ghost mini" data-c="edit" data-code="${esc(a.code)}">Edit</button><button class="btn ghost mini" data-c="pause" data-code="${esc(a.code)}">${a.active ? 'Pause' : 'Resume'}</button><button class="btn ghost mini" data-c="secret" data-code="${esc(a.code)}">New dashboard link</button></div></td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute);padding:18px">No links yet — the first approved student appears here.</td></tr>';
     const cm = members.filter(m => m.aff_code).sort((x, y) => new Date(y.updated_at || y.created_at) - new Date(x.updated_at || x.created_at));
     $('crows').innerHTML = cm.map(m => { const a = affs.find(x => x.code === m.aff_code); return '<tr data-uid="' + esc(m.user_id) + '"><td class="wrap"><b>' + esc(a ? a.name : m.aff_code) + '</b><small>' + esc(m.aff_code) + '</small></td><td class="wrap">' + esc(m.name || m.email) + '</td><td>' + esc(NAMES[m.package]) + '</td><td>' + peso(m.amount) + '</td><td><b>' + (m.commission == null ? '—' : peso(m.commission)) + '</b></td><td>' + (m.commission_paid_at ? '<span class="st ok">PAID ' + day(m.commission_paid_at) + '</span>' : '<span class="st rev">TO PAY</span>') + '</td><td>' + (m.commission == null ? '' : '<button class="btn ghost mini" data-paid="' + (m.commission_paid_at ? '0' : '1') + '">' + (m.commission_paid_at ? 'Undo' : 'Mark paid') + '</button>') + '</td></tr>'; }).join('') || '<tr><td colspan="7" style="color:var(--mute);padding:18px">No affiliate enrollments yet.</td></tr>';
   }
@@ -468,7 +488,11 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
     const b = e.target.closest('button[data-c]'); if(!b) return; const a = affs.find(x => x.code === b.dataset.code); if(!a) return;
     if(b.dataset.c === 'link') return copyBtn(b, affLink(a), 'Affiliate link');
     if(b.dataset.c === 'kit') return showMsg('Affiliate kit for ' + a.name, kitMsg(a));
-    if(b.dataset.c === 'edit'){ $('aName').value = a.name; $('aCode').value = a.code; $('aRate').value = a.rate_pct; $('aContact').value = a.contact || ''; $('aName').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+    if(b.dataset.c === 'rate'){ const rate = askRate(a.name, Number(a.rate_pct)); if(rate === null || rate === Number(a.rate_pct)) return;
+      b.disabled = true;
+      try { await saveRate(a, rate); await load(); toast(a.name + ' now earns ' + rate + '%.'); } catch(err){ alert(err.message); b.disabled = false; }
+      return; }
+    if(b.dataset.c === 'edit'){ $('af').closest('details').open = true; $('aName').value = a.name; $('aCode').value = a.code; $('aRate').value = a.rate_pct; $('aContact').value = a.contact || ''; $('aName').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
     b.disabled = true;
     try {
       if(b.dataset.c === 'pause') await call({ action:'aff_save', code:a.code, name:a.name, rate_pct:a.rate_pct, contact:a.contact, active:!a.active });
