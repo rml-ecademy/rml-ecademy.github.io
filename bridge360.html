@@ -36,7 +36,7 @@ button:hover{border-color:#51626d}button.on{color:#f0b24a;border-color:#6b4d18}
   <button id="bFull">FULL SCREEN</button>
   <a href="index.html" style="text-decoration:none"><button type="button">ECADEMY</button></a>
 </div>
-<div class="foot"><span><b>FOR TRAINING AND EDUCATIONAL PURPOSES ONLY. NOT FOR ACTUAL SHIP NAVIGATION.</b></span><span>Drag: look around · Arrow keys: 1° · Shift + arrows: 10° · Wheel or ZOOM: zoom · RESET: dead ahead</span><span id="ownline"></span></div>
+<div class="foot"><span><b>FOR TRAINING AND EDUCATIONAL PURPOSES ONLY. NOT FOR ACTUAL SHIP NAVIGATION.</b></span><span>Drag: look around, up and down · Arrow keys: 1° · Shift + arrows: 10° · Wheel or ZOOM: zoom · RESET: dead ahead</span><span id="ownline"></span></div>
 <div id="msg"><div><h1>Loading the bridge…</h1><p id="msgp"></p></div></div>
 
 <script src="assets/supabase-2.117.2.js"></script>
@@ -61,7 +61,7 @@ async function allowed() {
 const OWN = { heading: 271.5, cog: 271.7, sog: 12.6, rudder: 0 };
 const EYE = 1.70;                 // eye height above the wheelhouse deck, m
 const BR = { hw: 4.55, zf: -3.2, za: 3.8, h: 2.7 };
-const PHOTO = { src: 'media/bridge360/bridge-ahead.jpg', hfov: 100, aspect: 1774 / 887, horizonUp: 5.87 };   // the approved picture is the view ahead; its horizon is 5.87° above its centre   // wheelhouse: half width, front, aft, deckhead
+const PHOTO = { src: 'media/bridge360/bridge-pano.jpg', horizonUp: 0 };   // the approved 360° picture of the wheelhouse: one image, dead ahead at its centre, horizon moved onto the level of the eye
 const SEA_Y = -20.0, DECK_Y = -13.0;               // sea level and main deck, relative to the wheelhouse deck
 const NM = 1852;
 
@@ -79,105 +79,11 @@ function build() {
   const tex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); draw(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.userData = { c, g, draw }; return t; };
   const redraw = t => { t.userData.draw(t.userData.g, t.userData.c.width, t.userData.c.height); t.needsUpdate = true; };
 
-  /* ----- sky and sea: one continuous night, faint horizon ----- */
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(50000, 48, 24), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, depthTest: false,
-    uniforms: { hz: { value: new THREE.Color(0x050a0f) }, zn: { value: new THREE.Color(0x02060a) } },
-    vertexShader: 'varying vec3 d; void main(){ d = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: `varying vec3 d; uniform vec3 hz; uniform vec3 zn;
-      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
-      float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
-      void main(){ float e = clamp(d.y, 0.0, 1.0); float az = atan(d.x, -d.z);
-        vec3 c = mix(hz, zn, pow(e, 0.55));
-        float cl = n(vec2(az*2.2, e*9.0)) * 0.6 + n(vec2(az*5.0+3.0, e*22.0)) * 0.4;   /* overcast, barely visible */
-        c += vec3(0.0006,0.0009,0.0013) * cl * smoothstep(0.0, 0.25, e) * (1.0 - e);
-        c += hz * 0.25 * exp(-e * 38.0);                                               /* thin lighter band on the horizon */
-        gl_FragColor = vec4(c, 1.0);
-        #include <colorspace_fragment>
-      }` }));
-  sky.renderOrder = -10; scene.add(sky);
-  const sea = new THREE.Mesh(new THREE.CircleGeometry(48000, 96), new THREE.ShaderMaterial({
-    uniforms: { near: { value: new THREE.Color(0x000102) }, far: { value: new THREE.Color(0x010409) } },
-    vertexShader: 'varying vec3 w; void main(){ vec4 p = modelMatrix * vec4(position,1.0); w = p.xyz; gl_Position = projectionMatrix * viewMatrix * p; }',
-    fragmentShader: `varying vec3 w; uniform vec3 near; uniform vec3 far;
-      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
-      float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
-      void main(){ float r = length(w.xz); float k = smoothstep(150.0, 9000.0, r);
-        vec3 c = mix(near, far, k); c += vec3(0.0003,0.0004,0.0006) * (n(w.xz*0.02) - 0.5) * (1.0 - smoothstep(200.0, 2500.0, r));
-        gl_FragColor = vec4(c, 1.0);
-        #include <colorspace_fragment>
-      }` }));
-  sea.rotation.x = -Math.PI / 2; sea.position.y = SEA_Y; scene.add(sea);
-
-  /* ----- light: no deck lights, no interior lights; only the sky and the instruments ----- */
-  scene.add(new THREE.HemisphereLight(0x8fa6c8, 0x101418, .16)); scene.add(new THREE.AmbientLight(0x8090a8, .2));   // colours are converted to linear light: a very dim night
-  const glow = (c, i, x, y, z, dist) => { const l = new THREE.PointLight(c, i, dist, 2); l.position.set(x, y, z); scene.add(l); return l; };
-  glow(0xffa030, .12, 0, 1.0, -1.9, 5);                                                       // the instruments ahead are the only light in the room
-
-  /* ----- hull, main deck, hatch covers, forecastle ----- */
-  const B = 14.25, BOW = -170, STERN = 30;
-  const outline = new THREE.Shape(); outline.moveTo(-B * .86, STERN); outline.lineTo(-B, STERN - 14); outline.lineTo(-B, -138);
-  outline.bezierCurveTo(-B, -154, -7, -166, 0, BOW); outline.bezierCurveTo(7, -166, B, -154, B, -138); outline.lineTo(B, STERN - 14); outline.lineTo(B * .86, STERN); outline.closePath();
-  const hull = new THREE.Mesh(new THREE.ExtrudeGeometry(outline, { depth: DECK_Y - SEA_Y + 2, bevelEnabled: false, curveSegments: 20 }), [std(0x171613, { roughness: .9 }), std(0x070808)]);
-  hull.rotation.x = Math.PI / 2; hull.position.y = DECK_Y; scene.add(hull);                 // shape XY -> world XZ, extruded downwards
-  const hatchM = std(0x241d15, { roughness: .8 }), coamM = std(0x0f0e0c);
-  for (let i = 0; i < 7; i++) { const zc = -20 - i * 20; box(20.5, 1.0, 16.6, coamM, 0, DECK_Y + .5, zc); box(19.6, .55, 16, hatchM, 0, DECK_Y + 1.28, zc);
-    for (let k = -2; k <= 2; k++) box(19.6, .08, .12, coamM, 0, DECK_Y + 1.58, zc + k * 2.8); }
-  box(26, 2.6, 16, std(0x191814), 0, DECK_Y + 1.3, -154);   // forecastle
-  const fc = new THREE.Mesh(new THREE.CylinderGeometry(.22, .3, 11, 10), std(0x0b0b0b)); fc.position.set(0, DECK_Y + 2.6 + 5.5, -160); scene.add(fc);     // foremast: its light is screened from abaft the beam and is not drawn
-  box(3.2, .18, .18, std(0x0b0b0b), 0, DECK_Y + 11.5, -160); box(2.2, 1.1, 2.6, std(0x0a0a0a), -4.5, DECK_Y + 3.15, -150); box(2.2, 1.1, 2.6, std(0x0a0a0a), 4.5, DECK_Y + 3.15, -150);
-  { // rails and deck fittings along both sides
-    const p = []; for (const s of [-1, 1]) { const x = s * (B - .25); for (let z = -6; z > -138; z -= 3) { p.push(x, DECK_Y, z, x, DECK_Y + 1.05, z); p.push(x, DECK_Y + 1.05, z, x, DECK_Y + 1.05, z - 3); p.push(x, DECK_Y + .55, z, x, DECK_Y + .55, z - 3); } }
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); scene.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0x55554d, transparent: true, opacity: .6 })));
-    const bit = std(0x2c2610); for (const s of [-1, 1]) for (let z = -14; z > -136; z -= 12.5) { box(.35, .55, .35, bit, s * (B - 1.3), DECK_Y + .28, z); box(.35, .55, .35, bit, s * (B - 1.3), DECK_Y + .28, z - .9); }
-  }
-  /* ----- accommodation below the wheelhouse, bridge wings, funnel ----- */
-  const steel = std(0x0b0c0d);
-  box(22, -DECK_Y - .2, 15, steel, 0, (DECK_Y - .2) / 2, 4.2);                                           // accommodation block
-  for (const s of [-1, 1]) { box(9.6, .16, 5.6, steel, s * 9.45, -.1, -.3); box(9.6, 1.15, .1, steel, s * 9.45, .5, -3.05); box(.1, 1.15, 5.6, steel, s * 14.25, .5, -.3); box(9.6, 1.15, .1, steel, s * 9.45, .5, 2.45);
-    box(.45, 1.25, .45, std(0x101213), s * 13.4, .62, -2.4); }                              // wing repeater pedestal
-  box(7, 14, 9, std(0x090909), 0, 4.5, 17.5); box(2.4, 3, 2.4, std(0x080808), 0, 13, 17.5);  // funnel
-  box(.25, 9, .25, steel, 0, 7.5, 9.5);                                                      // after mast, seen through the after windows
-
-  /* ----- wheelhouse shell: one continuous room, windows all round ----- */
-  const wallM = std(0x2b3035, { roughness: .6, metalness: .15 }), trimM = std(0x4a5258, { roughness: .4, metalness: .4 });
-  function wall(len, wins, x, z, ry) {
-    const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(len, 0); s.lineTo(len, BR.h); s.lineTo(0, BR.h); s.closePath();
-    for (const [a, b, y0 = .9, y1 = 2.3] of wins) { const r = .11, h = new THREE.Path(); h.moveTo(a + r, y0); h.lineTo(b - r, y0); h.quadraticCurveTo(b, y0, b, y0 + r); h.lineTo(b, y1 - r); h.quadraticCurveTo(b, y1, b - r, y1); h.lineTo(a + r, y1); h.quadraticCurveTo(a, y1, a, y1 - r); h.lineTo(a, y0 + r); h.quadraticCurveTo(a, y0, a + r, y0); s.holes.push(h); }
-    const grp = new THREE.Group(); const m = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: .14, bevelEnabled: true, bevelSize: .012, bevelThickness: .012, bevelSegments: 1, curveSegments: 6 }), wallM); grp.add(m);
-    const gl = new THREE.Mesh(new THREE.PlaneGeometry(len, BR.h), new THREE.MeshBasicMaterial({ color: 0x0a1118, transparent: true, opacity: .10, depthWrite: false })); gl.position.set(len / 2, BR.h / 2, .07); grp.add(gl);
-    for (const [a, b, y0 = .9, y1 = 2.3] of wins) { const e = new THREE.Mesh(new THREE.BoxGeometry(b - a + .06, .03, .2), trimM); e.position.set((a + b) / 2, y0 - .025, .07); grp.add(e); }
-    grp.position.set(x, 0, z); grp.rotation.y = ry; scene.add(grp); return grp;
-  }
-  const L = BR.hw * 2;
-  wall(L, [], -BR.hw, BR.zf - .14, 0);                                                                                   // front: covered by the picture of the view ahead
-  wall(7, [[.85, 1.95, 1.05, 2.1], [2.4, 4.4], [4.7, 6.7]], -BR.hw - .14, BR.za, Math.PI / 2);                            // port side, wing door aft
-  wall(7, [[.3, 2.3], [2.6, 4.6], [5.05, 6.15, 1.05, 2.1]], BR.hw + .14, BR.zf, -Math.PI / 2);                            // starboard side
-  wall(L, [[.35, 3.1], [L - 3.1, L - .35]], BR.hw, BR.za + .14, Math.PI);                                                 // after bulkhead, stair casing in the middle
-  for (const s of [-1, 1]) box(.42, BR.h, .42, wallM, s * (BR.hw - .12), BR.h / 2, BR.zf + .12);                          // front corner posts
-  const deckT = tex(512, 512, (g, w, h) => { g.fillStyle = '#0d0f11'; g.fillRect(0, 0, w, h); g.strokeStyle = '#15191c'; g.lineWidth = 2; for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, h); g.moveTo(0, i * 64); g.lineTo(w, i * 64); g.stroke(); } });
-  deckT.wrapS = deckT.wrapT = THREE.RepeatWrapping; deckT.repeat.set(3, 2);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(BR.hw * 2, 7), std(0x0d0f11, { roughness: .6 })); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, .3); scene.add(floor);
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(BR.hw * 2, 7), new THREE.MeshStandardMaterial({ map: deckT, roughness: .9 })); ceil.rotation.x = Math.PI / 2; ceil.position.set(0, BR.h, .3); scene.add(ceil);
-
-  /* ----- the view ahead: the approved picture, placed exactly where the camera that made it would see it.
-           The eye only turns, it does not move, so a flat picture gives the correct view for every direction it covers. ----- */
-  const conM = std(0x0f1214, { roughness: .6, metalness: .2 });
-  const ahead = new THREE.Group(); ahead.position.copy(camera.position); ahead.rotation.x = -PHOTO.horizonUp * Math.PI / 180; scene.add(ahead);
-  { const d = 1.15, w = 2 * d * Math.tan(PHOTO.hfov / 2 * Math.PI / 180), h = w / PHOTO.aspect;
-    const fade = tex(512, 256, (g, W, H) => { g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); const e = (x0, y0, x1, y1) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)'); return gr; };
-      g.fillStyle = e(0, 0, W * .035, 0); g.fillRect(0, 0, W * .035, H); g.fillStyle = e(W, 0, W * .965, 0); g.fillRect(W * .965, 0, W * .035, H); g.fillStyle = e(0, 0, 0, H * .05); g.fillRect(0, 0, W, H * .05); g.fillStyle = e(0, H, 0, H * .95); g.fillRect(0, H * .95, W, H * .05); });
-    fade.colorSpace = THREE.NoColorSpace;
-    const pt = new THREE.TextureLoader().load(PHOTO.src, t => { api.photoReady = true; }); pt.colorSpace = THREE.SRGBColorSpace; pt.anisotropy = 8;
-    const pm = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: pt, alphaMap: fade, transparent: true, toneMapped: false, depthWrite: false })); pm.position.z = -d; pm.renderOrder = 20; ahead.add(pm); }
-  // console returns at the two front corners, so the desk in the picture carries on round to the sides
-  for (const s of [-1, 1]) { box(.9, .98, 2.2, conM, s * (BR.hw - .5), .49, BR.zf + 1.25); const led = new THREE.Mesh(new THREE.PlaneGeometry(.5, .012), new THREE.MeshBasicMaterial({ color: 0xc8820f })); led.rotation.x = -Math.PI / 2; led.position.set(s * (BR.hw - .5), .985, BR.zf + 1.9); scene.add(led); }
-  // after part of the wheelhouse: stair casing, chart table, communications desk. All lights off.
-  box(2.4, BR.h, 1.2, wallM, 0, BR.h / 2, BR.za - .6); box(.9, 2.0, .04, std(0x101315), 0, 1.0, BR.za - 1.22);
-  box(2.6, .9, 1.2, conM, -2.95, .45, BR.za - .75); box(2.4, .03, 1.0, std(0x23221d), -2.95, .915, BR.za - .75);          // chart table, chart lying on it
-  box(2.6, .9, 1.0, conM, 2.95, .45, BR.za - .65); const gm = new THREE.Mesh(new THREE.BoxGeometry(2.4, .05, .5), conM); gm.position.set(2.95, 1.05, BR.za - .45); gm.rotation.x = -.7; scene.add(gm);
-
-  { const led = (c, x, y, z) => { const m = new THREE.Mesh(new THREE.SphereGeometry(.007, 6, 6), new THREE.MeshBasicMaterial({ color: c, toneMapped: false })); m.position.set(x, y, z); scene.add(m); };
-    for (let i = 0; i < 5; i++) led(i % 2 ? 0x1fbf4a : 0xd8861c, 2.2 + i * .35, 1.1, BR.za - .62); led(0xd8261c, -2.2, 1.02, BR.za - .3); led(0x1fbf4a, .62, 1.5, BR.za - 1.22); }
+  /* ----- the whole surroundings are the approved 360° picture, on the inside of a sphere centred on the eye.
+           The eye only turns, so every direction shows the picture without distortion. ----- */
+  { const pt = new THREE.TextureLoader().load(PHOTO.src, () => { api.photoReady = true; }); pt.colorSpace = THREE.SRGBColorSpace; pt.anisotropy = renderer.capabilities.getMaxAnisotropy(); pt.generateMipmaps = true;
+    const sph = new THREE.Mesh(new THREE.SphereGeometry(400, 96, 48), new THREE.MeshBasicMaterial({ map: pt, side: THREE.BackSide, toneMapped: false, depthWrite: false, depthTest: false }));
+    sph.scale.x = -1; sph.rotation.y = -Math.PI / 2; sph.position.copy(camera.position); sph.renderOrder = -10; scene.add(sph); }
   /* ----- relative bearing scale (optional), 000 to 359, drawn at the level of the eye ----- */
   const ring = new THREE.Group(); ring.visible = false; scene.add(ring);
   { const R = 300, p = []; for (let d = 0; d < 360; d++) { const a = d * Math.PI / 180, x = Math.sin(a), z = -Math.cos(a), len = d % 10 === 0 ? 9 : d % 5 === 0 ? 5.5 : 3; p.push(x * R, EYE - len / 2, z * R, x * R, EYE + len / 2, z * R); }
@@ -221,23 +127,23 @@ function build() {
   }
 
   /* ----- look around: fixed eye position, smooth horizontal rotation ----- */
-  const PITCH0 = PHOTO.horizonUp * Math.PI / 180, FOV0 = 61.6;   // dead ahead at rest is exactly the approved picture
+  const PITCH0 = 3 * Math.PI / 180, FOV0 = 84;   // dead ahead at rest is exactly the approved picture
   let yaw = 0, pitch = PITCH0, vyaw = 0, fov = FOV0, fovT = FOV0, pitchT = null, drag = null;
   const rel = () => ((Math.round(-yaw * 180 / Math.PI) % 360) + 360) % 360;
   const el = renderer.domElement;
   el.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, t: performance.now() }; el.setPointerCapture(e.pointerId); host.classList.add('drag'); vyaw = 0; yawT = null; pitchT = null; });
   el.addEventListener('pointermove', e => { if (!drag) return; const k = (fov * Math.PI / 180) / host.clientHeight, dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now();
-    yaw += dx * k; pitch = Math.max(PITCH0 - .3, Math.min(PITCH0 + .3, pitch + dy * k)); vyaw = dx * k / Math.max(1, now - drag.t) * 1000; drag = { x: e.clientX, y: e.clientY, t: now }; });
+    yaw += dx * k; pitch = Math.max(-.6, Math.min(.75, pitch + dy * k)); vyaw = dx * k / Math.max(1, now - drag.t) * 1000; drag = { x: e.clientX, y: e.clientY, t: now }; });
   const end = () => { drag = null; host.classList.remove('drag'); }; el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(18, Math.min(75, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
+  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(28, Math.min(95, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
   el.addEventListener('dblclick', () => { pitchT = PITCH0; fovT = FOV0; });
   window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; const st = (e.shiftKey ? 10 : 1) * Math.PI / 180; if (e.key === 'ArrowRight') { yaw -= st; e.preventDefault(); } if (e.key === 'ArrowLeft') { yaw += st; e.preventDefault(); } });
   const lookAt = d => { yaw = -(((+d % 360) + 360) % 360) * Math.PI / 180; vyaw = 0; yawT = null; };
   $('goto').addEventListener('change', e => { const d = parseInt(e.target.value, 10); if (!isNaN(d)) lookAt(d); e.target.blur(); });
   const setInd = on => { ring.visible = !!on; $('bInd').classList.toggle('on', ring.visible); };
   $('bInd').onclick = () => setInd(!ring.visible);
-  const zoom = d => { fovT = Math.max(18, Math.min(75, fovT + d)); };
-  $('bZin').onclick = () => zoom(-8); $('bZout').onclick = () => zoom(8);
+  const zoom = d => { fovT = Math.max(28, Math.min(95, fovT + d)); };
+  $('bZin').onclick = () => zoom(-10); $('bZout').onclick = () => zoom(10);
   let yawT = null; $('bReset').onclick = () => { const cur = ((yaw % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; yaw = cur; yawT = 0; vyaw = 0; fovT = FOV0; pitchT = PITCH0; };
   $('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); };
 
@@ -269,7 +175,7 @@ function build() {
     const b = rel(); if (b !== shownB) { shownB = b; $('rb').textContent = String(b).padStart(3, '0') + '°' + (b === 0 ? ' AHEAD' : b === 180 ? ' ASTERN' : b < 180 ? ' STBD ' + b : ' PORT ' + (360 - b)); if (document.activeElement !== $('goto')) $('goto').value = String(b).padStart(3, '0'); }
     requestAnimationFrame(loop);
   }
-  $('ownline').textContent = `Own ship: bulk carrier (synthetic) · HDG ${OWN.heading.toFixed(1)}° · SOG ${OWN.sog.toFixed(1)} kn · eye ${(EYE - SEA_Y).toFixed(1)} m above the sea`;
+  $('ownline').textContent = `Own ship: bulk carrier (synthetic) · HDG ${OWN.heading.toFixed(1)}° · SOG ${OWN.sog.toFixed(1)} kn`;
   $('msg').style.display = 'none'; requestAnimationFrame(loop);
 }
 
