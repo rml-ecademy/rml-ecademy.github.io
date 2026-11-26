@@ -61,7 +61,7 @@ async function allowed() {
 const OWN = { heading: 271.5, cog: 271.7, sog: 12.6, rudder: 0 };
 const EYE = 1.70;                 // eye height above the wheelhouse deck, m
 const BR = { hw: 4.55, zf: -3.2, za: 3.8, h: 2.7 };
-const PHOTO = { src: 'media/bridge360/bridge-pano.jpg', src8k: 'media/bridge360/bridge-pano-8k.jpg', glass: 'media/bridge360/bridge-pano-glass.png' };   // the approved 360° picture (sharpened), and a map of its window glass round the horizon
+const PHOTO = { src: 'media/bridge360/bridge-pano.jpg', glass: 'media/bridge360/bridge-pano-glass.png' };   // true 360° render of the wheelhouse model (tools/bridge360/build_scene.py), and the map of its window glass
 const SEA_Y = -20.0, DECK_Y = -13.0;               // sea level and main deck, relative to the wheelhouse deck
 const NM = 1852;
 
@@ -81,8 +81,7 @@ function build() {
 
   /* ----- the whole surroundings are the approved 360° picture, on the inside of a sphere centred on the eye.
            The eye only turns, so every direction shows the picture without distortion. ----- */
-  { const big = renderer.capabilities.maxTextureSize >= 8192 && Math.max(screen.width, screen.height) >= 1100 && (navigator.deviceMemory || 8) >= 4;   // large picture on computers, smaller one on phones
-    const pt = new THREE.TextureLoader().load(big ? PHOTO.src8k : PHOTO.src, () => { api.photoReady = true; api.pano = big ? '8k' : '4k'; }); pt.colorSpace = THREE.SRGBColorSpace; pt.anisotropy = renderer.capabilities.getMaxAnisotropy(); pt.generateMipmaps = true;
+  { const pt = new THREE.TextureLoader().load(PHOTO.src, () => { api.photoReady = true; }); pt.colorSpace = THREE.SRGBColorSpace; pt.anisotropy = renderer.capabilities.getMaxAnisotropy(); pt.generateMipmaps = true;
     const sph = new THREE.Mesh(new THREE.SphereGeometry(400, 96, 48), new THREE.MeshBasicMaterial({ map: pt, side: THREE.BackSide, toneMapped: false, depthWrite: false, depthTest: false }));
     sph.scale.x = -1; sph.rotation.y = -Math.PI / 2; sph.position.copy(camera.position); sph.renderOrder = -10; scene.add(sph); }
   /* ----- relative bearing scale (optional), 000 to 359, drawn at the level of the eye ----- */
@@ -131,7 +130,7 @@ function build() {
   }
 
   /* ----- look around: fixed eye position, smooth horizontal rotation ----- */
-  const PITCH0 = 7 * Math.PI / 180, FOV0 = 56;   // dead ahead at rest is exactly the approved picture
+  const PITCH0 = 8 * Math.PI / 180, FOV0 = 62;   // dead ahead at rest is exactly the approved picture
   let yaw = 0, pitch = PITCH0, vyaw = 0, fov = FOV0, fovT = FOV0, pitchT = null, drag = null;
   const rel = () => ((Math.round(-yaw * 180 / Math.PI) % 360) + 360) % 360;
   const el = renderer.domElement;
@@ -139,14 +138,14 @@ function build() {
   el.addEventListener('pointermove', e => { if (!drag) return; const k = (fov * Math.PI / 180) / host.clientHeight, dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now();
     yaw += dx * k; pitch = Math.max(-.6, Math.min(.75, pitch + dy * k)); vyaw = dx * k / Math.max(1, now - drag.t) * 1000; drag = { x: e.clientX, y: e.clientY, t: now }; });
   const end = () => { drag = null; host.classList.remove('drag'); }; el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(16, Math.min(72, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
+  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(18, Math.min(85, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
   el.addEventListener('dblclick', () => { pitchT = PITCH0; fovT = FOV0; });
   window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; const st = (e.shiftKey ? 10 : 1) * Math.PI / 180; if (e.key === 'ArrowRight') { yaw -= st; e.preventDefault(); } if (e.key === 'ArrowLeft') { yaw += st; e.preventDefault(); } });
   const lookAt = d => { yaw = -(((+d % 360) + 360) % 360) * Math.PI / 180; vyaw = 0; yawT = null; };
   $('goto').addEventListener('change', e => { const d = parseInt(e.target.value, 10); if (!isNaN(d)) lookAt(d); e.target.blur(); });
   const setInd = on => { ring.visible = !!on; $('bInd').classList.toggle('on', ring.visible); };
   $('bInd').onclick = () => setInd(!ring.visible);
-  const zoom = d => { fovT = Math.max(16, Math.min(72, fovT + d)); };
+  const zoom = d => { fovT = Math.max(18, Math.min(85, fovT + d)); };
   $('bZin').onclick = () => zoom(-10); $('bZout').onclick = () => zoom(10);
   let yawT = null; $('bReset').onclick = () => { const cur = ((yaw % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; yaw = cur; yawT = 0; vyaw = 0; fovT = FOV0; pitchT = PITCH0; };
   $('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); };
