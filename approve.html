@@ -196,6 +196,7 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
           </div>
           <div class="two"><div><label for="amt">Amount paid (₱, optional)</label><input id="amt" placeholder="3199" inputmode="decimal"></div><div><label for="ref">Reference no. (optional)</label><input id="ref" placeholder="GCash / bank ref"></div></div>
           <label for="aff">Referred by · code (optional)</label><input id="aff" list="affCodes" placeholder="e.g. JUAN25" autocomplete="off" style="text-transform:uppercase"><datalist id="affCodes"></datalist><div class="sub" id="affHint" style="margin:4px 0 0"></div>
+          <label for="ownRate">Give this person their own link to share · commission % (leave blank = no link)</label><input id="ownRate" type="number" min="0" max="100" step="0.5" placeholder="e.g. 25 for a professor" inputmode="decimal" autocomplete="off"><div class="sub" style="margin:4px 0 0">For a professor or partner: type the % they earn on each enrollment through their link. It is set for this person only.</div>
           <label class="check"><input type="checkbox" id="extend" checked> If already enrolled, add the time on top of the current expiry</label>
           <label class="check"><input type="checkbox" id="newLink"> Also make a set-password link (for a student who never set one)</label>
           <button class="btn full" id="eb" type="submit">Give access</button>
@@ -515,10 +516,25 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   $('ef').addEventListener('submit', async e => {
     e.preventDefault(); $('eb').disabled = true; $('eerr').textContent = '';
     const body = { action:'enroll', aff_code:$('aff').value.trim().toUpperCase(), email:$('email').value.trim().toLowerCase(), name:$('name').value.trim(), package:$('pkg').value, validity:$('val').value, amount:$('amt').value.trim(), ref:$('ref').value.trim(), extend:$('extend').checked, newLink:$('newLink').checked };
+    const rv = $('ownRate').value.trim(), own = rv === '' ? null : Math.round(parseFloat(rv) * 100) / 100;
+    if(own !== null && (!isFinite(own) || own < 0 || own > 100)){ $('eerr').textContent = 'Commission % must be a number from 0 to 100.'; $('eb').disabled = false; return; }
     try {
       const r = await call(body);
-      showOut(r.link ? 'Access given — send this to ' + (body.name || body.email) : 'Access updated for ' + (body.name || body.email), manualMsg(body.name, body.package, r.member.expires_at, r.link), r.link);
-      $('amt').value = ''; $('ref').value = ''; $('aff').value = ''; affHint(); await load();
+      let msg = manualMsg(body.name, body.package, r.member.expires_at, r.link), title = r.link ? 'Access given — send this to ' + (body.name || body.email) : 'Access updated for ' + (body.name || body.email), linkErr = '';
+      if(own !== null){
+        try {
+          const { data, error } = await sb.rpc('admin_set_referral', { p_user: r.member.user_id, p_on: true });
+          if(error || !data || !data.ok) throw new Error((error && error.message) || (data && data.message) || 'Could not make the link.');
+          await load();
+          const af = affs.find(x => x.code === data.code); if(!af) throw new Error('Link made, but the % could not be set. Use Change % in Students.');
+          if(Number(af.rate_pct) !== own) await saveRate(af, own);
+          msg += '\n\nYour own ECADEMY link to share:\nhttps://ecademymaritime.com/?ref=' + data.code + '\n\nLog in and open "Share my link" to see who enrolled through it and your commission.';
+          title += ' · own link at ' + own + '%';
+        } catch(err2){ linkErr = 'Access was given, but the share link was not finished: ' + err2.message; }
+      }
+      showOut(title, msg, r.link);
+      $('amt').value = ''; $('ref').value = ''; $('aff').value = ''; $('ownRate').value = ''; affHint(); await load();
+      if(linkErr) $('eerr').textContent = linkErr;
     } catch(err){ $('eerr').textContent = err.message; }
     $('eb').disabled = false;
   });
