@@ -85,6 +85,20 @@ mark{background:none;color:var(--hi);font-weight:700}
 .veil.show>*{filter:none;opacity:1;pointer-events:auto}
 .veil.show::after{display:none}
 
+
+/* ---- bridge at night ---- */
+.nb{background:#05090d}.nb svg{display:block;width:100%;height:auto}
+.nb .ctl{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;padding:12px 14px;border-top:1px solid #1b2b34}
+.nb label{display:block;font-size:10.5px;letter-spacing:.12em;color:#9fb3bd;margin-bottom:4px}
+.nb select,.nb input[type=range]{width:100%}.nb select{background:#0c161b;color:#e9f1f4;border:1px solid #2d4350;border-radius:4px;padding:7px 8px;font:inherit;font-size:13px}
+.nb .say{grid-column:1/-1;font-size:13.2px;line-height:1.45;color:#cfdde3;border-top:1px solid #1b2b34;padding-top:10px}.nb .say b{color:#e9f1f4}
+.nb .row{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.nb button{font:700 11px Arial,sans-serif;letter-spacing:.08em;color:#0b161c;background:#e9f1f4;border:0;border-radius:4px;padding:8px 12px;cursor:pointer}
+.nb button.gh{background:none;color:#e9f1f4;border:1px solid #2d4350}.nb button.ok{background:#2fbf71}.nb button.no{background:#d9534f;color:#fff}
+.nb .opts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}.nb .opts button{text-align:left;font-weight:600;letter-spacing:0;font-size:12.6px;padding:10px 12px}
+@keyframes nbshim{0%,100%{opacity:.9}50%{opacity:.55}}.nb .refl{animation:nbshim 2.6s ease-in-out infinite}
+@media (max-width:560px){.nb .ctl{grid-template-columns:1fr}.nb .opts{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.nb .refl{animation:none}}
 /* ---- COLREG figures and sound signals ---- */
 figure.ani + figure.ani{margin-top:-4px}
 .snd{padding:14px 14px 8px;background:#0b161c}.snd h5{margin:0 0 8px;font-size:11.5px;letter-spacing:.14em;color:#9fb3bd}
@@ -861,6 +875,96 @@ const FIGS = {"colstruct": ["c_struct"], "collook": ["c_bearing"], "colaction": 
   window.addEventListener("hashchange", halt);
 })();
 
+
+/* ===== bridge at night: lights of another vessel seen through the wheelhouse windows ===== */
+ANI.c_night = { cap:"The wheelhouse at night. Choose the vessel and turn her to see which lights show at each aspect, or press IDENTIFY to be tested.", svg:'<div class="nb" data-nb></div>' };
+["collights","colspecial","colregapp","colsight"].forEach(k => { FIGS[k] = ["c_night"].concat(FIGS[k] || []); });
+function NB(root){
+  const Wc = "#fff6d8", Rc = "#ff3b30", Gc = "#27e07a";
+  const big = [[70,40,Wc,"m"],[-50,62,Wc,"m"],[-45,20,Gc,"g"],[-45,20,Rc,"r"],[-100,14,Wc,"s"]];
+  const sml = [[0,14,Gc,"g"],[0,14,Rc,"r"],[-40,10,Wc,"s"]];
+  const V = {
+    pdv:   { n:"Power-driven vessel, 50 m or more, underway", k:1,   L: big },
+    pdvs:  { n:"Power-driven vessel, less than 50 m, underway", k:.55, L: [[8,30,Wc,"m"]].concat(sml) },
+    nuc:   { n:"Vessel not under command, not making way", k:1, L: [[0,62,Rc,"a"],[0,50,Rc,"a"]] },
+    nucm:  { n:"Vessel not under command, making way", k:1, L: [[0,62,Rc,"a"],[0,50,Rc,"a"],[-45,20,Gc,"g"],[-45,20,Rc,"r"],[-100,14,Wc,"s"]] },
+    ram:   { n:"Vessel restricted in her ability to manoeuvre, making way", k:1, L: [[0,76,Rc,"a"],[0,64,Wc,"a"],[0,52,Rc,"a"]].concat(big) },
+    cbd:   { n:"Vessel constrained by her draught", k:1, L: [[0,76,Rc,"a"],[0,64,Rc,"a"],[0,52,Rc,"a"]].concat(big) },
+    trawl: { n:"Vessel engaged in trawling, making way", k:.55, L: [[6,46,Gc,"a"],[6,34,Wc,"a"]].concat(sml) },
+    fish:  { n:"Vessel engaged in fishing, other than trawling, making way", k:.55, L: [[6,46,Rc,"a"],[6,34,Wc,"a"]].concat(sml) },
+    pilot: { n:"Pilot vessel on duty, underway", k:.55, L: [[6,46,Wc,"a"],[6,34,Rc,"a"]].concat(sml) },
+    sail:  { n:"Sailing vessel underway", k:.5, L: sml },
+    anch:  { n:"Vessel at anchor, 50 m or more", k:1, L: [[95,36,Wc,"a"],[-95,24,Wc,"a"]] },
+    agr:   { n:"Vessel aground, 50 m or more", k:1, L: [[95,36,Wc,"a"],[-95,24,Wc,"a"],[0,62,Rc,"a"],[0,50,Rc,"a"]] }
+  };
+  const S = { v:"pdv", asp:300, brg:-12, rng:2, quiz:null };
+  const vis = (t, a) => t === "a" || (t === "m" && Math.abs(a) <= 112.5) || (t === "g" && a >= -1.5 && a <= 112.5) || (t === "r" && a <= 1.5 && a >= -112.5) || (t === "s" && Math.abs(a) >= 112.5);
+  const norm = a => ((a + 180) % 360 + 360) % 360 - 180;
+  function scene(){
+    const v = V[S.v], a = norm(S.asp), sc = [0, 2.1, 1.25, .7][S.rng] * v.k, cx = 450 + S.brg * 9, hz = 214;
+    const sn = Math.sin(a * Math.PI / 180), lit = v.L.filter(l => vis(l[3], a));
+    let stars = ""; for(let i = 0; i < 46; i++){ const x = (i * 197.3) % 900, y = (i * 61.7) % 190; stars += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${i % 7 === 0 ? 1.1 : .7}" fill="#dfe9f2" opacity="${(.25 + (i % 5) * .11).toFixed(2)}"/>`; }
+    let rip = ""; for(let i = 0; i < 16; i++){ const y = hz + 6 + i * i * .62; rip += `<line x1="0" y1="${y.toFixed(1)}" x2="900" y2="${y.toFixed(1)}" stroke="#0f2233" stroke-width="${(.5 + i * .09).toFixed(2)}" opacity=".55"/>`; }
+    const half = 100 * sc * Math.abs(sn) + 9 * sc, hullH = 7 * sc;
+    const hull = `<path d="M${(cx - half).toFixed(1)} ${hz} L${(cx - half + 4 * sc).toFixed(1)} ${(hz - hullH).toFixed(1)} L${(cx + half - 4 * sc).toFixed(1)} ${(hz - hullH).toFixed(1)} L${(cx + half).toFixed(1)} ${hz} Z" fill="#04080c" opacity=".6"/>`;
+    let lamps = "", refl = "";
+    lit.forEach(l => { const x = cx + l[0] * sn * sc, y = hz - l[1] * sc * .62 - 2, r = Math.max(1.5, 2.3 * Math.sqrt(sc));
+      refl += `<ellipse class="refl" cx="${x.toFixed(1)}" cy="${(hz + 10 + l[1] * sc * .5).toFixed(1)}" rx="${(r * .9).toFixed(1)}" ry="${(9 + l[1] * sc * .42).toFixed(1)}" fill="${l[2]}" opacity=".3" filter="url(#nbB2)"/>`;
+      lamps += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r * 4).toFixed(1)}" fill="${l[2]}" opacity=".28" filter="url(#nbB)"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${l[2]}"/>${l[2] === Wc ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r * .45).toFixed(1)}" fill="#ffffff"/>` : ""}`; });
+    const pil = [0, 222, 446, 670, 886].map(x => `<rect x="${x}" y="0" width="14" height="330" fill="#020406"/>`).join("");
+    return `<svg viewBox="0 0 900 430" role="img" aria-label="View ahead from the wheelhouse at night">
+      <defs><linearGradient id="nbSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02050a"/><stop offset="1" stop-color="#0a1826"/></linearGradient>
+      <linearGradient id="nbSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#081521"/><stop offset="1" stop-color="#02060a"/></linearGradient>
+      <filter id="nbB" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.2"/></filter><filter id="nbB2" x="-400%" y="-50%" width="900%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>
+      <radialGradient id="nbPpi"><stop offset="0" stop-color="#0d3a2a"/><stop offset="1" stop-color="#04130e"/></radialGradient></defs>
+      <rect width="900" height="${hz}" fill="url(#nbSky)"/>${stars}<rect y="${hz}" width="900" height="${430 - hz}" fill="url(#nbSea)"/>${rip}
+      <rect x="0" y="${hz - 1}" width="900" height="2" fill="#12283a" opacity=".8"/>
+      ${hull}${refl}${lamps}
+      <path d="M430 330 L436 262 L441 262 L441 196 L445 196 L445 150 L455 150 L455 196 L459 196 L459 262 L464 262 L470 330 Z" fill="#03070b"/><path d="M250 330 L330 276 L570 276 L650 330 Z" fill="#03070b"/>
+      ${pil}<rect x="0" y="0" width="900" height="34" fill="#020406"/><rect x="0" y="34" width="900" height="3" fill="#0a1218"/>
+      <rect x="0" y="322" width="900" height="108" fill="#04080b"/><rect x="0" y="322" width="900" height="3" fill="#101a21"/>
+      <g opacity=".9"><circle cx="150" cy="378" r="38" fill="url(#nbPpi)" stroke="#12382b"/><line x1="150" y1="378" x2="174" y2="349" stroke="#2fbf71" stroke-width="1" opacity=".7"/><circle cx="150" cy="378" r="19" fill="none" stroke="#1d5a45" stroke-width=".7"/><circle cx="139" cy="362" r="1.6" fill="#f2c14e"/>
+      <rect x="392" y="352" width="116" height="40" rx="3" fill="#0a0f12" stroke="#1a252c"/><text x="450" y="368" text-anchor="middle" font-family="Arial" font-size="8" fill="#7a2a22" letter-spacing="2">HDG</text><text x="450" y="386" text-anchor="middle" font-family="Consolas,monospace" font-size="17" fill="#c9382c">000.0</text>
+      <rect x="700" y="350" width="120" height="48" rx="3" fill="#0a0f12" stroke="#1a252c"/><circle cx="722" cy="366" r="3" fill="#b8791f"/><circle cx="742" cy="366" r="3" fill="#1f7a48"/><circle cx="762" cy="366" r="3" fill="#1f7a48"/><rect x="714" y="380" width="92" height="8" rx="2" fill="#10202a"/></g>
+      <text x="450" y="24" text-anchor="middle" font-family="Arial" font-size="10" fill="#4f6470" letter-spacing="3">VIEW AHEAD FROM THE WHEELHOUSE · OWN HEADING 000°</text>
+      ${S.quiz ? "" : `<text x="${Math.max(60, Math.min(840, cx)).toFixed(0)}" y="312" text-anchor="middle" font-family="Arial" font-size="10.5" fill="#7f95a1">relative bearing ${S.brg === 0 ? "ahead" : Math.abs(S.brg) + "° " + (S.brg < 0 ? "on the port bow" : "on the starboard bow")}</text>`}</svg>`;
+  }
+  function say(){
+    const v = V[S.v], a = norm(S.asp), lit = v.L.filter(l => vis(l[3], a)), c = t => lit.filter(l => l[3] === t).length;
+    const parts = []; const ar = lit.filter(l => l[3] === "a").map(l => l[2] === Rc ? "red" : l[2] === Gc ? "green" : "white");
+    if(ar.length) parts.push((ar.length === 1 ? "one all-round light: " : ar.length + " all-round lights, top to bottom: ") + ar.join(", "));
+    if(c("m")) parts.push(c("m") === 2 ? "two masthead lights" : "one masthead light");
+    if(c("g") && c("r")) parts.push("both sidelights"); else if(c("g")) parts.push("green sidelight"); else if(c("r")) parts.push("red sidelight");
+    if(c("s")) parts.push("sternlight");
+    const mov = v.L.some(l => l[3] === "g");
+    const asp = !mov ? "She shows the same lights all round." : Math.abs(a) < 2 ? "She is end-on, coming towards you." : Math.abs(a) >= 112.5 ? "You are in the arc of her sternlight, more than 22.5° abaft her beam." : a > 0 ? "You see her starboard side: she is heading to your right." : "You see her port side: she is heading to your left.";
+    return `<b>${esc(v.n)}.</b> You see ${parts.join(", ")}. ${asp}`;
+  }
+  function draw(){
+    const q = S.quiz, ctl = q ? `<div class="say">What is this vessel?</div><div class="opts">${q.o.map(k => `<button type="button" class="gh ${q.done ? (k === S.v ? "ok" : k === q.pick ? "no" : "") : ""}" data-pick="${k}" ${q.done ? "disabled" : ""}>${esc(V[k].n)}</button>`).join("")}</div>${q.done ? `<div class="say">${say()}</div>` : ""}<div class="row"><button type="button" data-next>NEXT VESSEL</button><button type="button" class="gh" data-free>BACK TO FREE VIEW</button><span style="font-size:12.5px;color:#9fb3bd">Score ${q.s} / ${q.n}</span></div>`
+     : `<div><label>VESSEL</label><select data-v>${Object.keys(V).map(k => `<option value="${k}" ${k === S.v ? "selected" : ""}>${esc(V[k].n)}</option>`).join("")}</select></div>
+        <div><label>RANGE</label><select data-r><option value="1" ${S.rng === 1 ? "selected" : ""}>Close</option><option value="2" ${S.rng === 2 ? "selected" : ""}>Medium</option><option value="3" ${S.rng === 3 ? "selected" : ""}>Distant</option></select></div>
+        <div><label>TURN HER · ASPECT</label><input type="range" min="0" max="359" step="1" value="${S.asp}" data-a aria-label="Aspect"></div>
+        <div><label>WHERE YOU SEE HER · RELATIVE BEARING</label><input type="range" min="-44" max="44" step="1" value="${S.brg}" data-b aria-label="Relative bearing"></div>
+        <div class="say">${say()}</div><div class="row"><button type="button" data-quiz>IDENTIFY · TEST ME</button></div>`;
+    root.innerHTML = scene() + `<div class="ctl">${ctl}</div>`;
+    const on = (sel, ev, fn) => { const e = root.querySelector(sel); if(e) e[ev] = fn; };
+    on("[data-v]", "onchange", e => { S.v = e.target.value; draw(); }); on("[data-r]", "onchange", e => { S.rng = +e.target.value; draw(); });
+    const live = () => { root.querySelector("svg").outerHTML = scene(); root.querySelector(".say").innerHTML = say(); };
+    on("[data-a]", "oninput", e => { S.asp = +e.target.value; live(); }); on("[data-b]", "oninput", e => { S.brg = +e.target.value; live(); });
+    on("[data-quiz]", "onclick", () => { S.quiz = { s:0, n:0 }; next(); }); on("[data-next]", "onclick", next); on("[data-free]", "onclick", () => { S.quiz = null; draw(); });
+    root.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { const q = S.quiz; q.done = true; q.pick = b.dataset.pick; q.n++; if(q.pick === S.v) q.s++; draw(); });
+  }
+  function next(){
+    const keys = Object.keys(V), q = S.quiz; S.v = keys[Math.floor(Math.random() * keys.length)];
+    S.asp = [0, 45, 90, 135, 180, 225, 270, 315, 60, 300][Math.floor(Math.random() * 10)]; S.brg = Math.floor(Math.random() * 60) - 30; S.rng = 1 + Math.floor(Math.random() * 2);
+    const a = norm(S.asp), sig = k => V[k].L.filter(l => vis(l[3], a)).map(l => l[2] + l[1]).sort().join("|");
+    const others = keys.filter(k => k !== S.v && sig(k) !== sig(S.v)).sort(() => Math.random() - .5).slice(0, 3);
+    q.o = others.concat([S.v]).sort(() => Math.random() - .5); q.done = false; q.pick = null; draw();
+  }
+  draw();
+}
+
 function open(id){
   const t = T.find(x => x.id === id); if(!t) return;
   cur = id; location.hash = id;
@@ -884,6 +988,7 @@ function open(id){
     ${quizHTML(t.id)}`;
   $("doc").querySelectorAll(".veil").forEach(v => v.onclick = () => v.classList.add("show"));
   wireQuiz(t.id);
+  $("doc").querySelectorAll("[data-nb]").forEach(NB);
   $("doc").scrollTop = 0; renderList($("q").value);
 }
 $("q").oninput = () => renderList($("q").value);
