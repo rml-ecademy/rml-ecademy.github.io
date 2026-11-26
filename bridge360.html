@@ -131,7 +131,7 @@ function build() {
   }
 
   /* ----- look around: fixed eye position, smooth horizontal rotation ----- */
-  const PITCH0 = 3 * Math.PI / 180, FOV0 = 84;   // dead ahead at rest is exactly the approved picture
+  const PITCH0 = 7 * Math.PI / 180, FOV0 = 56;   // dead ahead at rest is exactly the approved picture
   let yaw = 0, pitch = PITCH0, vyaw = 0, fov = FOV0, fovT = FOV0, pitchT = null, drag = null;
   const rel = () => ((Math.round(-yaw * 180 / Math.PI) % 360) + 360) % 360;
   const el = renderer.domElement;
@@ -139,14 +139,14 @@ function build() {
   el.addEventListener('pointermove', e => { if (!drag) return; const k = (fov * Math.PI / 180) / host.clientHeight, dx = e.clientX - drag.x, dy = e.clientY - drag.y, now = performance.now();
     yaw += dx * k; pitch = Math.max(-.6, Math.min(.75, pitch + dy * k)); vyaw = dx * k / Math.max(1, now - drag.t) * 1000; drag = { x: e.clientX, y: e.clientY, t: now }; });
   const end = () => { drag = null; host.classList.remove('drag'); }; el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(16, Math.min(95, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
+  el.addEventListener('wheel', e => { e.preventDefault(); fovT = Math.max(16, Math.min(72, fovT + Math.sign(e.deltaY) * 4)); }, { passive: false });
   el.addEventListener('dblclick', () => { pitchT = PITCH0; fovT = FOV0; });
   window.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; const st = (e.shiftKey ? 10 : 1) * Math.PI / 180; if (e.key === 'ArrowRight') { yaw -= st; e.preventDefault(); } if (e.key === 'ArrowLeft') { yaw += st; e.preventDefault(); } });
   const lookAt = d => { yaw = -(((+d % 360) + 360) % 360) * Math.PI / 180; vyaw = 0; yawT = null; };
   $('goto').addEventListener('change', e => { const d = parseInt(e.target.value, 10); if (!isNaN(d)) lookAt(d); e.target.blur(); });
   const setInd = on => { ring.visible = !!on; $('bInd').classList.toggle('on', ring.visible); };
   $('bInd').onclick = () => setInd(!ring.visible);
-  const zoom = d => { fovT = Math.max(16, Math.min(95, fovT + d)); };
+  const zoom = d => { fovT = Math.max(16, Math.min(72, fovT + d)); };
   $('bZin').onclick = () => zoom(-10); $('bZout').onclick = () => zoom(10);
   let yawT = null; $('bReset').onclick = () => { const cur = ((yaw % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; yaw = cur; yawT = 0; vyaw = 0; fovT = FOV0; pitchT = PITCH0; };
   $('bFull').onclick = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); };
