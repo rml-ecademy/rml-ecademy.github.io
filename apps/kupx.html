@@ -199,6 +199,13 @@ figure.ani figcaption{padding:9px 14px;font-size:12.6px;color:#9fb3bd;background
 .qdone .again{background:none;border:1px solid var(--line2);color:var(--mut);border-radius:8px;padding:6px 12px;
  cursor:pointer;font:inherit;font-size:13px}
 .qdone .again:hover{color:var(--tx);border-color:var(--acc)}
+
+/* ---- printable assessment ---- */
+.printbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:2px 0 14px}
+.printbar button{background:rgba(86,184,230,.08);border:1px solid var(--line2);color:var(--blue);border-radius:8px;
+ padding:7px 13px;cursor:pointer;font:700 11.5px Arial;letter-spacing:.1em}
+.printbar button:hover{border-color:var(--blue);background:rgba(86,184,230,.16)}
+.printbar span{font-size:12.5px;color:var(--mut)}
 </style></head><body>
 <header><b>ECADEMY</b><span class="sub">Deck Knowledge · Knowledge, Understanding and Proficiency</span><span class="sp"></span>
 <button class="hdbtn" id="recall" title="Hide the bullets and the reference, then tap to reveal">RECALL MODE</button>
@@ -788,6 +795,93 @@ function renderList(f){
   $("cnt").textContent = done ? done + " / " + T.length + " PASSED" : T.length + " TOPICS";
 }
 
+
+/* ---------- ASSESS_PRINT: printable assessment ---------- */
+function assessHTML(id, withKey){
+  const t = T.find(x => x.id === id); if(!t) return "";
+  const qs = Q[id] || [];
+  const L = "ABCDEFGH";
+  const plain = x => esc(String(x == null ? "" : x).replace(/\*\*/g, ""));
+  const lines = n => Array.from({ length: n }, () => '<div class="ln"></div>').join("");
+  const rank = RK[t.r][0];
+  const mcq = qs.map((x, i) => `<div class="q"><p><b>${i + 1}.</b> ${esc(x.q)}</p>
+      ${x.o.map((o, j) => `<div class="o"><span class="bx"></span><b>${L[j]}.</b> ${esc(o)}</div>`).join("")}</div>`).join("");
+  const head = `
+    <div class="hd"><div><div class="brand">ECADEMY</div><div class="sub">Deck Knowledge Assessment</div></div>
+    <div class="meta"><div><b>${plain(rank)}</b></div><div>${plain(t.g)}</div></div></div>
+    <h1>${plain(t.t)}</h1>
+    <table class="id"><tr><td>Name</td><td class="w"></td><td>Date</td><td class="d"></td></tr>
+    <tr><td>Rank / ID</td><td class="w"></td><td>Score</td><td class="d">/ ${qs.length}</td></tr></table>`;
+  const sheet = `<section class="pg">${head}
+    <h2>PART A · KNOWLEDGE CHECK <small>Tick one answer for each question. ${qs.length} question${qs.length === 1 ? "" : "s"}.</small></h2>
+    ${mcq || "<p>No multiple-choice questions for this topic.</p>"}
+    <h2>PART B · WRITTEN ANSWERS</h2>
+    <div class="q"><p><b>K · Knowledge.</b> ${plain(t.k)}</p>${lines(4)}</div>
+    <div class="q"><p><b>U · Understanding.</b> ${plain(t.u)}</p>${lines(5)}</div>
+  </section>
+  <section class="pg">
+    <h2>PART C · PROFICIENCY TASK <small>Carried out and observed. Assessor completes this part.</small></h2>
+    <div class="q"><p><b>P · Proficiency.</b> ${plain(t.p)}</p>
+      <p class="lab">What was done, and the evidence seen (record, entry, photograph, reading):</p>${lines(6)}</div>
+    <table class="sign">
+      <tr><td colspan="2"><span class="bx"></span> <b>Competent</b> &nbsp;&nbsp;&nbsp;&nbsp; <span class="bx"></span> <b>Not yet competent</b> &nbsp;&nbsp;&nbsp;&nbsp; <span class="bx"></span> <b>Re-assess on</b> ______________</td></tr>
+      <tr><td>Assessor name and rank</td><td class="sg"></td></tr>
+      <tr><td>Signature</td><td class="sg"></td></tr>
+      <tr><td>Date</td><td class="sg"></td></tr>
+    </table>
+    ${t.stcw ? `<p class="ref"><b>Competence reference.</b> ${plain(t.stcw)}</p>` : ""}
+    <p class="foot">For training and educational purposes only. This sheet does not replace the ship's SMS, a company assessment or an approved course.</p>
+  </section>`;
+  const key = !withKey ? "" : `<section class="pg key">
+    <div class="hd"><div><div class="brand">ECADEMY</div><div class="sub">Assessor copy · Answer key</div></div>
+    <div class="meta"><div><b>${plain(rank)}</b></div><div>${plain(t.g)}</div></div></div>
+    <h1>${plain(t.t)}</h1>
+    <h2>PART A · ANSWERS</h2>
+    ${qs.map((x, i) => `<div class="q"><p><b>${i + 1}. ${L[x.a]}.</b> ${esc(x.o[x.a])}</p><p class="why">${esc(x.why)}</p></div>`).join("")}
+    <h2>PART B · WHAT A COMPLETE ANSWER CONTAINS</h2>
+    <p class="lab">Marker's guide: the answer should cover the points below. Accept the candidate's own words.</p>
+    <ul>${t.pts.map(p => `<li>${plain(p)}</li>`).join("")}</ul>
+    ${t.ref ? `<p class="ref"><b>Reference.</b> ${plain(t.ref)}</p>` : ""}
+    ${t.err ? `<p class="ref"><b>Common error to look for.</b> ${plain(t.err)}</p>` : ""}
+    <h2>PART C · WHAT TO LOOK FOR</h2>
+    <p>${plain(t.p)}</p>
+    <p class="lab">Competent only when the candidate does the task unprompted, on the real equipment or record, and can say why each step is done.</p>
+  </section>`;
+  const css = `
+    @page{size:A4;margin:14mm 14mm 16mm}
+    *{box-sizing:border-box}
+    body{font:11.5pt/1.4 Arial,Helvetica,sans-serif;color:#000;background:#fff;margin:0}
+    .pg{page-break-after:always} .pg:last-child{page-break-after:auto}
+    .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}
+    .brand{font-weight:800;letter-spacing:.2em;font-size:15pt} .sub{font-size:9.5pt;letter-spacing:.08em;color:#333}
+    .meta{text-align:right;font-size:9.5pt}
+    h1{font-size:17pt;margin:6px 0 10px}
+    h2{font-size:10.5pt;letter-spacing:.1em;border-bottom:1px solid #000;padding-bottom:3px;margin:16px 0 8px}
+    h2 small{font-weight:400;letter-spacing:0;font-size:9pt;color:#333;margin-left:8px}
+    table{border-collapse:collapse;width:100%}
+    .id td{border:1px solid #000;padding:6px 8px;font-size:10pt} .id td.w{width:46%} .id td.d{width:20%}
+    .q{margin:0 0 11px;page-break-inside:avoid} .q p{margin:0 0 4px}
+    .o{margin:2px 0 2px 18px;display:flex;gap:6px;align-items:flex-start}
+    .bx{display:inline-block;width:11px;height:11px;border:1.4px solid #000;flex:none;margin-top:3px}
+    .ln{border-bottom:1px solid #444;height:21px}
+    .lab{font-size:9.5pt;color:#222;margin:6px 0 2px}
+    .sign{margin-top:18px} .sign td{border:1px solid #000;padding:9px 8px;font-size:10pt} .sign td.sg{width:62%;height:34px}
+    .ref{font-size:9.5pt;margin:10px 0 0}
+    .foot{font-size:8.5pt;color:#333;border-top:1px solid #999;padding-top:6px;margin-top:22px}
+    .key .why{font-size:10pt;color:#222;margin-left:18px} ul{margin:4px 0 4px 18px;padding:0} li{margin:2px 0;font-size:10.5pt}
+  `;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>ECADEMY Assessment · ${plain(t.t)}</title><style>${css}</style></head><body>${sheet}${key}</body></html>`;
+}
+function printAssessment(id, withKey){
+  const old = document.getElementById("printframe"); if(old) old.remove();
+  const fr = document.createElement("iframe");
+  fr.id = "printframe";
+  fr.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden";
+  document.body.appendChild(fr);
+  fr.srcdoc = assessHTML(id, withKey);
+  fr.onload = () => { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch(e){} };
+}
+
 /* ---------- quiz ---------- */
 function quizHTML(id){
   const qs = Q[id];
@@ -999,6 +1093,7 @@ function open(id){
   $("doc").innerHTML = `
     <h1>${esc(t.t)}</h1>
     <p class="kick">${RK[t.r][0]} · ${esc(t.g)}</p>
+    <div class="printbar"><button id="prA" type="button">PRINT ASSESSMENT</button><button id="prK" type="button">PRINT WITH ANSWER KEY</button><span>Quiz, written answers and a practical sign-off sheet, A4.</span></div>
     <p class="lead">${b(t.lead)}</p>
     ${t.ani && ANI[t.ani] ? `<figure class="ani">${ANI[t.ani].svg}<figcaption>${esc(ANI[t.ani].cap)}</figcaption></figure>` : ""}
     ${(FIGS[t.id] || []).map(f => ANI[f] ? `<figure class="ani">${ANI[f].svg}<figcaption>${esc(ANI[f].cap)}</figcaption></figure>` : "").join("")}
@@ -1016,6 +1111,8 @@ function open(id){
     ${quizHTML(t.id)}`;
   $("doc").querySelectorAll(".veil").forEach(v => v.onclick = () => v.classList.add("show"));
   wireQuiz(t.id);
+  $("prA").onclick = () => printAssessment(t.id, false);
+  $("prK").onclick = () => printAssessment(t.id, true);
   $("doc").querySelectorAll("[data-nb]").forEach(NB);
   $("doc").scrollTop = 0; renderList($("q").value);
 }
