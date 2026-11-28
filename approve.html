@@ -134,6 +134,22 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
       <div class="tile"><b id="tDue">0</b><span>Renewals due · 30 d</span></div>
     </div>
 
+    <!-- SITE MAINTENANCE -->
+    <section class="card" id="maintCard">
+      <h2>Site maintenance <span class="st no" id="mState">OFF</span></h2>
+      <p class="sub" id="mSub">Switch this on while you are updating. Students see a maintenance notice and cannot use the site until you switch it off. Your owner account still gets in.</p>
+      <label for="mPreset">Notice shown to students</label>
+      <select id="mPreset">
+        <option value="ECADEMY is under maintenance. We are upgrading the system and will be back shortly.">System under maintenance / upgrade</option>
+        <option value="We are adding new lessons and simulators. ECADEMY will be back online shortly.">New lessons and simulators being added</option>
+        <option value="Scheduled maintenance is in progress. Please come back in about 1 hour.">Scheduled maintenance, back in about 1 hour</option>
+        <option value="">Write my own notice</option>
+      </select>
+      <textarea id="mText" maxlength="300" style="margin-top:8px;min-height:84px;padding:10px 12px;line-height:1.45"></textarea>
+      <button class="btn full" id="mBtn" type="button">Pause site and show notice</button>
+      <div class="err" id="mErr" role="alert"></div>
+    </section>
+
     <!-- 1 · TO APPROVE -->
     <div class="panel" id="p-payments">
       <section class="card">
@@ -588,11 +604,37 @@ details.adv summary{cursor:pointer;font-weight:700;list-style:none;display:flex;
   document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('app').classList.contains('hidden')) load(); });
   if(window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) $('homeTip').classList.add('hidden');
 
+
+  /* ---------- site maintenance ---------- */
+  let maint = null, mDirty = false;
+  function paintMaint(){
+    if(!maint) return;
+    const on = !!maint.on; $('mState').textContent = on ? 'ON · STUDENTS PAUSED' : 'OFF'; $('mState').className = 'st ' + (on ? 'bad' : 'no');
+    $('maintCard').style.borderColor = on ? 'var(--red)' : '';
+    $('mBtn').textContent = on ? 'Resume site (remove notice)' : 'Pause site and show notice'; $('mBtn').className = 'btn full' + (on ? ' ok' : '');
+    $('mSub').textContent = on ? 'The site is paused since ' + fmt(maint.updated_at) + '. Students see the notice below. Switch it off when your update is finished.' : 'Switch this on while you are updating. Students see a maintenance notice and cannot use the site until you switch it off. Your owner account still gets in.';
+    if(!mDirty){ const t = on && maint.message ? maint.message : $('mPreset').value; $('mText').value = t; const o = [...$('mPreset').options].find(x => x.value === t); $('mPreset').value = o ? o.value : ''; }
+    $('mText').disabled = $('mPreset').disabled = on;
+  }
+  async function loadMaint(){ const { data, error } = await sb.rpc('site_status'); if(!error && data){ maint = data; paintMaint(); } }
+  $('mPreset').onchange = () => { mDirty = true; if($('mPreset').value) $('mText').value = $('mPreset').value; else { $('mText').value = ''; $('mText').focus(); } };
+  $('mText').oninput = () => { mDirty = true; };
+  $('mBtn').onclick = async () => {
+    const on = !(maint && maint.on), text = $('mText').value.trim(); $('mErr').textContent = '';
+    if(on && !text){ $('mErr').textContent = 'Write the notice students will see.'; return; }
+    if(on && !confirm('Pause ECADEMY for all students now?')) return;
+    $('mBtn').disabled = true;
+    try { const { data, error } = await sb.rpc('admin_set_maintenance', { p_on: on, p_message: on ? text : (maint && maint.message) || '' }); if(error || !data || !data.ok) throw new Error((error && error.message) || (data && data.message) || 'Could not save.');
+      mDirty = false; await loadMaint(); toast(on ? 'Site paused. Students now see the notice.' : 'Site is open again.'); }
+    catch(e){ $('mErr').textContent = e.message; }
+    $('mBtn').disabled = false;
+  };
+
   async function boot(){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ view('loginView'); return; }
     $('who').textContent = session.user.email;
-    try { await fetchAll(); view('app'); renderAll(); showTab(location.hash.slice(1)); }
+    try { await fetchAll(); view('app'); renderAll(); loadMaint(); showTab(location.hash.slice(1)); }
     catch(e){ if(/admin|forbidden/i.test(e.message)){ $('deniedEmail').textContent = session.user.email; view('denied'); } else { view('app'); showTab(location.hash.slice(1)); $('list').innerHTML = '<div class="empty">Could not load: ' + esc(e.message) + '</div>'; } }
   }
   boot();
